@@ -23,7 +23,7 @@ inoremap <buffer> ;b              ** **<C-o>F <c-o>x
 inoremap <buffer> ;h              == ==<C-o>F <c-o>x
 
 
-inoremap <buffer><silent> <localleader><enter> 
+inoremap <buffer><silent> <localleader><enter>
     \ <esc>?\v[,.:?")，。)，。：》”；？、」） ]<cr>:noh<cr>a<enter><esc>`^A
 
 " preview markdown snippet ============================================== {{{1
@@ -44,7 +44,7 @@ setlocal formatoptions=tcq,ro/,n,lm]1,Bj tabstop=2 shiftwidth=2
 
 " setlocal foldexpr=nvim_treesitter#foldexpr() foldmethod=expr foldlevel=99 foldlevelstart=99
 
-"set formatexpr=format#Markdown()
+set formatexpr=
 let &l:formatprg="text_wrap"
 let &l:formatlistpat = '^\s*\d\+\.\s\+\|^\[-*+>]\s\+\|^\s*\[^[^\]]\+\]\[:\s]'
 setlocal nonumber norelativenumber

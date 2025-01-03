@@ -13,12 +13,12 @@ vim.wo.breakindent = true
 vim.api.nvim_buf_set_var(0, "did_ftplugin", true)
 
 -- markdown vs. quarto hacks
-local ns = vim.api.nvim_create_namespace "QuartoHighlight"
+local ns = vim.api.nvim_create_namespace("QuartoHighlight")
 vim.api.nvim_set_hl(ns, "@markup.strikethrough", { strikethrough = false })
 vim.api.nvim_set_hl(ns, "@markup.doublestrikethrough", { strikethrough = true })
 vim.api.nvim_win_set_hl_ns(0, ns)
 
-vim.cmd.UltiSnipsAddFiletype "quarto.r.markdown"
+-- vim.cmd.UltiSnipsAddFiletype "quarto.r.markdown"
 vim.api.nvim_set_option_value("formatexpr", nil, { scope = "local" })
 vim.api.nvim_set_option_value("formatprg", "text_wrap", { scope = "local" })
 
@@ -26,30 +26,24 @@ local keymap = require("util").keymap
 
 local fexport = function(oformat, ofile)
   local bufnr = vim.api.nvim_get_current_buf()
-  local fname = vim.fn.expand "%"
+  local fname = vim.fn.expand("%")
   oformat = oformat or "html"
   if not ofile then
-    local outdir = vim.fn.stdpath "cache" .. "/fexport"
+    local outdir = vim.fn.stdpath("cache") .. "/fexport"
     vim.fn.mkdir(outdir, "p")
     local filename = vim.fn.fnamemodify(vim.fn.swapname(bufnr), ":t")
     filename = filename:gsub("%.swp$", "." .. oformat)
     ofile = outdir .. "/" .. vim.fn.fnameescape(filename)
   end
 
-  local cmd = string.format(
-    'fexport --from=%s --to="%s" --outfile="%s" "%s"',
-    vim.bo.filetype,
-    oformat,
-    ofile,
-    fname
-  )
+  local cmd = string.format('fexport --from=%s --to="%s" --outfile="%s" "%s"', vim.bo.filetype, oformat, ofile, fname)
   print(cmd)
   require("util").execute_async(cmd)
   return ofile
 end
 
 local preview = function()
-  local file = vim.fn.expand "%"
+  local file = vim.fn.expand("%")
 
   --- @diagnostic disable: undefined-global
   Snacks.notify.info("Quarto Start Render", { title = "Quarto", icon = "" })
@@ -58,19 +52,13 @@ local preview = function()
     { text = true },
     function(obj)
       if obj and obj.code == 0 then
-        Snacks.notify.info(
-          "Render Success\n" .. obj.stdout,
-          { title = "Quarto", icon = "" }
-        )
+        Snacks.notify.info("Render Success\n" .. obj.stdout, { title = "Quarto", icon = "" })
       else
-        Snacks.notify.error(
-          "Failed to Render:\n" .. obj.stderr,
-          { title = "Quarto", icon = "" }
-        )
+        Snacks.notify.error("Failed to Render:\n" .. obj.stderr, { title = "Quarto", icon = "" })
       end
     end
   )
-  keymap {
+  keymap({
     "<localleader>xP",
     function()
       if job then
@@ -79,14 +67,14 @@ local preview = function()
     end,
     desc = "Stop Quarto Prview",
     buffer = true,
-  }
+  })
 end
 
 local fexport_open = function(oformat)
   oformat = oformat or "html"
   local ofile = fexport(oformat)
   local open = "open"
-  if vim.fn.has "mac" == 0 then
+  if vim.fn.has("mac") == 0 then
     open = "xdg-open"
   end
   vim.fn.jobstart(open .. ' "' .. ofile .. '"')
@@ -110,31 +98,31 @@ for type, key in pairs(format_desc) do
 end
 
 -- preview
-keymap {
+keymap({
   "<A-v>",
   "<cmd>call utils#MdPreview()<cr>",
   mode = "v",
   desc = "Preview Select lines",
-}
-keymap {
+})
+keymap({
   "<localleader>xp",
   preview,
   desc = "Start Quarto preview",
   icon = { icon = "", hl = "WhichKeyIconCyan" },
   buffer = true,
-}
-keymap {
+})
+keymap({
   "<A-v>",
   preview,
   desc = "Start Quarto preview",
   icon = { icon = "", hl = "WhichKeyIconCyan" },
-  mode = {"n"},
+  mode = { "n" },
   buffer = true,
-}
+})
 
-require("which-key").add {
+require("which-key").add({
   { "<localleader>x", group = "Export ..." },
-}
+})
 
 vim.keymap.set("i", "<A-=>", function()
   vim.api.nvim_put({ "<- " }, "c", at_end_of_line(), true)
@@ -143,7 +131,7 @@ vim.keymap.set("i", "<A-\\>", function()
   vim.api.nvim_put({ "%>%" }, "c", at_end_of_line(), true)
 end, { buffer = true, desc = "Pipe operator", silent = true })
 vim.keymap.set("n", "<c-x>", function()
-  require("util").bibkey_action(vim.fn.expand "<cword>")
+  require("util").bibkey_action(vim.fn.expand("<cword>"))
 end, { desc = "Show action related bibkey" })
 
 vim.keymap.set({ "n", "i" }, "<localleader>il", function()
@@ -151,16 +139,15 @@ vim.keymap.set({ "n", "i" }, "<localleader>il", function()
 end, { desc = "Add Link" })
 
 vim.keymap.set({ "x", "o" }, "ic", function()
-  vim.fn["text_obj#MdCodeBlock"] "i"
+  vim.fn["text_obj#MdCodeBlock"]("i")
 end, { desc = "Chunk i", silent = true, buffer = true })
 
 vim.keymap.set({ "x", "o" }, "ac", function()
-  vim.fn["text_obj#MdCodeBlock"] "a"
+  vim.fn["text_obj#MdCodeBlock"]("a")
 end, { desc = "Chunk a", silent = true, buffer = true })
 
-
 -- Hightlight
-vim.cmd [[
+vim.cmd([[
 syntax match QuartoCrossRef /\v[^-_0-9A-Za-z]\zs\@[^ ]+[-_0-9A-Za-z]/
 exec "highlight def QuartoCrossRef guifg=" . g:lbs_colors['orange']
-]]
+]])
