@@ -2,7 +2,7 @@ return {
   {
     "liubianshi/R.nvim",
     dev = true,
-    lazy = false,
+    ft = { "r", "rmd", "quarto" },
     opts = function()
       local hook = {
         on_filetype = function()

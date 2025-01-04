@@ -1,7 +1,9 @@
 return {
-  {
+  { -- "liubianshi/cmp-lsp-rimels"
     "liubianshi/cmp-lsp-rimels",
+    keys = { { "<localleader>f", mode = "i" } },
     branch = "blink.cmp",
+    lazy = true,
     dev = true,
     priority = 100,
     opts = {
@@ -24,7 +26,7 @@ return {
       require("rimels").setup(opts)
     end,
   },
-  {
+  { -- "saghen/blink.cmp"
     "saghen/blink.cmp",
     build = "cargo build --release",
     opts = function(_, opts)
@@ -38,7 +40,7 @@ return {
           ["<C-p>"] = { "scroll_documentation_up", "fallback" },
           ["<C-n>"] = { "scroll_documentation_down", "fallback" },
           ["<C-e>"] = { "hide", "fallback" },
-          ["<CR>"] = { "fallback" },
+          ["<CR>"] = { "accept", "fallback" },
         },
         completion = {
           documentation = {
@@ -110,7 +112,7 @@ return {
       return vim.tbl_deep_extend("force", opts, config)
     end,
   },
-  {
+  { -- "saghen/blink.compat"
     "saghen/blink.compat",
     lazy = true,
     opts = {},
