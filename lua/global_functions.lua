@@ -1,7 +1,22 @@
+function _G.LoadedPlugins()
+  local plugs = require("lazy").plugins()
+  local loaded_plugs = {}
+  for _, plug in ipairs(plugs) do
+    if not plug["_"].loaded then
+      loaded_plugs[plug.name] = 1
+    end
+  end
+  return loaded_plugs
+end
+
+function _G.PlugExist(plug)
+  return require("util").has(plug)
+end
+
 function _G.at_end_of_line()
   local mode = vim.fn.mode()
-  local col = vim.fn.col('.')
-  local line_end = vim.fn.col('$')
+  local col = vim.fn.col(".")
+  local line_end = vim.fn.col("$")
   if mode:find("^n") then
     return (col + 1 == line_end)
   elseif mode:find("^i") then
@@ -32,17 +47,17 @@ end
 function Set_terminal_keymaps()
   local opts = { buffer = 0 }
   vim.keymap.set("t", ";j", [[<C-\><C-n>]], opts)
-  if vim.fn.has "mac" == 1 then
+  if vim.fn.has("mac") == 1 then
     vim.keymap.set("t", "<c-space>", [[<C-\><C-n>]], opts)
-    vim.keymap.set('t', '<M-w>',     [[<C-\><C-n><C-w>]],   opts)
+    vim.keymap.set("t", "<M-w>", [[<C-\><C-n><C-w>]], opts)
   else
     vim.keymap.set("t", "<A-space>", [[<C-\><C-n>]], opts)
-    vim.keymap.set('t', '<A-w>',     [[<C-\><C-n><C-w>]],   opts)
+    vim.keymap.set("t", "<A-w>", [[<C-\><C-n><C-w>]], opts)
   end
-  vim.keymap.set('t', '<C-/>h',     [[<Cmd>wincmd h<CR>]], opts)
-  vim.keymap.set('t', '<C-/>j',     [[<Cmd>wincmd j<CR>]], opts)
-  vim.keymap.set('t', '<C-/>k',     [[<Cmd>wincmd k<CR>]], opts)
-  vim.keymap.set('t', '<C-/>l',     [[<Cmd>wincmd l<CR>]], opts)
+  vim.keymap.set("t", "<C-/>h", [[<Cmd>wincmd h<CR>]], opts)
+  vim.keymap.set("t", "<C-/>j", [[<Cmd>wincmd j<CR>]], opts)
+  vim.keymap.set("t", "<C-/>k", [[<Cmd>wincmd k<CR>]], opts)
+  vim.keymap.set("t", "<C-/>l", [[<Cmd>wincmd l<CR>]], opts)
 end
 
 function _G.BufIsBig(bufnr)
@@ -86,38 +101,34 @@ function _G.is_cjk_character(char)
 
   -- 检查并分类 CJK 字符
   if code >= 0x4E00 and code <= 0x9FFF then
-      return true, "基本汉字 (CJK Unified Ideographs)"
+    return true, "基本汉字 (CJK Unified Ideographs)"
   elseif code >= 0x3400 and code <= 0x4DBF then
-      return true, "扩展汉字 A 区 (CJK Unified Ideographs Extension A)"
+    return true, "扩展汉字 A 区 (CJK Unified Ideographs Extension A)"
   elseif code >= 0x20000 and code <= 0x2A6DF then
-      return true, "扩展汉字 B 区 (CJK Unified Ideographs Extension B)"
+    return true, "扩展汉字 B 区 (CJK Unified Ideographs Extension B)"
   elseif code >= 0x2A700 and code <= 0x2B73F then
-      return true, "扩展汉字 C 区 (CJK Unified Ideographs Extension C)"
+    return true, "扩展汉字 C 区 (CJK Unified Ideographs Extension C)"
   elseif code >= 0x2B740 and code <= 0x2B81F then
-      return true, "扩展汉字 D 区 (CJK Unified Ideographs Extension D)"
+    return true, "扩展汉字 D 区 (CJK Unified Ideographs Extension D)"
   elseif code >= 0x2B820 and code <= 0x2CEAF then
-      return true, "扩展汉字 E 区 (CJK Unified Ideographs Extension E)"
+    return true, "扩展汉字 E 区 (CJK Unified Ideographs Extension E)"
   elseif code >= 0x2CEB0 and code <= 0x2EBEF then
-      return true, "扩展汉字 F 区 (CJK Unified Ideographs Extension F)"
+    return true, "扩展汉字 F 区 (CJK Unified Ideographs Extension F)"
   elseif code >= 0x30000 and code <= 0x3134F then
-      return true, "扩展汉字 G 区 (CJK Unified Ideographs Extension G)"
+    return true, "扩展汉字 G 区 (CJK Unified Ideographs Extension G)"
   elseif code >= 0xF900 and code <= 0xFAFF then
-      return true, "兼容汉字 (CJK Compatibility Ideographs)"
+    return true, "兼容汉字 (CJK Compatibility Ideographs)"
   elseif code >= 0x2F00 and code <= 0x2FDF then
-      return true, "汉字部首 (Kangxi Radicals)"
+    return true, "汉字部首 (Kangxi Radicals)"
   elseif code >= 0x31C0 and code <= 0x31EF then
-      return true, "汉字部件补充 (CJK Strokes)"
+    return true, "汉字部件补充 (CJK Strokes)"
   elseif code >= 0x3100 and code <= 0x312F then
-      return true, "注音符号 (Bopomofo)"
+    return true, "注音符号 (Bopomofo)"
   elseif code >= 0x3040 and code <= 0x309F then
-      return true, "平假名 (Hiragana)"
+    return true, "平假名 (Hiragana)"
   elseif code >= 0x30A0 and code <= 0x30FF then
-      return true, "片假名 (Katakana)"
+    return true, "片假名 (Katakana)"
   else
-      return false, "非 CJK 字符"
+    return false, "非 CJK 字符"
   end
 end
-
-
-
-

@@ -26,6 +26,7 @@ return {
   },
   {
     "saghen/blink.cmp",
+    build = "cargo build --release",
     opts = function(_, opts)
       local border = require("util").border("▔", "bottom")
       local config = {
@@ -47,7 +48,7 @@ return {
           },
           keyword = {
             range = "prefix",
-            regex = "[-_,.:\\?!]\\|[A-Za-z0-9]",
+            -- regex = "[_,:\\?!]\\|[A-Za-z0-9]",
           },
           list = {
             selection = function(ctx)

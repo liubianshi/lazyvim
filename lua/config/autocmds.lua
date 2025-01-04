@@ -17,21 +17,17 @@ end
 local augroups = vim.tbl_map(function(name)
   return augroup(name)
 end, {
-  "Auto_create_dir",
   "Buffer",
-  "Bigfile",
-  "Checktime",
-  "Close_with_q",
   "Cursor",
   "FASD",
   "Fugitive",
   "Help",
   "Keywordprg",
-  "LspAttach",
   "Man",
   "Term",
   "Yank",
   "Zen",
+  "Snacks",
 })
 
 -- Buffer --------------------------------------------------------------- {{{1
@@ -39,14 +35,6 @@ aucmd({ "BufWritePre" }, {
   group = augroups.Buffer,
   command = [[%s/\v\s+$//e]],
   desc = "Delete suffix space before writing",
-})
-
--- Lsp related ---------------------------------------------------------- {{{1
-aucmd({ "LspAttach" }, {
-  group = augroups.LspAttach,
-  callback = function()
-    vim.opt.formatoptions:remove("cro")
-  end,
 })
 
 -- Zen mode related ----------------------------------------------------- {{{1
@@ -137,8 +125,9 @@ aucmd({ "BufWinEnter", "BufRead", "BufEnter" }, {
       end
       return
     end
+
     if not is_zen_buffer and not is_zen_window then
-      vim.go.showtabline = vim.g.showtabline or 1
+      -- vim.go.showtabline = vim.g.showtabline or 1
       vim.go.laststatus = vim.g.laststatus or 3
       ---@diagnostic disable: missing-fields
       if lualine then
@@ -224,23 +213,6 @@ aucmd({ "TermOpen" }, {
   end,
 })
 
--- Check if we need to reload the file when it changed ------------------ {{{1
-aucmd({ "FocusGained", "TermClose", "TermLeave" }, {
-  group = augroups.Checktime,
-  callback = function()
-    if vim.o.buftype ~= "nofile" and vim.fn.getcmdwintype() == "" then
-      vim.cmd("checktime")
-    end
-  end,
-})
-
-aucmd({ "FileChangedShellPost" }, {
-  group = augroups.Checktime,
-  callback = function()
-    vim.notify("File changed on disk. Buffer reloaded!", vim.log.levels.WARN, { title = "nvim-config" })
-  end,
-})
-
 aucmd("InsertEnter", {
   group = augroups.Yank,
   callback = function()
@@ -258,36 +230,6 @@ aucmd("CursorMoved", {
         vim.cmd.nohlsearch()
       end)
     end
-  end,
-})
-
--- close some filetypes with <q> ----------------------------------------
-aucmd("FileType", {
-  group = augroups.Close_with_q,
-  pattern = {
-    "PlenaryTestPopup",
-    "grug-far",
-    "help",
-    "lspinfo",
-    "notify",
-    "qf",
-    "spectre_panel",
-    "startuptime",
-    "tsplayground",
-    "neotest-output",
-    "checkhealth",
-    "neotest-summary",
-    "neotest-output-panel",
-    "dbout",
-    "gitsigns.blame",
-  },
-  callback = function(event)
-    vim.bo[event.buf].buflisted = false
-    vim.keymap.set("n", "q", "<cmd>close<cr>", {
-      buffer = event.buf,
-      silent = true,
-      desc = "Quit buffer",
-    })
   end,
 })
 
@@ -357,5 +299,20 @@ aucmd("BufHidden", {
         end
       end, 0)
     end
+  end,
+})
+
+-- Setup some globals for debugging (lazy-loaded)
+vim.api.nvim_create_autocmd("User", {
+  pattern = "VeryLazy",
+  callback = function()
+    -- Setup some globals for debugging (lazy-loaded)
+    _G.dd = function(...)
+      Snacks.debug.inspect(...)
+    end
+    _G.bt = function()
+      Snacks.debug.backtrace()
+    end
+    vim.print = _G.dd -- Override print to use snacks for `:=` command
   end,
 })
