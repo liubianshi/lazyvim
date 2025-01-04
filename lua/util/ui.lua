@@ -10,11 +10,7 @@ function M.get_mark(buf, lnum)
   local marks = vim.fn.getmarklist(buf)
   vim.list_extend(marks, vim.fn.getmarklist())
   for _, mark in ipairs(marks) do
-    if
-      mark.pos[1] == buf
-      and mark.pos[2] == lnum
-      and mark.mark:match "[a-zA-Z]"
-    then
+    if mark.pos[1] == buf and mark.pos[2] == lnum and mark.mark:match("[a-zA-Z]") then
       return { text = mark.mark:sub(2), texthl = "DiagnosticHint" }
     end
   end
@@ -72,10 +68,8 @@ function M.statuscolumn()
 
   local components = { "", "", "" } -- left, middle, right
 
-  local show_open_folds = vim.g.lazyvim_statuscolumn
-    and vim.g.lazyvim_statuscolumn.folds_open
-  local use_githl = vim.g.lazyvim_statuscolumn
-    and vim.g.lazyvim_statuscolumn.folds_githl
+  local show_open_folds = vim.g.lazyvim_statuscolumn and vim.g.lazyvim_statuscolumn.folds_open
+  local use_githl = vim.g.lazyvim_statuscolumn and vim.g.lazyvim_statuscolumn.folds_githl
 
   if show_signs then
     local signs = M.get_signs(buf, vim.v.lnum)
@@ -83,7 +77,7 @@ function M.statuscolumn()
     ---@type Sign?,Sign?,Sign?
     local left, right, fold, githl
     for _, s in ipairs(signs) do
-      if s.name and (s.name:find "GitSign" or s.name:find "MiniDiffSign") then
+      if s.name and (s.name:find("GitSign") or s.name:find("MiniDiffSign")) then
         right = s
         if use_githl then
           githl = s["texthl"]
@@ -104,8 +98,7 @@ function M.statuscolumn()
         and not M.skip_foldexpr[buf]
         and tostring(vim.treesitter.foldexpr(vim.v.lnum)):sub(1, 1) == ">"
       then -- fold start
-        fold =
-          { text = vim.opt.fillchars:get().foldopen or "", texthl = githl }
+        fold = { text = vim.opt.fillchars:get().foldopen or "", texthl = githl }
       end
     end)
     -- Left: mark or non-git sign
@@ -119,7 +112,7 @@ function M.statuscolumn()
   local is_num = vim.wo[win].number
   local is_relnum = vim.wo[win].relativenumber
   if (is_num or is_relnum) and vim.v.virtnum == 0 then
-    if vim.fn.has "nvim-0.11" == 1 then
+    if vim.fn.has("nvim-0.11") == 1 then
       components[1] = "%l" -- 0.11 handles both the current and other lines with %l
     else
       if vim.v.relnum == 0 then
@@ -183,7 +176,7 @@ end
 
 -- UI components -------------------------------------------------------- {{{1
 M.prompt = function(top, callback, default)
-  local Input = require "nui.input"
+  local Input = require("nui.input")
   local event = require("nui.utils.autocmd").event
   top = top or "Input"
   default = default or ""
@@ -208,7 +201,7 @@ M.prompt = function(top, callback, default)
     prompt = "> ",
     default_value = default,
     on_close = function()
-      print "Input Closed!"
+      print("Input Closed!")
     end,
     on_submit = callback,
   })
@@ -232,7 +225,7 @@ M.mylib_tag = function()
 end
 
 M.popup = function(opts)
-  local Popup = require "nui.popup"
+  local Popup = require("nui.popup")
   opts = vim.tbl_extend("keep", opts or {}, {
     enter = true,
     focusable = true,
@@ -259,7 +252,7 @@ M.popup = function(opts)
 end
 
 M.mylib_popup = function(bufnr)
-  local Popup = require "nui.popup"
+  local Popup = require("nui.popup")
   local opts = {
     bufnr = bufnr,
     enter = true,
@@ -313,14 +306,14 @@ M.select = function(items, opts)
     end
   end
 
-  vim.notify(table.concat(prompt, '\n'), vim.log.levels.INFO, {
-    title = opts.title or "Choose an item:"
+  vim.notify(table.concat(prompt, "\n"), vim.log.levels.INFO, {
+    title = opts.title or "Choose an item:",
   })
 
   vim.schedule(function()
     local choice = vim.fn.nr2char(vim.fn.getchar())
-    vim.cmd('redraw!')
-    require("notify").dismiss { silent = true, pending = true }
+    vim.cmd("redraw!")
+    require("notify").dismiss({ silent = true, pending = true })
     if command[choice] then
       command[choice](texts[choice])
     end
@@ -328,13 +321,10 @@ M.select = function(items, opts)
 end
 
 M.get_highest_zindex_win = function(tab)
-  local wins = vim.tbl_filter(
-    function(win)
-      local bufnr = vim.api.nvim_win_get_buf(win)
-      return vim.bo[bufnr].filetype ~= 'notify'
-    end,
-    vim.api.nvim_tabpage_list_wins(tab or 0)
-  )
+  local wins = vim.tbl_filter(function(win)
+    local bufnr = vim.api.nvim_win_get_buf(win)
+    return vim.bo[bufnr].filetype ~= "notify"
+  end, vim.api.nvim_tabpage_list_wins(tab or 0))
 
   local highest_zindex = -1
   local highest_win = nil

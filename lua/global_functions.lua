@@ -1,3 +1,13 @@
+_G.dd = function(...)
+  Snacks.debug.inspect(...)
+end
+
+_G.bt = function()
+  Snacks.debug.backtrace()
+end
+
+vim.print = _G.dd -- Override print to use snacks for `:=` command
+
 function _G.LoadedPlugins()
   local plugs = require("lazy").plugins()
   local loaded_plugs = {}
@@ -131,4 +141,30 @@ function _G.is_cjk_character(char)
   else
     return false, "非 CJK 字符"
   end
+end
+
+function _G.get_char_at_cursor()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local line = vim.api.nvim_buf_get_lines(0, cursor[1] - 1, cursor[1], true)[1]
+  local cursor_col = cursor[2] + 1
+
+  -- Find the start of the UTF-8 character
+  local start_col = cursor_col
+  while start_col > 1 do
+    local char = string.byte(line:sub(start_col, start_col))
+    if char < 0x80 or char > 0xBF then
+      break
+    end
+    start_col = start_col - 1
+  end
+  -- Find the end of the UTF-8 character
+  local end_col = cursor_col
+  while end_col < #line do
+    local char = string.byte(line:sub(end_col + 1, end_col + 1))
+    if char < 0x80 or char > 0xBF then
+      break
+    end
+    end_col = end_col + 1
+  end
+  return line:sub(start_col, end_col)
 end

@@ -107,9 +107,10 @@ aucmd({ "BufWinEnter", "BufRead", "BufEnter" }, {
   callback = function(ev)
     local bufnr = ev.buf
     local winid = vim.fn.bufwinid(bufnr)
-    if winid == -1 then
+    if winid == -1 or vim.api.nvim_win_get_config(winid).zindex then
       return
     end
+    local win_attr = vim.api.nvim_win_get_config(winid)
 
     local zen_oriwin = vim.b[bufnr].zen_oriwin
     local is_zen_buffer = zen_oriwin and zen_oriwin.zenmode
@@ -127,7 +128,7 @@ aucmd({ "BufWinEnter", "BufRead", "BufEnter" }, {
     end
 
     if not is_zen_buffer and not is_zen_window then
-      -- vim.go.showtabline = vim.g.showtabline or 1
+      vim.go.showtabline = vim.g.showtabline or 1
       vim.go.laststatus = vim.g.laststatus or 3
       ---@diagnostic disable: missing-fields
       if lualine then
@@ -299,20 +300,5 @@ aucmd("BufHidden", {
         end
       end, 0)
     end
-  end,
-})
-
--- Setup some globals for debugging (lazy-loaded)
-vim.api.nvim_create_autocmd("User", {
-  pattern = "VeryLazy",
-  callback = function()
-    -- Setup some globals for debugging (lazy-loaded)
-    _G.dd = function(...)
-      Snacks.debug.inspect(...)
-    end
-    _G.bt = function()
-      Snacks.debug.backtrace()
-    end
-    vim.print = _G.dd -- Override print to use snacks for `:=` command
   end,
 })
