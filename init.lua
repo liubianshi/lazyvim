@@ -3,4 +3,4 @@ require("config.lazy")
 
 require("global_functions")
 require("commands")
-require("theme")
+-- require("theme")

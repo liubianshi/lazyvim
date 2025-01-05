@@ -1,6 +1,5 @@
 return {
-  -- nvim-neo-tree/neo-tree.nvim: browse tree like structures ------------- {{{3
-  {
+  { -- nvim-neo-tree/neo-tree.nvim: browse tree like structures --------- {{{3
     "nvim-neo-tree/neo-tree.nvim",
     cmd = "Neotree",
     dependencies = { "s1n7ax/nvim-window-picker" },
@@ -48,6 +47,19 @@ return {
           ["s"] = "vsplit_with_window_picker",
           ["h"] = "close_node",
         },
+      },
+    },
+  },
+  { -- stevearc/oil.nvim: file explorer: edit your filesystem like a buffer  {{{3
+    "stevearc/oil.nvim",
+    dependencies = {
+      { "echasnovski/mini.icons", opts = {} },
+    },
+    opts = {
+      columns = {
+        { "icon", highlight = "Special" },
+        { "mtime", format = "%Y-%m-%d %H:%M", highlight = "Number" },
+        { "size", highlight = "String" },
       },
     },
   },

@@ -96,6 +96,9 @@ vim.g.R_start_libs = "base,stats,graphics,grDevices,utils,methods,"
   .. "rlang,data.table,readxl,haven,lbs,purrr,stringr,"
   .. "fst,future,devtools,ggplot2,fixest"
 
+-- color ----------------------------------------------------------------
+vim.g.lbs_colors = require("util.ui").fetch_color_pallete()
+
 -- only set clipboard if not in ssh, to make sure the OSC 52
 -- integration works automatically. Requires Neovim >= 0.10.0
 opt.clipboard = vim.env.SSH_TTY and "" or "unnamedplus" -- Sync with system clipboard

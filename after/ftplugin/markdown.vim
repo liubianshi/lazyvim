@@ -49,5 +49,7 @@ let &l:formatprg="text_wrap"
 let &l:formatlistpat = '^\s*\d\+\.\s\+\|^\[-*+>]\s\+\|^\s*\[^[^\]]\+\]\[:\s]'
 setlocal nonumber norelativenumber
 " call utils#ToggleZenMode()
+"
+highlight @markup.raw.markdown_inline guibg=NONE
 
 " UltiSnipsAddFiletype rmd.r.markdown.pandoc

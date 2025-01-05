@@ -163,7 +163,7 @@ nmap("<c-h>", "vertical resize -2", "<cmd>vertical resize -2<cr>")
 nmap("<c-l>", "vertical resize +2", "<cmd>vertical resize +2<cr>")
 
 --- edit special files -------------------------------------------------- {{{1
-nmap("<leader>ev", "Neovim Plugin List", "<cmd>edit ~/.config/nvim/lua/plugins<cr>")
+nmap("<leader>ev", "Neovim Plugin List", "<cmd>Oil ~/.config/nvim/lua/plugins<cr>")
 nmap("<leader>ek", "Neovim Keymap", "<cmd>edit ~/.config/nvim/lua/config/keymaps.lua<cr>")
 nmap("<leader>ea", "Neovim Keymap", "<cmd>edit ~/.config/nvim/lua/config/autocmds.lua<cr>")
 nmap("<leader>eo", "Neovim Options", "<cmd>edit ~/.config/nvim/lua/config/options.lua<cr>")
