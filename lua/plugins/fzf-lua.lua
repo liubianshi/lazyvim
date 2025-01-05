@@ -1,8 +1,9 @@
 -- vim: set fdm=marker:
-vim.env.FZF_DEFAULT_OPTS = vim.env.FZF_DEFAULT_OPTS .. " --color=gutter:-1"
-if vim.o.background == "light" then
-  vim.env.FZF_DEFAULT_OPTS = "--select-1 --exit-0"
-end
+-- vim.env.FZF_DEFAULT_OPTS = vim.env.FZF_DEFAULT_OPTS .. " --color=gutter:-1"
+-- if vim.o.background == "light" then
+--   vim.env.FZF_DEFAULT_OPTS = "--select-1 --exit-0"
+-- end
+vim.env.FZF_DEFAULT_OPTS = "--ansi --bind ctrl-l:jump --select-1 --exit-0"
 local my_border = require("util").border("═", "top")
 
 -- integration with project.nvim ---------------------------------------- {{{2
@@ -306,7 +307,7 @@ local function fzf_selection_action(cmd)
   end
 end
 
--- cheat ----------------------------------------------------------------
+-- cheat ---------------------------------------------------------------- {{{2
 local function Cheat_Action(vimcmd)
   return function(selected, opts)
     local item = next(selected) and selected[1] or opts.last_query:gsub("^'", "")
@@ -333,7 +334,7 @@ local function Cheat_Action(vimcmd)
   end
 end
 
--- mylib ----------------------------------------------------------------
+-- mylib ---------------------------------------------------------------- {{{2
 local function handle_mylib_selected(selected, method)
   method = method or "edit"
   local key = vim.split(selected[1], [[%s+]])[1]
@@ -367,7 +368,7 @@ local function list_mylib_items()
   })
 end
 
--- config fzf-lua
+-- config fzf-lua ------------------------------------------------------- {{{2
 return {
   "ibhagwan/fzf-lua",
   branch = "main",
@@ -402,6 +403,10 @@ return {
     { "<c-b>", "<cmd>FzfLua grep_cword<cr>", desc = "FzfLua: Grep cword", mode = { "n", "x" } },
   },
   opts = {
+    hls = {
+      normal = "Normal",
+    },
+    fzf_colors = true,
     winopts = {
       border = my_border,
       preview = {
@@ -468,8 +473,8 @@ return {
     end, { nargs = "*" })
 
     -- Open urls ------------------------------------------------------------ {{{2
-    vim.api.nvim_create_user_command("Urlopen", function(opts)
-      require("fzf-lua").fzf_exec(vim.fn["utils#Fetch_urls"](opts.args), {
+    vim.api.nvim_create_user_command("Urlopen", function(opt)
+      require("fzf-lua").fzf_exec(vim.fn["utils#Fetch_urls"](opt.args), {
         preview = nil,
         actions = {
           ["default"] = function(selected, _)

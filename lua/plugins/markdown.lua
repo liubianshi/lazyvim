@@ -391,5 +391,14 @@ return {
         },
       }
     end,
+    config = function(_, opts)
+      require("markview").setup(opts)
+      for i = 1, 6 do
+        vim.api.nvim_set_hl(0, "MarkviewHeading" .. i, {
+          bg = "NONE",
+          bold = true,
+        })
+      end
+    end,
   },
 }
