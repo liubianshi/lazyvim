@@ -9,6 +9,8 @@ local opt_get = function(name, scope)
   return vim.api.nvim_get_option_value(name, { scope = scope })
 end
 
+vim.g.lazyvim_blink_main = true
+
 -- Resolving Errors Opening Man Files
 vim.cmd([[runtime plugin/man.lua]])
 

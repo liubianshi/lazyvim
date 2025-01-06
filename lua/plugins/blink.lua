@@ -33,13 +33,7 @@ return {
       local border = require("util").border("▔", "bottom")
       local config = {
         keymap = {
-          preset = "none",
-          ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
-          ["<Tab>"] = { "select_next", "fallback" },
-          ["<S-Tab>"] = { "select_prev", "fallback" },
-          ["<C-p>"] = { "scroll_documentation_up", "fallback" },
-          ["<C-n>"] = { "scroll_documentation_down", "fallback" },
-          ["<C-e>"] = { "hide", "fallback" },
+          preset = "super-tab",
           ["<CR>"] = { "accept", "fallback" },
         },
         completion = {
@@ -61,48 +55,38 @@ return {
             border = border,
             auto_show = true,
             draw = {
+              columns = { { "kind_icon" }, { "label", gap = 1 } },
               components = {
                 label = {
-                  width = { fill = true, max = 60 },
-                  text = function(ctx)
-                    local highlights_info = require("colorful-menu").highlights(ctx.item, vim.bo.filetype)
-                    if highlights_info ~= nil then
-                      return highlights_info.text
-                    else
-                      return ctx.label
-                    end
-                  end,
-                  highlight = function(ctx)
-                    local highlights_info = require("colorful-menu").highlights(ctx.item, vim.bo.filetype)
-                    local highlights = {}
-                    if highlights_info ~= nil then
-                      for _, info in ipairs(highlights_info.highlights) do
-                        table.insert(highlights, {
-                          info.range[1],
-                          info.range[2],
-                          group = ctx.deprecated and "BlinkCmpLabelDeprecated" or info[1],
-                        })
-                      end
-                    end
-                    for _, idx in ipairs(ctx.label_matched_indices) do
-                      table.insert(highlights, { idx, idx + 1, group = "BlinkCmpLabelMatch" })
-                    end
-                    return highlights
-                  end,
+                  text = require("colorful-menu").blink_components_text,
+                  highlight = require("colorful-menu").blink_components_highlight,
                 },
               },
             },
           },
         },
         appearance = {
-          use_nvim_cmp_as_default = true,
+          use_nvim_cmp_as_default = false,
           nerd_font_variant = "mono",
           kind_icons = {
             Text = "",
           },
         },
         sources = {
-          default = { "lazydev", "lsp", "path", "snippets", "buffer", "cmp_r" },
+          compat = { "cmp_r" },
+          default = { "lazydev", "lsp", "path", "snippets", "buffer" },
+          cmdline = function()
+            local type = vim.fn.getcmdtype()
+            -- Search forward and backward
+            if type == "/" or type == "?" then
+              return { "buffer" }
+            end
+            -- Commands
+            if type == ":" or type == "@" then
+              return { "cmdline" }
+            end
+            return {}
+          end,
           providers = {
             cmp_r = {
               name = "cmp_r",

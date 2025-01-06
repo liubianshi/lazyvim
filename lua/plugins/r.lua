@@ -2,6 +2,7 @@ return {
   {
     "liubianshi/R.nvim",
     dev = true,
+    lazy = false,
     ft = { "r", "rmd", "quarto" },
     opts = function()
       local hook = {
@@ -93,6 +94,6 @@ return {
   {
     "liubianshi/cmp-r",
     dev = true,
-    lazy = true,
+    lazy = false,
   },
 }
