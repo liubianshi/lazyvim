@@ -192,11 +192,11 @@ return {
         name = "fzf-lua",
         -- Optional, configure key mappings for the picker. These are the defaults.
         -- Not all pickers support all mappings.
-        mappings = {
+        note_mappings = {
           -- Create a new note from your query.
-          new = "<C-x>",
+          new = "<C-e>",
           -- Insert a link to the selected note.
-          insert_link = "<C-l>",
+          insert_link = "<C-i>",
         },
       },
 

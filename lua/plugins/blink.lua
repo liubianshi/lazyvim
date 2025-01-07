@@ -47,9 +47,12 @@ return {
             -- regex = "[_,:\\?!]\\|[A-Za-z0-9]",
           },
           list = {
-            selection = function(ctx)
-              return ctx.mode == "cmdline" and "auto_insert" or "preselect"
-            end,
+            selection = {
+              preselect = function(ctx)
+                return ctx.mode ~= "cmdline" and not require("blink.cmp").snippet_active({ direction = 1 })
+              end,
+              auto_insert = true,
+            },
           },
           menu = {
             border = border,
