@@ -169,17 +169,19 @@ return {
   { -- folke/which-key.nvim: displays a popup with possible keybindings - {{{3
     "folke/which-key.nvim",
     opts = {
-      preset = "modern",
+      -- preset = "modern",
       layout = {
         height = { min = 1, max = 15 },
       },
-      win = {
-        border = require("util").border("═", "top", true),
-      },
+      -- win = {
+      --   border = require("util").border("═", "top", true),
+      -- },
       triggers = {
         { "<auto>", mode = "nixsoc" },
         { "s", mode = { "n", "v" } },
         { ",", mode = { "n" } },
+        { "w", mode = { "n" } },
+        { ";", mode = { "n", "i" } },
       },
       replace = {
         key = {

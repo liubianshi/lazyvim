@@ -209,7 +209,7 @@ endfunction
 
 " set options ----------------------------------------------------------- {{{1
 set nocindent nosmartindent nowrap nonumber norelativenumber
-let &l:formatprg = "text_wrap -tonewsboat"
+let &l:formatprg = "mdwrap --line-width=90 -tonewsboat"
 set fo-=q
 setlocal scrolloff=10
 

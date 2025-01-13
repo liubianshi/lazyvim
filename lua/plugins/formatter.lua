@@ -7,8 +7,8 @@ return {
       xml = { "xmllint" },
       yaml = { "yq" },
       r = { "r-format" },
-      markdown = { "text_wrap" },
-      quarto = { "text_wrap" },
+      markdown = { "mdwrap" },
+      quarto = { "mdwrap" },
       perl = { "perltidy" },
     },
     formatters = {
@@ -29,8 +29,9 @@ return {
           stdin = true,
         }
       end,
-      ["text_wrap"] = {
-        command = "text_wrap",
+      ["mdwrap"] = {
+        command = "mdwrap",
+        args = { "--line-width", 90 },
       },
     },
   },

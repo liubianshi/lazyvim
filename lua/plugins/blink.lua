@@ -33,8 +33,9 @@ return {
       local border = require("util").border("▔", "bottom")
       local config = {
         keymap = {
-          preset = "super-tab",
-          ["<CR>"] = { "accept", "fallback" },
+          preset = "enter",
+          ["<Tab>"] = { "snippet_forward", "select_next", "fallback" },
+          ["<S-Tab>"] = { "snippet_backward", "select_prev", "fallback" },
         },
         completion = {
           documentation = {
@@ -48,9 +49,7 @@ return {
           },
           list = {
             selection = {
-              preselect = function(ctx)
-                return ctx.mode ~= "cmdline" and not require("blink.cmp").snippet_active({ direction = 1 })
-              end,
+              preselect = false,
               auto_insert = true,
             },
           },
@@ -91,12 +90,16 @@ return {
             return {}
           end,
           providers = {
+            lazydev = {
+              fallbacks = { "lsp" },
+            },
             cmp_r = {
               name = "cmp_r",
               module = "blink.compat.source",
               enabled = function()
                 return vim.tbl_contains({ "r", "rmd", "quarto", "rdoc" }, vim.bo.filetype)
               end,
+              fallbacks = { "buffer" },
               opts = {
                 trigger_characters = { " ", ":", "(", '"', "@", "$" },
                 keyword_pattern = "[-`\\._@\\$:_[:digit:][:lower:][:upper:]]*",
@@ -115,12 +118,13 @@ return {
                     and item.source_id == "lsp"
                     and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls"
                   then
-                    item.score_offset = 99
+                    item.score_offset = item.score_offset - 3
                   end
                 end
                 -- you can define your own filter for rime item
                 return items
               end,
+              fallbacks = { "buffer" },
             },
           },
         },

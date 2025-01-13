@@ -20,7 +20,7 @@ vim.api.nvim_win_set_hl_ns(0, ns)
 
 -- vim.cmd.UltiSnipsAddFiletype "quarto.r.markdown"
 vim.api.nvim_set_option_value("formatexpr", nil, { scope = "local" })
-vim.api.nvim_set_option_value("formatprg", "text_wrap", { scope = "local" })
+vim.api.nvim_set_option_value("formatprg", "mdwrap --line-width=90", { scope = "local" })
 
 local keymap = require("util").keymap
 

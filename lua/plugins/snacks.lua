@@ -58,7 +58,7 @@ return {
         return vim.g.snacks_indent ~= false
           and vim.b[buf].snacks_indent ~= false
           and vim.bo[buf].buftype == ""
-          and vim.bo[buf].filetype ~= "norg"
+          and not vim.tbl_contains({ "norg", "quarto", "markdown" }, vim.bo[buf].filetype)
       end,
     },
     notifier = {

@@ -237,23 +237,6 @@ return {
       })
     end,
   },
-  { -- stevearc/aerial.nvim: Neovim plugin for a code outline window ------ {{{2
-    "stevearc/aerial.nvim",
-    config = function()
-      require("aerial").setup({
-        backends = { "treesitter", "lsp", "markdown", "asciidoc", "man" },
-        on_attach = function(bufnr)
-          -- Jump forwards/backwards with '{' and '}'
-          vim.keymap.set("n", "{", "<cmd>AerialPrev<CR>", { buffer = bufnr })
-          vim.keymap.set("n", "}", "<cmd>AerialNext<CR>", { buffer = bufnr })
-        end,
-      })
-    end,
-    keys = {
-      { "<localleader>v", "<cmd>AerialToggle!<CR>", desc = "Toggle aerial" },
-    },
-    cmd = { "AerialToggle" },
-  },
   { -- kevinhwang91/nvim-hlslens: Hlsearch Lens for Neovim -------------- {{{3
     "kevinhwang91/nvim-hlslens",
     event = { "SearchWrapped", "CursorMoved" },

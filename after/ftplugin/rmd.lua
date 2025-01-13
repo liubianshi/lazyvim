@@ -9,7 +9,7 @@ vim.cmd [[
   UltiSnipsAddFiletype rmd.r.markdown.pandoc
 ]]
 
-vim.api.nvim_set_option_value('formatprg', "text_wrap", { scope = 'local' })
+vim.api.nvim_set_option_value('formatprg', "mdwrap --line-width=90", { scope = 'local' })
 
 
 local fexport = function(oformat, ofile)
