@@ -44,6 +44,11 @@ return {
           ["<S-Tab>"] = { "snippet_backward", "select_prev", "fallback" },
         },
         completion = {
+          accept = {
+            auto_brackets = {
+              enabled = true,
+            },
+          },
           documentation = {
             window = { border = border },
             auto_show = true,
