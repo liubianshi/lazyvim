@@ -256,6 +256,15 @@ return {
       { "g*", "g*<Cmd>lua require('hlslens').start()<CR>", noremap = true },
       { "g#", "g#<Cmd>lua require('hlslens').start()<CR>", noremap = true },
     },
+    opts = {
+      calm_down = true,
+      nearest_only = true,
+      nearest_float_when = "auto",
+    },
+  },
+  { -- j-hui/fidget.nvim: ----------------------------------------------- {{{3
+    -- Extensible UI for Neovim notifications and LSP progress messages
+    "j-hui/fidget.nvim",
     config = true,
   },
 }

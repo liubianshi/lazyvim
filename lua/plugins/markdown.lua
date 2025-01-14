@@ -294,6 +294,8 @@ return {
   },
   { -- OXY2DEV/markview.nvim -------------------------------------------- {{{3
     "OXY2DEV/markview.nvim",
+    enabled = false,
+    condition = false,
     lazy = false,
     opts = function()
       local default_heading = {
@@ -399,6 +401,39 @@ return {
           bold = true,
         })
       end
+    end,
+  },
+  {
+    "MeanderingProgrammer/render-markdown.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.icons" },
+    ft = { "markdown", "quarto", "rmd" },
+    opts = {
+      render_modes = { "n", "i", "c", ":", "no", "io", "co" },
+      anti_conceal = {
+        enabled = true,
+      },
+      code = {
+        disable_background = true,
+        sign = false,
+        style = "language",
+        border = "none",
+      },
+      dash = {
+        enabled = true,
+        width = 20,
+      },
+      heading = {
+        sign = false,
+        position = "inline",
+        backgrounds = {},
+      },
+      indent = {
+        enabled = true,
+        skip_heading = true,
+      },
+    },
+    config = function(_, opts)
+      require("render-markdown").setup(opts)
     end,
   },
 }

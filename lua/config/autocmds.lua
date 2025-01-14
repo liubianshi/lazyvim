@@ -8,6 +8,8 @@
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 vim.api.nvim_del_augroup_by_name("lazyvim_resize_splits")
+-- yanky.nvim 提供类似高亮复制区域的功能
+vim.api.nvim_del_augroup_by_name("lazyvim_highlight_yank")
 
 local aucmd = vim.api.nvim_create_autocmd
 local function augroup(name)
@@ -28,6 +30,7 @@ end, {
   "Yank",
   "Zen",
   "Snacks",
+  "Untitled",
   "ColorScheme",
 })
 
@@ -215,6 +218,7 @@ aucmd({ "TermOpen" }, {
   end,
 })
 
+-- Highlight on yank ---------------------------------------------------- {{{1
 aucmd("InsertEnter", {
   group = augroups.Yank,
   callback = function()
@@ -366,4 +370,17 @@ vim.api.nvim_create_autocmd({ "ColorScheme" }, {
     vim.cmd.highlight("IndentLineCurrent guifg=" .. vim.g.lbs_colors.orange)
   end,
   desc = "Define personal highlight group",
+})
+
+-- Untitled file -------------------------------------------------------- {{{1
+-- 退出 Neovim 时，忽略未保存的 Untitled buffer 对退出进程的干扰
+vim.api.nvim_create_autocmd({ "QuitPre" }, {
+  callback = function()
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      -- 检查缓冲区是否已加载并且没有文件名
+      if vim.api.nvim_buf_is_loaded(buf) and vim.api.nvim_buf_get_name(buf) == "" then
+        vim.bo[buf].modified = false
+      end
+    end
+  end,
 })

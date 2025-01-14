@@ -21,8 +21,14 @@ return {
         },
       },
     },
+    init = function()
+      vim.system({
+        vim.env.HOME .. "/.local/bin/rime_ls",
+        "--listen",
+        "127.0.0.1:9257",
+      }, { detach = true })
+    end,
     config = function(_, opts)
-      vim.system({ vim.env.HOME .. "/.local/bin/rime_ls", "--listen", "127.0.0.1:9257" }, { detach = true })
       require("rimels").setup(opts)
     end,
   },
@@ -60,8 +66,12 @@ return {
               columns = { { "kind_icon" }, { "label", gap = 1 } },
               components = {
                 label = {
-                  text = require("colorful-menu").blink_components_text,
-                  highlight = require("colorful-menu").blink_components_highlight,
+                  text = function(ctx)
+                    return require("colorful-menu").blink_components_text(ctx)
+                  end,
+                  highlight = function(ctx)
+                    return require("colorful-menu").blink_components_highlight(ctx)
+                  end,
                 },
               },
             },
@@ -76,7 +86,7 @@ return {
         },
         sources = {
           compat = { "cmp_r" },
-          default = { "lazydev", "lsp", "path", "snippets", "buffer" },
+          default = { "lazydev", "lsp", "path", "snippets", "buffer", "markdown" },
           cmdline = function()
             local type = vim.fn.getcmdtype()
             -- Search forward and backward
@@ -99,7 +109,7 @@ return {
               enabled = function()
                 return vim.tbl_contains({ "r", "rmd", "quarto", "rdoc" }, vim.bo.filetype)
               end,
-              fallbacks = { "buffer" },
+              fallbacks = { "lsp", "buffer" },
               opts = {
                 trigger_characters = { " ", ":", "(", '"', "@", "$" },
                 keyword_pattern = "[-`\\._@\\$:_[:digit:][:lower:][:upper:]]*",
@@ -124,7 +134,11 @@ return {
                 -- you can define your own filter for rime item
                 return items
               end,
-              fallbacks = { "buffer" },
+            },
+            markdown = {
+              name = "RenderMarkdown",
+              module = "render-markdown.integ.blink",
+              fallbacks = { "lsp" },
             },
           },
         },
