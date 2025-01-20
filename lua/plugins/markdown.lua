@@ -427,6 +427,9 @@ return {
         position = "inline",
         backgrounds = {},
       },
+      latex = {
+        enabled = false,
+      },
       indent = {
         enabled = true,
         skip_heading = true,

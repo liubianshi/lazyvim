@@ -1,5 +1,5 @@
 return {
-  {
+  { -- is0n/fm-nvim: Neovim plugin that lets you use your favorite terminal file managers {{{2
     "is0n/fm-nvim",
     cmd = { "Lf", "Nnn", "Neomutt", "Lazygit" },
     keys = {
@@ -73,9 +73,13 @@ return {
       })
     end,
   },
-  -- typicode/bg.nvim: Automatically sync your terminal background -------- {{{3
-  {
+  { -- typicode/bg.nvim: Automatically sync your terminal background ---- {{{2
     "typicode/bg.nvim",
     lazy = false,
+  },
+  { -- liubianshi/vimcmdline: Send code to command line interpreter
+    "liubianshi/vimcmdline",
+    ft = { "stata", "sh", "bash", "perl" },
+    dev = true,
   },
 }
