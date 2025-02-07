@@ -512,10 +512,10 @@ return {
       },
       whisper = { disable = true },
       image = { disable = true },
+      default_chat_agent = "DeepSeek-Chat",
+      default_command_agent = "DeepSeek-Reasoner",
       chat_user_prefix = "# 💬: ",
       chat_assistant_prefix = { "🤖: ", "[{{agent}}]" },
-      default_chat_agent = "ChatDeepSeek-V",
-      default_command_agent = "ChatDeepSeek-R",
     },
     config = function(_, opts)
       opts.agents = vim.tbl_deep_extend("force", opts.agents or {}, {
