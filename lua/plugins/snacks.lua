@@ -2,11 +2,20 @@ return {
   "folke/snacks.nvim",
   opts = {
     bigfile = { enabled = true },
+    zen = {
+      win = {
+        style = {
+          width = 100,
+          backdrop = { transparent = false },
+        },
+      },
+    },
     dashboard = {
       width = 60,
       preset = {
         keys = {
           { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
+          { icon = "󱙺", key = "a", desc = "Chat New", action = ":GpChatNew" },
           { icon = " ", key = "e", desc = "New File", action = ":silent ene | startinsert" },
           { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
           { icon = " ", key = "n", desc = "Obsidian Note", action = ":ObsidianQuickSwitch" },
@@ -75,6 +84,22 @@ return {
       notification = {
         wo = { wrap = true }, -- Wrap notifications
       },
+    },
+  },
+  keys = {
+    {
+      "<leader>fm",
+      function()
+        Snacks.picker.recent()
+      end,
+      desc = "Smart",
+    },
+    {
+      "<A-x>",
+      function()
+        Snacks.picker.commands({ layout = { preset = "ivy" } })
+      end,
+      desc = "Run Command",
     },
   },
 }

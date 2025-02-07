@@ -118,4 +118,13 @@ return {
       },
     },
   },
+  { -- stevearc/overseer.nvim: task runner and joib management ---------- {{{2
+    "stevearc/overseer.nvim",
+    opts = {},
+    config = function(opts)
+      require("overseer").setup({
+        templates = { "builtin", "mytasks.source" },
+      })
+    end,
+  },
 }

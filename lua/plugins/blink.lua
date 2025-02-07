@@ -23,7 +23,7 @@ return {
     },
     init = function()
       vim.system({
-        "rime_ls",
+        vim.fn.executable("rime_ls") and "rime_ls" or vim.env.HOME .. "/.local/bin/rime_ls",
         "--listen",
         "127.0.0.1:9257",
       }, { detach = true })

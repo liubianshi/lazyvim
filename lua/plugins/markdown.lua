@@ -194,7 +194,7 @@ return {
         -- Not all pickers support all mappings.
         note_mappings = {
           -- Create a new note from your query.
-          new = "<C-e>",
+          new = "<C-x>",
           -- Insert a link to the selected note.
           insert_link = "<C-i>",
         },
@@ -403,7 +403,7 @@ return {
       end
     end,
   },
-  {
+  { -- MeanderingProgrammer/render-markdown.nvim ------------------------ {{{2
     "MeanderingProgrammer/render-markdown.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.icons" },
     ft = { "markdown", "quarto", "rmd" },

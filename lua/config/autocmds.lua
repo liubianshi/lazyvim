@@ -29,6 +29,8 @@ end, {
   "Term",
   "Yank",
   "Zen",
+  "Formatprg",
+  "Quit",
   "Snacks",
   "Untitled",
   "ColorScheme",
@@ -375,6 +377,7 @@ vim.api.nvim_create_autocmd({ "ColorScheme" }, {
 -- Untitled file -------------------------------------------------------- {{{1
 -- 退出 Neovim 时，忽略未保存的 Untitled buffer 对退出进程的干扰
 vim.api.nvim_create_autocmd({ "QuitPre" }, {
+  group = augroups.Quit,
   callback = function()
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
       -- 检查缓冲区是否已加载并且没有文件名
@@ -382,5 +385,15 @@ vim.api.nvim_create_autocmd({ "QuitPre" }, {
         vim.bo[buf].modified = false
       end
     end
+  end,
+})
+
+-- Formatprg --------------------------------------------------------------- {{{1
+vim.api.nvim_create_autocmd({ "FileType" }, {
+  pattern = { "newsboat", "markdown", "quarto", "rmarkdown" },
+  group = augroups.Formatprg,
+  callback = function(ev)
+    vim.bo[ev.buf].formatexpr = nil
+    vim.bo[ev.buf].formatprg = vim.b[ev.buf].filetype == "newsboat" and "mdwrap --tonewsboat" or "mdwrap"
   end,
 })

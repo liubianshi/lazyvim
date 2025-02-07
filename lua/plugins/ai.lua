@@ -477,9 +477,15 @@ return {
     },
     opts = {
       openai_api_key = { vim.env.HOME .. "/.private_info.sh", "openai" },
+      providers = {
+        deepseek = {
+          endpoint = "https://api.deepseek.com/v1/chat/completions",
+          secret = { os.getenv("HOME") .. "/.private_info.sh", "deepseek" },
+        },
+      },
       hooks = {
         Translator = function(gp, params)
-          local agent = gp.get_command_agent()
+          local agent = gp.agents["DeepSeek-Chat"]
           local chat_system_prompt =
             "请你担任一名将英文翻译成简体中文的翻译者。请帮我把英文翻译成简体中文。我会输入英文内容，内容可能是一个句子、或一个单字，请先理解内容后再将我提供的内容翻译成简体中文。回答内容请尽量口语化且符合语境，但仍保留意思。回答内容包含翻译后的简体中文文本，不需要额外的解释。"
           gp.cmd.ChatNew(params, agent.model, chat_system_prompt)
@@ -506,10 +512,29 @@ return {
       },
       whisper = { disable = true },
       image = { disable = true },
+      chat_user_prefix = "# 💬: ",
+      chat_assistant_prefix = { "🤖: ", "[{{agent}}]" },
+      default_chat_agent = "ChatDeepSeek-V",
+      default_command_agent = "ChatDeepSeek-R",
     },
     config = function(_, opts)
       opts.agents = vim.tbl_deep_extend("force", opts.agents or {}, {
-
+        {
+          name = "DeepSeek-Chat",
+          provider = "deepseek",
+          chat = true,
+          command = true,
+          model = { model = "deepseek-chat", temperature = 1.1, top_p = 1 },
+          system_prompt = require("gp.defaults").chat_system_prompt,
+        },
+        {
+          name = "DeepSeek-Reasoner",
+          provider = "deepseek",
+          chat = false,
+          command = true,
+          model = { model = "deepseek-reasoner", temperature = 0.7, top_p = 1 },
+          system_prompt = require("gp.defaults").chat_system_prompt,
+        },
         {
           name = "ChatGPT4",
           chat = true,
@@ -605,5 +630,31 @@ return {
         end,
       })
     end,
+  },
+  {
+    "yetone/avante.nvim",
+    event = "VeryLazy",
+    lazy = false,
+    version = "*", -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
+    opts = {
+      -- add any opts here
+      -- for example
+      provider = "openai",
+      openai = {
+        endpoint = "https://api.deepseek.com/v1",
+        model = "deepseek-reasoner", -- your desired model (or use gpt-4o, etc.)
+        timeout = 30000, -- timeout in milliseconds
+        temperature = 0, -- adjust if needed
+        max_tokens = 4096,
+      },
+    },
+    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
+    build = "make",
+    -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
+    dependencies = {
+      "stevearc/dressing.nvim",
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
+    },
   },
 }

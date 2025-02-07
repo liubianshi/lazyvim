@@ -31,7 +31,6 @@ return {
       end,
       ["mdwrap"] = {
         command = "mdwrap",
-        args = { "--line-width", 90 },
       },
     },
   },
