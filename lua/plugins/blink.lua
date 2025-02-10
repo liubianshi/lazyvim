@@ -38,6 +38,9 @@ return {
     opts = function(_, opts)
       local border = require("util").border("▔", "bottom")
       local config = {
+        snippets = {
+          preset = "luasnip",
+        },
         keymap = {
           preset = "enter",
           ["<Tab>"] = { "snippet_forward", "select_next", "fallback" },
@@ -91,6 +94,9 @@ return {
         },
         sources = {
           compat = { "cmp_r" },
+          per_filetype = {
+            codecompanion = { "codecompanion", "lsp", "path", "snippets", "buffer" },
+          },
           default = { "lazydev", "lsp", "path", "snippets", "buffer", "markdown" },
           cmdline = function()
             local type = vim.fn.getcmdtype()

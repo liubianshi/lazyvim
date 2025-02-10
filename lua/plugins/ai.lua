@@ -631,7 +631,7 @@ return {
       })
     end,
   },
-  {
+  { -- yetone/avante.nvim ----------------------------------------------- {{{2
     "yetone/avante.nvim",
     event = "VeryLazy",
     lazy = false,
@@ -639,13 +639,17 @@ return {
     opts = {
       -- add any opts here
       -- for example
-      provider = "openai",
+      provider = "deepseek",
+      vendors = {
+        ["deepseek"] = {
+          __inherited_from = "openai",
+          model = "deepseek-coder",
+          endpoint = "https://api.deepseek.com",
+          api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh deepseek",
+        },
+      },
       openai = {
-        endpoint = "https://api.deepseek.com/v1",
-        model = "deepseek-reasoner", -- your desired model (or use gpt-4o, etc.)
-        timeout = 30000, -- timeout in milliseconds
-        temperature = 0, -- adjust if needed
-        max_tokens = 4096,
+        api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh openai",
       },
     },
     -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
@@ -656,5 +660,72 @@ return {
       "nvim-lua/plenary.nvim",
       "MunifTanjim/nui.nvim",
     },
+  },
+  { -- olimorris/codecompanion.nvim ------------------------------------- {{{2
+    "olimorris/codecompanion.nvim",
+    keys = {
+      { "<c-a>", "<cmd>CodeCompanionActions<cr>", desc = "CodeCompanion Actions", mode = { "n", "v" } },
+      { "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", desc = "CodeCompanion Toggle", mode = { "n", "v" } },
+      { "ga", "<cmd>CodeCompanionChat Add<cr>", desc = "CodeCompanion Toggle", mode = { "v" } },
+    },
+    cmd = { "CodeCompanion" },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    init = function()
+      vim.cmd([[cabbrev cc CodeCompanion]])
+      local has_fidget, _ = pcall(require, "fidget")
+      if has_fidget then
+        require("util.codecompanion.fidget-spinner"):init()
+      end
+    end,
+    opts = {
+      display = {
+        chat = {
+          show_settings = true,
+        },
+      },
+      strategies = {
+        chat = {
+          adapter = "deepseek",
+        },
+        inline = {
+          adapter = "deepseek",
+        },
+        cmd = {
+          adapter = "deepseek",
+        },
+      },
+      adapters = {
+        deepseek = function()
+          return require("codecompanion.adapters").extend("deepseek", {
+            env = {
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh deepseek",
+            },
+            schema = {
+              model = {
+                default = "deepseek-reasoner",
+              },
+            },
+          })
+        end,
+      },
+    },
+    config = function(_, opts)
+      require("codecompanion").setup(opts)
+      local cc_group = vim.api.nvim_create_augroup("LBS_CC", { clear = true })
+      vim.api.nvim_create_autocmd({ "FileType" }, {
+        group = cc_group,
+        pattern = { "codecompanion" },
+        callback = function()
+          vim.opt_local.formatexpr = "v:lua.require'conform'.formatexpr()"
+          vim.opt_local.formatoptions:append("a")
+          vim.opt_local.textwidth = 85
+          vim.opt_local.number = false
+          vim.opt_local.relativenumber = false
+        end,
+      })
+    end,
   },
 }

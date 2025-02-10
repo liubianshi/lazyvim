@@ -8,6 +8,7 @@ return {
       yaml = { "yq" },
       r = { "r-format" },
       markdown = { "mdwrap" },
+      codecompanion = { "mdwrap" },
       quarto = { "mdwrap" },
       perl = { "perltidy" },
     },

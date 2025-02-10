@@ -120,7 +120,7 @@ imap("<localleader>]", "Chinese Punctuation: 「I」", "<C-v>u300c <C-v>u300d<C-
 imap("<localleader>}", "Chinese Punctuation: “I”", "<C-v>u201C <C-v>u201D<C-o>F <c-o>x")
 imap("<localleader>'", "Chinese Punctuation: 「", "<C-v>u300c")
 imap('<localleader>"', "Chinese Punctuation: 」", "<C-v>u300d")
-imap("<localleader>,         ", "Chinese Punctuation: ，", "<C-v>uFF0C")
+imap("<localleader>,", "Chinese Punctuation: ，", "<C-v>uFF0C")
 imap("<localleader>.", "Chinese Punctuation: 。", "<C-v>u3002")
 imap("<localleader>\\", "Chinese Punctuation: 、", "<C-v>u3001")
 imap("<localleader>:", "Chinese Punctuation: ：", "<C-v>uff1a")

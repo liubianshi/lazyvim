@@ -406,7 +406,7 @@ return {
   { -- MeanderingProgrammer/render-markdown.nvim ------------------------ {{{2
     "MeanderingProgrammer/render-markdown.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.icons" },
-    ft = { "markdown", "quarto", "rmd" },
+    ft = { "markdown", "quarto", "rmd", "codecompanion", "Avante" },
     opts = {
       render_modes = { "n", "i", "c", ":", "no", "io", "co" },
       anti_conceal = {
@@ -424,6 +424,7 @@ return {
       },
       heading = {
         sign = false,
+        icons = { "󰍜 ", "󰍜󰍜 ", "󰍜󰉭󰍜 ", "󰍜󰉮󰍜 ", "󰍜󰉯󰍜 ", "󰍜󰉰󰍜 " },
         position = "inline",
         backgrounds = {},
       },
