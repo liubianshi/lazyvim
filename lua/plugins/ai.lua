@@ -1,5 +1,35 @@
 local gpt4 = "gpt-4o"
 local gpt35 = "gpt-3.5-turbo"
+local prompt_polish_system = [[
+**Paper Polishing Request**
+
+You are an economics paper editing assistant with 10 years experience. Your
+expertise includes econometric analysis formatting and academic style
+maintenance.
+
+
+Please refine the following academic paragraph by:
+
+1. Correcting grammatical errors and typos
+2. Improving sentence structure for better readability
+3. Enhancing academic tone while maintaining original meaning
+4. Ensuring technical terminology accuracy
+5. Optimizing transition between ideas
+6. Ensure that the language is the same as the original language
+7. Applying proper academic formatting conventions
+8. Maintain original citation/reference format
+
+Respond exclusively with:
+1. full polished version (no markdown codeblocks) and
+2. Brief technical justification, as markdown comment, like:
+
+   ```
+   <!-- EXPLANATION
+   - ...
+   - ...
+   -->
+   ```
+]]
 
 return {
   { -- jackMort/ChatGPT.nvim: Effortless Natural Language Generation ---- {{{3
@@ -634,7 +664,10 @@ return {
   { -- yetone/avante.nvim ----------------------------------------------- {{{2
     "yetone/avante.nvim",
     event = "VeryLazy",
-    lazy = false,
+    cmd = {
+      "AvanteChat",
+    },
+    -- lazy = false,
     version = "*", -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
     opts = {
       -- add any opts here
@@ -698,6 +731,13 @@ return {
         },
       },
       adapters = {
+        openai = function()
+          return require("codecompanion.adapters").extend("openai", {
+            env = {
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh openai",
+            },
+          })
+        end,
         deepseek = function()
           return require("codecompanion.adapters").extend("deepseek", {
             env = {
@@ -711,6 +751,42 @@ return {
           })
         end,
       },
+      prompt_library = {
+        ["Text Polish"] = {
+          strategy = "inline",
+          description = "Polish the selected text",
+          opts = {
+            index = 13,
+            mapping = "<LocalLeader>cp",
+            is_slash_cmd = false,
+            modes = { "v" },
+            short_name = "polish",
+            auto_submit = true,
+            user_prompt = false,
+            stop_context_insertion = true,
+            -- placement = "replace",
+          },
+          prompts = {
+            {
+              role = "system",
+              content = prompt_polish_system,
+              opts = {
+                visible = false,
+              },
+            },
+            {
+              role = "user",
+              content = function(context)
+                local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
+                return string.format("Please polish the text from buffer %d:\n\n```\n%s\n```\n\n", context.bufnr, code)
+              end,
+              opts = {
+                contains_code = true,
+              },
+            },
+          },
+        },
+      },
     },
     config = function(_, opts)
       require("codecompanion").setup(opts)
@@ -720,8 +796,6 @@ return {
         pattern = { "codecompanion" },
         callback = function()
           vim.opt_local.formatexpr = "v:lua.require'conform'.formatexpr()"
-          vim.opt_local.formatoptions:append("a")
-          vim.opt_local.textwidth = 85
           vim.opt_local.number = false
           vim.opt_local.relativenumber = false
         end,

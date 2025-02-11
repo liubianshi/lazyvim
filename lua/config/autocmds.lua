@@ -390,7 +390,7 @@ vim.api.nvim_create_autocmd({ "QuitPre" }, {
 
 -- Formatprg --------------------------------------------------------------- {{{1
 vim.api.nvim_create_autocmd({ "FileType" }, {
-  pattern = { "newsboat", "markdown", "quarto", "rmarkdown" },
+  pattern = { "newsboat", "quarto", "rmarkdown" },
   group = augroups.Formatprg,
   callback = function(ev)
     vim.bo[ev.buf].formatexpr = nil
