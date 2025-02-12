@@ -7,7 +7,6 @@ You are an economics paper editing assistant with 10 years experience. Your
 expertise includes econometric analysis formatting and academic style
 maintenance.
 
-
 Please refine the following academic paragraph by:
 
 1. Correcting grammatical errors and typos
@@ -15,20 +14,20 @@ Please refine the following academic paragraph by:
 3. Enhancing academic tone while maintaining original meaning
 4. Ensuring technical terminology accuracy
 5. Optimizing transition between ideas
-6. Ensure that the language is the same as the original language
+6. Ensure that the language is the same as the original language, so do not translate Chinese to English
 7. Applying proper academic formatting conventions
 8. Maintain original citation/reference format
 
 Respond exclusively with:
-1. full polished version (no markdown codeblocks) and
-2. Brief technical justification, as markdown comment, like:
 
-   ```
+full polished version, no markdown codeblocks, no extra marker or subtitle
+
+Brief technical justification, as markdown comment, like:
+
    <!-- EXPLANATION
    - ...
    - ...
    -->
-   ```
 ]]
 
 return {
@@ -521,18 +520,12 @@ return {
           gp.cmd.ChatNew(params, agent.model, chat_system_prompt)
         end,
         TextOptimize = function(gp, params)
-          local template = "Having following from {{filename}}:\n\n"
-            .. "```{{filetype}}\n{{selection}}\n```\n\n"
-            .. "Please act as an economics professor."
-            .. " Correct any spelling mistakes and improve the expression to enhance clarity and coherence."
-            .. " Additionally, optimize the text to align with the style and tone of an academic paper in the field of economics."
-            .. " Please ensure that the language is the same as the original language."
-            .. "\n\nRespond exclusively with the snippet that should replace the selection above."
-          local agent = gp.agents["CodeGPT4o-mini"]
+          local template = "Please polish the text from {{filename}}:\n\n" .. "```{{filetype}}\n{{selection}}\n```\n\n"
+          local agent = gp.agents["Translator"]
           gp.logger.info("Implementing selection with agent: " .. agent.name)
           gp.Prompt(
             params,
-            gp.Target.rewrite,
+            gp.Target.append,
             agent,
             template,
             nil, -- command will run directly without any prompting for user input
@@ -542,7 +535,7 @@ return {
       },
       whisper = { disable = true },
       image = { disable = true },
-      default_chat_agent = "DeepSeek-Chat",
+      default_chat_agent = "DeepSeek-Reasoner",
       default_command_agent = "DeepSeek-Reasoner",
       chat_user_prefix = "# 💬: ",
       chat_assistant_prefix = { "🤖: ", "[{{agent}}]" },
@@ -564,6 +557,14 @@ return {
           command = true,
           model = { model = "deepseek-reasoner", temperature = 0.7, top_p = 1 },
           system_prompt = require("gp.defaults").chat_system_prompt,
+        },
+        {
+          name = "Translator",
+          provider = "deepseek",
+          chat = false,
+          command = true,
+          model = { model = "deepseek-chat", temperature = 0.6, top_p = 1 },
+          system_prompt = prompt_polish_system,
         },
         {
           name = "ChatGPT4",
@@ -684,6 +685,9 @@ return {
       openai = {
         api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh openai",
       },
+      hints = {
+        enabled = false,
+      },
     },
     -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
     build = "make",
@@ -693,6 +697,40 @@ return {
       "nvim-lua/plenary.nvim",
       "MunifTanjim/nui.nvim",
     },
+    config = function(_, opts)
+      require("avante").setup(opts)
+
+      local prefill_edit_window = function(request)
+        if not request then
+          return
+        end
+        request = vim.split(request, "\n")
+        require("avante.api").edit()
+        local code_bufnr = vim.api.nvim_get_current_buf()
+        local code_winid = vim.api.nvim_get_current_win()
+        if code_bufnr == nil or code_winid == nil then
+          return
+        end
+        vim.api.nvim_buf_set_lines(code_bufnr, 0, -1, false, request)
+        -- Optionally set the cursor position to the end of the input
+        vim.api.nvim_win_set_cursor(code_winid, { 1, #request + 1 })
+        -- Simulate Ctrl+S keypress to submit
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-s>", true, true, true), "v", true)
+      end
+      require("which-key").add({
+        { "<leader>a", group = "Avante" },
+        {
+          mode = "v",
+          {
+            "<leader>ap",
+            function()
+              prefill_edit_window(prompt_polish_system)
+            end,
+            desc = "Paper Polish",
+          },
+        },
+      })
+    end,
   },
   { -- olimorris/codecompanion.nvim ------------------------------------- {{{2
     "olimorris/codecompanion.nvim",
@@ -717,6 +755,9 @@ return {
       display = {
         chat = {
           show_settings = true,
+        },
+        diff = {
+          provider = "default",
         },
       },
       strategies = {
@@ -757,14 +798,18 @@ return {
           description = "Polish the selected text",
           opts = {
             index = 13,
-            mapping = "<LocalLeader>cp",
+            adapter = {
+              name = "deepseek",
+              model = "deepseek-chat",
+            },
+            mapping = ";cp",
             is_slash_cmd = false,
             modes = { "v" },
             short_name = "polish",
             auto_submit = true,
             user_prompt = false,
             stop_context_insertion = true,
-            -- placement = "replace",
+            placement = "replace",
           },
           prompts = {
             {
