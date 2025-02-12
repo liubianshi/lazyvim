@@ -738,6 +738,13 @@ return {
       { "<c-a>", "<cmd>CodeCompanionActions<cr>", desc = "CodeCompanion Actions", mode = { "n", "v" } },
       { "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", desc = "CodeCompanion Toggle", mode = { "n", "v" } },
       { "ga", "<cmd>CodeCompanionChat Add<cr>", desc = "CodeCompanion Toggle", mode = { "v" } },
+      {
+        "<localleader>cp",
+        function()
+          require("codecompanion").prompt("polish")
+        end,
+        mode = { "v" },
+      },
     },
     cmd = { "CodeCompanion" },
     dependencies = {
@@ -802,7 +809,6 @@ return {
               name = "deepseek",
               model = "deepseek-chat",
             },
-            mapping = ";cp",
             is_slash_cmd = false,
             modes = { "v" },
             short_name = "polish",
