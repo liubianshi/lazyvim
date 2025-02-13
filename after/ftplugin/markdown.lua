@@ -1,6 +1,4 @@
 vim.opt_local.formatexpr = "v:lua.require'conform'.formatexpr()"
-vim.opt_local.formatoptions:append("a")
-vim.opt_local.textwidth = 85
 
 vim.keymap.set("n", "<c-x>m", function()
   vim.cmd.normal("EvT@")
