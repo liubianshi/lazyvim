@@ -87,7 +87,7 @@ return {
   { -- 3rd/image.nvim: Bringing images to Neovim. ----------------------- {{{2
     "3rd/image.nvim",
     --- @diagostic disable: undefined-field
-    cond = not (vim.g.neovide and next(vim.g.neovdie)),
+    cond = not vim.g.neovide,
     ft = { "markdown", "pandoc", "rmd", "rmarkdown", "norg", "org", "newsboat" },
     opts = {
       backend = "kitty",

@@ -92,13 +92,9 @@ return {
             Text = "",
           },
         },
-        sources = {
-          compat = { "cmp_r" },
-          per_filetype = {
-            codecompanion = { "codecompanion", "lsp", "path", "snippets", "buffer" },
-          },
-          default = { "lazydev", "lsp", "path", "snippets", "buffer", "markdown" },
-          cmdline = function()
+        cmdline = {
+          enabled = true,
+          sources = function()
             local type = vim.fn.getcmdtype()
             -- Search forward and backward
             if type == "/" or type == "?" then
@@ -110,6 +106,13 @@ return {
             end
             return {}
           end,
+        },
+        sources = {
+          compat = { "cmp_r" },
+          per_filetype = {
+            codecompanion = { "codecompanion", "lsp", "path", "snippets", "buffer" },
+          },
+          default = { "lazydev", "lsp", "path", "snippets", "buffer", "markdown" },
           providers = {
             lazydev = {
               fallbacks = { "lsp" },
