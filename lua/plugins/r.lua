@@ -77,7 +77,6 @@ return {
         synctex = false,
         listmethods = true,
         start_libs = vim.g.R_start_libs,
-        rmdchunk = 1,
         disable_cmds = {},
       }
       -- Check if the environment variable "R_AUTO_START" exists.

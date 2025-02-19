@@ -2,6 +2,19 @@ return {
   "folke/snacks.nvim",
   opts = {
     bigfile = { enabled = true },
+    image = {
+      enabled = true,
+      doc = {
+        enabled = true,
+        inline = true,
+        float = true,
+      },
+      convert = {
+        math = {
+          font_size = "large",
+        },
+      },
+    },
     zen = {
       win = {
         style = {
