@@ -6,7 +6,7 @@ return {
       enabled = true,
       doc = {
         enabled = true,
-        inline = false,
+        inline = true,
         float = true,
       },
       convert = {

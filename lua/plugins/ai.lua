@@ -243,7 +243,7 @@ return {
       end
     end,
   },
-  { -- robitx/gp.nvim: (GPT prompt) Neovim AI plugin -------------------- {{{2
+  { -- robitx/gp.nvim: (GPT prompt) Neovim AI plugin -------------------- {{{3
     "robitx/gp.nvim",
     cmd = {
       "GpAgent",
@@ -505,8 +505,15 @@ return {
       },
     },
     opts = {
-      openai_api_key = { vim.env.HOME .. "/.private_info.sh", "openai" },
+      openai_api_key = { vim.env.HOME .. "/.private_info.sh", "aihubmix" },
       providers = {
+        openai = {
+          endpoint = "https://aihubmix.com/v1/chat/completions",
+        },
+        ollama = {
+          endpoint = "http://localhost:11434/v1/chat/completions",
+          secret = "",
+        },
         deepseek = {
           endpoint = "https://api.deepseek.com/v1/chat/completions",
           secret = { os.getenv("HOME") .. "/.private_info.sh", "deepseek" },
@@ -535,13 +542,20 @@ return {
       },
       whisper = { disable = true },
       image = { disable = true },
-      default_chat_agent = "DeepSeek-Reasoner",
-      default_command_agent = "DeepSeek-Reasoner",
-      chat_user_prefix = "# 💬: ",
-      chat_assistant_prefix = { "🤖: ", "[{{agent}}]" },
+      default_chat_agent = "DeepSeek7B",
+      default_command_agent = "DeepSeek-Chat",
+      -- chat_user_prefix = "💬: ",
     },
     config = function(_, opts)
       opts.agents = vim.tbl_deep_extend("force", opts.agents or {}, {
+        {
+          name = "DeepSeek7B",
+          provider = "ollama",
+          chat = true,
+          command = true,
+          model = "deepseek-r1:7b",
+          system_prompt = require("gp.defaults").chat_system_prompt,
+        },
         {
           name = "DeepSeek-Chat",
           provider = "deepseek",
