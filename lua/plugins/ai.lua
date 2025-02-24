@@ -522,8 +522,9 @@ return {
       hooks = {
         Translator = function(gp, params)
           local agent = gp.agents["DeepSeek-Chat"]
-          local chat_system_prompt =
-            "请你担任一名将英文翻译成简体中文的翻译者。请帮我把英文翻译成简体中文。我会输入英文内容，内容可能是一个句子、或一个单字，请先理解内容后再将我提供的内容翻译成简体中文。回答内容请尽量口语化且符合语境，但仍保留意思。回答内容包含翻译后的简体中文文本，不需要额外的解释。"
+          local chat_system_prompt = "请你担任一名将英文翻译成简体中文的翻译者。请帮我把英文翻译成简体中文。"
+            .. "我会输入英文内容，内容可能是一个句子、或一个单字，请先理解内容后再将我提供的内容翻译成简体中文。"
+            .. "回答内容请尽量口语化且符合语境，但仍保留意思。回答内容包含翻译后的简体中文文本，不需要额外的解释。"
           gp.cmd.ChatNew(params, agent.model, chat_system_prompt)
         end,
         TextOptimize = function(gp, params)
@@ -542,7 +543,7 @@ return {
       },
       whisper = { disable = true },
       image = { disable = true },
-      default_chat_agent = "DeepSeek7B",
+      default_chat_agent = "DeepSeek-Chat",
       default_command_agent = "DeepSeek-Chat",
       -- chat_user_prefix = "💬: ",
     },
@@ -554,6 +555,14 @@ return {
           chat = true,
           command = true,
           model = "deepseek-r1:7b",
+          system_prompt = require("gp.defaults").chat_system_prompt,
+        },
+        {
+          name = "DeepSeek8B",
+          provider = "ollama",
+          chat = true,
+          command = true,
+          model = "deepseek-r1:8b",
           system_prompt = require("gp.defaults").chat_system_prompt,
         },
         {
