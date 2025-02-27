@@ -259,13 +259,6 @@ return {
     keys = {
       {
         "<M-o>",
-        "<cmd>GpTextOptimize<cr>",
-        desc = "Optimize Text",
-        nowait = true,
-        mode = { "n" },
-      },
-      {
-        "<M-o>",
         ":<C-u>'<,'>GpTextOptimize<cr>",
         desc = "Optimize Text",
         nowait = true,
