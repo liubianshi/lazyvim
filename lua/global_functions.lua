@@ -1,4 +1,7 @@
 _G.dd = function(...)
+  if select("#", ...) == 0 then
+    return
+  end
   Snacks.debug.inspect(...)
 end
 

@@ -434,6 +434,7 @@ return {
       indent = {
         enabled = true,
         skip_heading = true,
+        icon = "",
       },
     },
     config = function(_, opts)

@@ -94,6 +94,16 @@ return {
         },
         cmdline = {
           enabled = true,
+          completion = {
+            menu = {
+              auto_show = function(ctx)
+                return vim.fn.getcmdtype() == ":"
+              end,
+            },
+          },
+          keymap = {
+            ["<CR>"] = { "accept_and_enter", "fallback" },
+          },
           sources = function()
             local type = vim.fn.getcmdtype()
             -- Search forward and backward
