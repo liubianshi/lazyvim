@@ -545,7 +545,7 @@ return {
         {
           name = "DeepSeek7B",
           provider = "ollama",
-          chat = true,
+          chat = false,
           command = true,
           model = "deepseek-r1:7b",
           system_prompt = require("gp.defaults").chat_system_prompt,
@@ -553,7 +553,7 @@ return {
         {
           name = "DeepSeek8B",
           provider = "ollama",
-          chat = true,
+          chat = false,
           command = true,
           model = "deepseek-r1:8b",
           system_prompt = require("gp.defaults").chat_system_prompt,
@@ -568,18 +568,18 @@ return {
         },
         {
           name = "DeepSeek-Reasoner",
-          provider = "deepseek",
-          chat = false,
+          provider = "openai",
+          chat = true,
           command = true,
-          model = { model = "deepseek-reasoner", temperature = 0.7, top_p = 1 },
+          model = { model = "DeepSeek-R1", temperature = 0.7, top_p = 1 },
           system_prompt = require("gp.defaults").chat_system_prompt,
         },
         {
           name = "Translator",
-          provider = "deepseek",
+          provider = "openai",
           chat = false,
           command = true,
-          model = { model = "deepseek-chat", temperature = 0.6, top_p = 1 },
+          model = { model = "gemini-2.0-flash", temperature = 0, top_p = 1 },
           system_prompt = prompt_polish_system,
         },
         {
