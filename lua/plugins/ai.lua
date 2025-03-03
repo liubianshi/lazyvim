@@ -31,7 +31,7 @@ Brief technical justification, as markdown comment, like:
 ]]
 
 return {
-  { -- jackMort/ChatGPT.nvim: Effortless Natural Language Generation ---- {{{3
+  { -- jackMort/ChatGPT.nvim: Effortless Natural Language Generation ---- {{{2
     "jackMort/ChatGPT.nvim",
     enabled = false,
     event = "VeryLazy",
@@ -243,7 +243,7 @@ return {
       end
     end,
   },
-  { -- robitx/gp.nvim: (GPT prompt) Neovim AI plugin -------------------- {{{3
+  { -- robitx/gp.nvim: (GPT prompt) Neovim AI plugin -------------------- {{{2
     "robitx/gp.nvim",
     cmd = {
       "GpAgent",
@@ -785,20 +785,42 @@ return {
       },
       strategies = {
         chat = {
-          adapter = "deepseek",
+          adapter = "deepseek-r1",
         },
         inline = {
-          adapter = "deepseek",
+          adapter = "gemini-flash",
         },
         cmd = {
-          adapter = "deepseek",
+          adapter = "gemini-flash",
         },
       },
       adapters = {
-        openai = function()
-          return require("codecompanion.adapters").extend("openai", {
+        ["gemini-flash"] = function()
+          return require("codecompanion.adapters").extend("openai_compatible", {
             env = {
-              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh openai",
+              url = "https://aihubmix.com",
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+            },
+            schema = {
+              model = {
+                default = "gemini-2.0-flash",
+              },
+              temperature = {
+                default = 0,
+              },
+            },
+          })
+        end,
+        ["deepseek-r1"] = function()
+          return require("codecompanion.adapters").extend("openai_compatible", {
+            env = {
+              url = "https://aihubmix.com",
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+            },
+            schema = {
+              model = {
+                default = "DeepSeek-R1",
+              },
             },
           })
         end,
