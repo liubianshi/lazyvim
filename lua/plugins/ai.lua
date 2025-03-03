@@ -778,6 +778,14 @@ return {
       display = {
         chat = {
           show_settings = true,
+          window = {
+            width = 0.375,
+            opts = {
+              number = false,
+              relativenumber = false,
+              signcolumn = "yes:1",
+            },
+          },
         },
         diff = {
           provider = "default",
@@ -879,16 +887,6 @@ return {
     },
     config = function(_, opts)
       require("codecompanion").setup(opts)
-      local cc_group = vim.api.nvim_create_augroup("LBS_CC", { clear = true })
-      vim.api.nvim_create_autocmd({ "FileType" }, {
-        group = cc_group,
-        pattern = { "codecompanion" },
-        callback = function()
-          vim.opt_local.formatexpr = "v:lua.require'conform'.formatexpr()"
-          vim.opt_local.number = false
-          vim.opt_local.relativenumber = false
-        end,
-      })
     end,
   },
 }
