@@ -1,6 +1,6 @@
 return {
   { -- epwalsh/obsidian.nvim -------------------------------------------- {{{2
-    "epwalsh/obsidian.nvim",
+    "obsidian-nvim/obsidian.nvim",
     version = "*",
     ft = { "markdown" },
     cmd = { "ObsidianQuickSwitch", "ObsidianNew", "ObsidianSearch" },
@@ -188,16 +188,7 @@ return {
 
       ---@diagnostic disable: missing-fields, unused-local
       picker = {
-        -- Set your preferred picker. Can be one of 'telescope.nvim', 'fzf-lua', or 'mini.pick'.
-        name = "fzf-lua",
-        -- Optional, configure key mappings for the picker. These are the defaults.
-        -- Not all pickers support all mappings.
-        note_mappings = {
-          -- Create a new note from your query.
-          new = "<C-x>",
-          -- Insert a link to the selected note.
-          insert_link = "<C-i>",
-        },
+        name = "snacks.pick",
       },
 
       -- Optional, sort search results by "path", "modified", "accessed", or "created".
