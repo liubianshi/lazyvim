@@ -793,7 +793,7 @@ return {
       },
       strategies = {
         chat = {
-          adapter = "deepseek-r1",
+          adapter = "gemini-flash",
         },
         inline = {
           adapter = "gemini-flash",
@@ -803,6 +803,22 @@ return {
         },
       },
       adapters = {
+        ["gemini-search"] = function()
+          return require("codecompanion.adapters").extend("openai_compatible", {
+            env = {
+              url = "https://aihubmix.com",
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+            },
+            schema = {
+              model = {
+                default = "gemini-2.0-pro-exp-02-05-search",
+              },
+              temperature = {
+                default = 0,
+              },
+            },
+          })
+        end,
         ["gemini-flash"] = function()
           return require("codecompanion.adapters").extend("openai_compatible", {
             env = {
@@ -811,7 +827,7 @@ return {
             },
             schema = {
               model = {
-                default = "gemini-2.0-flash",
+                default = "gemini-2.0-flash-search",
               },
               temperature = {
                 default = 0,
