@@ -18,7 +18,7 @@ if exists("g:neovide")
     else
         " let &guifont =  "Fira Code,FZJuZhenXinFangS-R-GB,Symbols Nerd Font Mono,Noto Color Emoji:h11:w-0.5"
         " let &guifont =  "FiraCode Nerd Font,FZJuZhenXinFangS-R-GB,Noto Color Emoji:h11:w-0.5"
-        let &linespace = 12
+        let &linespace = 14
         let g:neovide_padding_top = 0
         let g:neovide_padding_bottom = 0
         let g:neovide_padding_right = 0
@@ -33,7 +33,7 @@ if exists("g:neovide")
     let g:neovide_cursor_animate_in_insert_mode = v:false
     let g:neovide_floating_blur_amount_x = 0
     let g:neovide_floating_blur_amount_y = 0
-    " let g:neovide_transparency = 0.98
+    let g:neovide_transparency = 0.9
     let g:neovide_border = [['', 'NormalFloat'], ['', 'NormalFloat']]
     let g:neovide_confirm_quit = v:true
     let g:neovide_cursor_vfx_mode = "railgun"
