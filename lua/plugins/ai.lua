@@ -30,6 +30,46 @@ Brief technical justification, as markdown comment, like:
    -->
 ]]
 
+local codecampanion_utils = {
+  handlers = {
+    gemini = {
+      chat_output = function(self, data)
+        local output = {}
+        local utils = require("codecompanion.utils.adapters")
+        if data and data ~= "" then
+          local data_mod = utils.clean_streamed_data(data)
+          local ok, json = pcall(vim.json.decode, data_mod, { luanil = { object = true } })
+
+          if ok and json.choices and #json.choices > 0 then
+            local choice = json.choices[1]
+            local delta = (self.opts and self.opts.stream) and choice.delta or choice.message
+
+            if delta then
+              if delta.role then
+                output.role = delta.role
+              else
+                output.role = "llm"
+              end
+
+              -- Some providers may return empty content
+              if delta.content then
+                output.content = delta.content
+              else
+                output.content = ""
+              end
+
+              return {
+                status = "success",
+                output = output,
+              }
+            end
+          end
+        end
+      end,
+    },
+  },
+}
+
 return {
   { -- jackMort/ChatGPT.nvim: Effortless Natural Language Generation ---- {{{2
     "jackMort/ChatGPT.nvim",
@@ -805,9 +845,15 @@ return {
       adapters = {
         ["gemini-search"] = function()
           return require("codecompanion.adapters").extend("openai_compatible", {
+            roles = {
+              llm = "model",
+            },
             env = {
               url = "https://aihubmix.com",
               api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+            },
+            handlers = {
+              chat_output = codecampanion_utils.handlers.gemini.chat_output,
             },
             schema = {
               model = {
@@ -821,9 +867,15 @@ return {
         end,
         ["gemini-flash"] = function()
           return require("codecompanion.adapters").extend("openai_compatible", {
+            roles = {
+              llm = "model",
+            },
             env = {
               url = "https://aihubmix.com",
               api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+            },
+            handlers = {
+              chat_output = codecampanion_utils.handlers.gemini.chat_output,
             },
             schema = {
               model = {
