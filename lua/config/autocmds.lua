@@ -340,11 +340,14 @@ vim.api.nvim_create_autocmd({ "ColorScheme" }, {
   callback = function()
     -- 解决 vim 帮助文件的示例代码的不够突显的问题
     vim.cmd("hi def link helpExample Special")
+
+    local bg_color = vim.api.nvim_get_hl(0, { name = "Pmenu" }).bg
     if vim.fn.exists("g:neovide") == 1 then
-      vim.cmd("highlight MyBorder guifg=bg guibg=NONE")
+      vim.api.nvim_set_hl(0, "MyBorder", { fg = bg_color, bg = bg_color })
     else
-      vim.cmd("highlight MyBorder guifg=" .. vim.g.lbs_colors.orange .. " guibg=NONE")
+      vim.api.nvim_set_hl(0, "MyBorder", { fg = vim.g.lbs_colors.orange, bg = bg_color })
     end
+
     vim.cmd("highlight DiagnosticSignInfo guibg=NONE")
     -- Setting the color scheme of the Complement window
     local pallete = {

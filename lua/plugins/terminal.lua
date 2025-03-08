@@ -4,7 +4,7 @@ return {
     cmd = { "Lf", "Nnn", "Neomutt", "Lazygit" },
     keys = {
       { "<leader>fo", "<cmd>Lf '%:p:h'<cr>", desc = "Open File with Lf" },
-      { "<leader>fn", "<cmd>Nnn '%:p:h'<cr>", desc = "Open File with nnn" },
+      -- { "<leader>fn", "<cmd>Nnn '%:p:h'<cr>", desc = "Open File with nnn" },
       -- { "<leader>gg", "<cmd>Lazygit<cr>", desc = "Open Lazy Git" },
     },
     config = function()

@@ -108,6 +108,21 @@ return {
       desc = "Smart",
     },
     {
+      "<leader>fn",
+      function()
+        Snacks.picker.grep({
+          dirs = {
+            vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/writing",
+          },
+          exclude = {
+            "*.{bck,html}",
+            "**/tags",
+          },
+        })
+      end,
+      desc = "Search Personal Notes",
+    },
+    {
       "<A-x>",
       function()
         Snacks.picker.commands({ layout = { preset = "ivy" } })
