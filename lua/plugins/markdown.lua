@@ -1,5 +1,5 @@
 return {
-  { -- epwalsh/obsidian.nvim -------------------------------------------- {{{2
+  { -- obsidian-nvim/obsidian.nvim -------------------------------------------- {{{2
     "obsidian-nvim/obsidian.nvim",
     version = "*",
     ft = { "markdown" },
@@ -426,6 +426,11 @@ return {
         enabled = true,
         skip_heading = true,
         icon = "",
+      },
+      html = {
+        comment = {
+          conceal = false,
+        },
       },
     },
     config = function(_, opts)

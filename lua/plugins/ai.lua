@@ -793,7 +793,7 @@ return {
       },
       strategies = {
         chat = {
-          adapter = "gemini-flash",
+          adapter = "gemini-search",
         },
         inline = {
           adapter = "gemini-flash",
