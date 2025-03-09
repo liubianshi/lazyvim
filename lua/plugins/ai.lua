@@ -576,9 +576,12 @@ return {
       },
       whisper = { disable = true },
       image = { disable = true },
-      default_chat_agent = "DeepSeek-Chat",
-      default_command_agent = "DeepSeek-Chat",
-      -- chat_user_prefix = "💬: ",
+      default_chat_agent = "Gemini-Pro",
+      default_command_agent = "Gemini-Flash",
+      chat_shortcut_respond = { modes = { "n", "i", "v", "x" }, shortcut = "<c-s>" },
+      chat_user_prefix = "| []:",
+      chat_assistant_prefix = { "|: ", "[{{agent}}]" },
+      chat_dir = (os.getenv("WRITING_LIB") or os.getenv("HOME") .. "/Documents/Writing"):gsub("/$", "") .. "/gp_chats",
     },
     config = function(_, opts)
       opts.agents = vim.tbl_deep_extend("force", opts.agents or {}, {
@@ -600,7 +603,7 @@ return {
         },
         {
           name = "DeepSeek-Chat",
-          provider = "deepseek",
+          provider = "openai",
           chat = true,
           command = true,
           model = { model = "deepseek-chat", temperature = 1.1, top_p = 1 },
@@ -615,72 +618,28 @@ return {
           system_prompt = require("gp.defaults").chat_system_prompt,
         },
         {
+          name = "Gemini-Pro",
+          provider = "openai",
+          chat = true,
+          command = true,
+          model = { model = "gemini-2.0-pro-exp-02-05-search", temperature = 1.1, top_p = 1 },
+          system_prompt = require("gp.defaults").chat_system_prompt,
+        },
+        {
+          name = "Gemini-Flash",
+          provider = "openai",
+          chat = true,
+          command = true,
+          model = { model = "gemini-2.0-flash", temperature = 1.1, top_p = 1 },
+          system_prompt = require("gp.defaults").chat_system_prompt,
+        },
+        {
           name = "Translator",
           provider = "openai",
           chat = false,
           command = true,
           model = { model = "gemini-2.0-flash", temperature = 0, top_p = 1 },
           system_prompt = prompt_polish_system,
-        },
-        {
-          name = "ChatGPT4",
-          chat = true,
-          command = false,
-          -- string with model name or table with model name and parameters
-          model = { model = gpt4, temperature = 1.1, top_p = 1 },
-          -- system prompt (use this to specify the persona/role of the AI)
-          system_prompt = require("gp.defaults").chat_system_prompt,
-        },
-        {
-          name = "ChatGPT3-5",
-          chat = true,
-          command = false,
-          -- string with model name or table with model name and parameters
-          model = { model = gpt35, temperature = 1.1, top_p = 1 },
-          -- system prompt (use this to specify the persona/role of the AI)
-          system_prompt = require("gp.defaults").chat_system_prompt,
-        },
-        {
-          name = "CodeGPT4",
-          chat = false,
-          command = true,
-          -- string with model name or table with model name and parameters
-          model = { model = gpt4, temperature = 0.8, top_p = 1 },
-          -- system prompt (use this to specify the persona/role of the AI)
-          system_prompt = "You are an AI working as a code editor.\n\n"
-            .. "Please AVOID COMMENTARY OUTSIDE OF THE SNIPPET RESPONSE.\n"
-            .. "START AND END YOUR ANSWER WITH:\n\n```",
-        },
-        {
-          name = "ChatGPT4o-mini",
-          provider = "openai",
-          chat = true,
-          command = false,
-          -- string with model name or table with model name and parameters
-          model = { model = "gpt-4o-mini", temperature = 1.1, top_p = 1 },
-          -- system prompt (use this to specify the persona/role of the AI)
-          system_prompt = require("gp.defaults").chat_system_prompt,
-        },
-        {
-          provider = "openai",
-          name = "CodeGPT4o-mini",
-          chat = false,
-          command = true,
-          -- string with model name or table with model name and parameters
-          model = { model = "gpt-4o-mini", temperature = 0.7, top_p = 1 },
-          -- system prompt (use this to specify the persona/role of the AI)
-          system_prompt = "Please return ONLY code snippets.\nSTART AND END YOUR ANSWER WITH:\n\n```",
-        },
-        {
-          name = "CodeGPT3-5",
-          chat = false,
-          command = true,
-          -- string with model name or table with model name and parameters
-          model = { model = gpt35, temperature = 0.8, top_p = 1 },
-          -- system prompt (use this to specify the persona/role of the AI)
-          system_prompt = "You are an AI working as a code editor.\n\n"
-            .. "Please AVOID COMMENTARY OUTSIDE OF THE SNIPPET RESPONSE.\n"
-            .. "START AND END YOUR ANSWER WITH:\n\n```",
         },
       })
       require("gp").setup(opts)
@@ -900,7 +859,7 @@ return {
             },
           })
         end,
-        deepseek = function()
+        ["deepseek"] = function()
           return require("codecompanion.adapters").extend("deepseek", {
             env = {
               api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh deepseek",
@@ -920,8 +879,7 @@ return {
           opts = {
             index = 13,
             adapter = {
-              name = "deepseek",
-              model = "deepseek-chat",
+              name = "gemini-flash",
             },
             is_slash_cmd = false,
             modes = { "v" },
@@ -957,7 +915,7 @@ return {
       require("codecompanion").setup(opts)
       local function chat_save(buf, opt)
         buf = buf or 0
-        opt = opt or {}
+        opt = opt or { fargs = {} }
         -- 获取当前缓冲区的聊天内容
         local success, chat = pcall(function()
           local codecompanion = require("codecompanion")
@@ -979,8 +937,9 @@ return {
               -- 清理内容中的特殊字符和空格
               save_name = output
                 .content
-                :gsub("[/%\\%s]", "-") -- 替换路径分隔符和空格为-
                 :gsub("[?？%p%s]*$", "") -- 去除末尾的标点和空格
+                :gsub("[?/%\\%s]", "-") -- 替换路径分隔符和空格为-
+                :gsub("？", "-") -- 替换路径分隔符和空格为-
                 :sub(1, 100) -- 限制最大长度
                 .. ".md"
               break
@@ -1026,16 +985,18 @@ return {
         nargs = "*",
         desc = "Save CodeCompanion chat to markdown file",
       })
-
-      vim.api.nvim_create_autocmd({ "BufDelete", "BufUnload", "BufWipeout", "VimLeave" }, {
-        group = vim.api.nvim_create_augroup("CC_Save", { clear = true }),
-        callback = function(ev)
-          if vim.bo[ev.buf].filetype ~= "codecompanion" then
-            return
-          end
-          chat_save(ev.buf)
+      vim.api.nvim_create_autocmd({ "FileType" }, {
+        group = vim.api.nvim_create_augroup("LBS_CC", { clear = true }),
+        callback = function()
+          require("util").keymap({
+            "<leader>fs",
+            chat_save,
+            desc = "CodeCompanion: Save current chat buffer",
+            buffer = true,
+            silent = true,
+            noremap = true,
+          })
         end,
-        desc = "CodeCompanion: Save chat buffer",
       })
     end,
   },

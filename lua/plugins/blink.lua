@@ -52,6 +52,11 @@ return {
               enabled = true,
             },
           },
+          trigger = {
+            prefetch_on_insert = false,
+            show_in_snippet = false,
+            show_on_trigger_character = true,
+          },
           documentation = {
             window = { border = border },
             auto_show = true,
@@ -59,7 +64,6 @@ return {
           },
           keyword = {
             range = "prefix",
-            -- regex = "[_,:\\?!]\\|[A-Za-z0-9]",
           },
           list = {
             selection = {
@@ -85,6 +89,9 @@ return {
             },
           },
         },
+        signature = {
+          enabled = true,
+        },
         appearance = {
           use_nvim_cmp_as_default = false,
           nerd_font_variant = "mono",
@@ -94,11 +101,20 @@ return {
         },
         cmdline = {
           enabled = true,
+          keymap = {
+            ["<cr>"] = { "accept_and_enter", "fallback" },
+          },
           completion = {
             menu = {
               auto_show = function(ctx)
                 return vim.fn.getcmdtype() == ":"
               end,
+            },
+            list = {
+              selection = {
+                preselect = false,
+                auto_insert = true,
+              },
             },
           },
           sources = function()
@@ -123,6 +139,12 @@ return {
           providers = {
             lazydev = {
               fallbacks = { "lsp" },
+            },
+            snippets = {
+              opts = {
+                use_show_condition = true,
+                show_autosnippets = true,
+              },
             },
             cmp_r = {
               name = "cmp_r",
