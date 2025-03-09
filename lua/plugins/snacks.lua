@@ -24,6 +24,14 @@ return {
       },
     },
     dashboard = {
+      enabled = function()
+        local argv = vim.v.argv or {}
+        if #argv == 1 or (#argv == 2 and argv[2] == "--embed") then
+          return true
+        else
+          return false
+        end
+      end,
       width = 60,
       preset = {
         keys = {

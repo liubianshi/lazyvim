@@ -802,7 +802,7 @@ return {
         mode = { "v" },
       },
     },
-    cmd = { "CodeCompanion" },
+    cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions" },
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
