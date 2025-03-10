@@ -1,5 +1,11 @@
 return {
   {
+    "folke/tokyonight.nvim",
+    opts = {
+      transparent = true,
+    },
+  },
+  {
     "vague2k/vague.nvim",
     opts = {
       transparent = false,

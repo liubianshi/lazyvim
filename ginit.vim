@@ -6,7 +6,7 @@ if exists("g:neovide")
     if current_time >= "07:00" && current_time <= "17:00"
         call setenv("NVIM_BACKGROUND", "light")
         call setenv("NVIM_COLOR_SCHEME_DARK", "vague")
-        call setenv("NVIM_COLOR_SCHEME_LIGHT", "rose-pine")
+        call setenv("NVIM_COLOR_SCHEME_LIGHT", "tokyonight-day")
     endif
     if has('mac')
         let &guifont =  "Maple Mono NF,LXGW WenKai Mono,Symbols Nerd Font Mono,Apple Color Emoji:h16:w-1.5"
