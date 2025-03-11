@@ -3,6 +3,31 @@ return {
     "obsidian-nvim/obsidian.nvim",
     version = "*",
     ft = { "markdown" },
+    specs = {
+      {
+        "folke/snacks.nvim",
+        opts = {
+          picker = {
+            win = {
+              input = {
+                keys = {
+                  ["<c-x>n"] = { "obsidian_note", mode = { "n", "i" } },
+                },
+              },
+            },
+            actions = {
+              obsidian_note = function(picker)
+                local current_buf = vim.api.nvim_get_current_buf()
+                local lines = vim.api.nvim_buf_get_lines(current_buf, 0, 1, false)
+                local input_text = lines[1]
+                picker:close()
+                vim.cmd.ObsidianNew(input_text)
+              end,
+            },
+          },
+        },
+      },
+    },
     cmd = { "ObsidianQuickSwitch", "ObsidianNew", "ObsidianSearch" },
     keys = {
       { "<leader>nl", "<cmd>ObsidianQuickSwitch<cr>", desc = "Obsidian: Switch Note" },
@@ -189,6 +214,9 @@ return {
       ---@diagnostic disable: missing-fields, unused-local
       picker = {
         name = "snacks.pick",
+        note_mappings = {
+          new = "<C-x>n",
+        },
       },
 
       -- Optional, sort search results by "path", "modified", "accessed", or "created".
@@ -423,7 +451,7 @@ return {
         enabled = false,
       },
       indent = {
-        enabled = true,
+        enabled = false,
         skip_heading = true,
         icon = "",
       },

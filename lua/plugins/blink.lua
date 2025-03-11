@@ -38,6 +38,9 @@ return {
     opts = function(_, opts)
       local border = require("util").border("▔", "bottom")
       local config = {
+        enabled = function()
+          return vim.b.completion ~= false
+        end,
         snippets = {
           preset = "luasnip",
         },
