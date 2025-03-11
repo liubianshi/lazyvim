@@ -46,10 +46,10 @@ M.fabric = function(opts)
     items = patterns,
     format = function(item, _)
       local ret = {}
-      ret[#ret + 1] = { item.text, "SnacksPickerLabel" }
-      ret[#ret + 1] = { " ", virtual = true }
+      ret[#ret + 1] = { item.text, "SnacksPickerDirectory" }
+      ret[#ret + 1] = { ": ", virtual = true }
       local desc = pattern_desc[item.text] or pattern_desc[item.text:gsub("analyze", "analyse")] or ""
-      ret[#ret + 1] = { desc, virtual = true }
+      ret[#ret + 1] = { desc, "SnacksPickerDesc" }
       ret[#ret + 1] = { " ", virtual = true }
       return ret
     end,

@@ -61,3 +61,22 @@ cmd("StataHelp", function(opts)
 end, { nargs = "*", desc = "Stata Help" })
 
 cmd("ToggleZenMode", "call utils#ToggleZenMode()", { desc = "Toggle Zen Mode" })
+
+cmd("Fabric", function(opts)
+  local fopts = {}
+  if opts.args ~= "" then
+    fopts.file = (os.getenv("WRITING_LIB") or os.getenv("HOME") .. "/Documents/Writing")
+      .. "/fabric/"
+      .. opts.args
+      .. ".md"
+  end
+  if opts.bang or opts.range > 0 then
+    fopts = vim.tbl_extend("force", fopts, { buf = 0, s = opts.line1, e = opts.line2 })
+  end
+  require("pickers").fabric(fopts)
+end, {
+  desc = "Fabric: choose pattern",
+  bang = true,
+  nargs = "*",
+  range = true,
+})
