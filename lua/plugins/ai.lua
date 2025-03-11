@@ -1,34 +1,6 @@
 local gpt4 = "gpt-4o"
 local gpt35 = "gpt-3.5-turbo"
-local prompt_polish_system = [[
-**Paper Polishing Request**
-
-You are an economics paper editing assistant with 10 years experience. Your
-expertise includes econometric analysis formatting and academic style
-maintenance.
-
-Please refine the following academic paragraph by:
-
-1. Correcting grammatical errors and typos
-2. Improving sentence structure for better readability
-3. Enhancing academic tone while maintaining original meaning
-4. Ensuring technical terminology accuracy
-5. Optimizing transition between ideas
-6. Ensure that the language is the same as the original language, so do not translate Chinese to English
-7. Applying proper academic formatting conventions
-8. Maintain original citation/reference format
-
-Respond exclusively with:
-
-full polished version, no markdown codeblocks, no extra marker or subtitle
-
-Brief technical justification, as markdown comment, like:
-
-   <!-- EXPLANATION
-   - ...
-   - ...
-   -->
-]]
+local PROMPTS = require("llm_prompts")
 
 local codecampanion_utils = {
   handlers = {
@@ -562,7 +534,10 @@ return {
         end,
         TextOptimize = function(gp, params)
           local template = "Please polish the text from {{filename}}:\n\n" .. "```{{filetype}}\n{{selection}}\n```\n\n"
-          local agent = gp.agents["Translator"]
+          local agent = gp.agents["Writing_Optimizer"]
+          if vim.bo.filetype == "quarto" then
+            agent.system_prompt = PROMPTS.improve_academic_writing
+          end
           gp.logger.info("Implementing selection with agent: " .. agent.name)
           gp.Prompt(
             params,
@@ -634,12 +609,12 @@ return {
           system_prompt = require("gp.defaults").chat_system_prompt,
         },
         {
-          name = "Translator",
+          name = "Writing_Optimizer",
           provider = "openai",
           chat = false,
           command = true,
           model = { model = "gemini-2.0-flash", temperature = 0, top_p = 1 },
-          system_prompt = prompt_polish_system,
+          system_prompt = PROMPTS.improve_writing,
         },
       })
       require("gp").setup(opts)
@@ -739,7 +714,7 @@ return {
           {
             "<leader>ap",
             function()
-              prefill_edit_window(prompt_polish_system)
+              prefill_edit_window(PROMPTS.improve_academic_writing)
             end,
             desc = "Paper Polish",
           },
@@ -892,7 +867,7 @@ return {
           prompts = {
             {
               role = "system",
-              content = prompt_polish_system,
+              content = PROMPTS.improve_academic_writing,
               opts = {
                 visible = false,
               },
