@@ -156,7 +156,6 @@ opt.isfname:remove({ "=", "," })
 opt.iskeyword = "_,49-57,A-Z,a-z"
 opt.jumpoptions = "view"
 opt.laststatus = vim.g.laststatus
-opt.linebreak = false -- 折行
 opt.list = true -- show some invisible characters
 opt.magic = true -- 对正则表达式开启 magic
 opt.matchpairs:append({
@@ -223,5 +222,6 @@ opt.wildmode = "longest:full,full" -- Command-line completion mode
 opt.winblend = 5 -- pseudo transparency for floating window
 opt.winminwidth = 5 -- Minimum window width
 opt.wrap = true -- 代码折行
+opt.linebreak = true
 opt.wrapmargin = 0 -- 指定拆行处与编辑窗口右边缘之间空出的字符数
 opt.writebackup = false
