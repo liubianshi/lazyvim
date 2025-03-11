@@ -1,6 +1,6 @@
 local M = {}
 
-M.root_patterns = { ".git", "lua", ".obsidian", ".vim", '.exercism' }
+M.root_patterns = { ".git", "lua", ".obsidian", ".vim", ".exercism" }
 
 ---@param plugin string
 function M.has(plugin)
@@ -10,7 +10,7 @@ end
 function M.fg(name)
   ---@type {foreground?:number}?
   local hl = vim.api.nvim_get_hl and vim.api.nvim_get_hl(0, { name = name })
-  local fg = hl and (hl['fg'] or hl.foreground)
+  local fg = hl and (hl["fg"] or hl.foreground)
   return fg and { fg = string.format("#%06x", fg) }
 end
 
@@ -20,7 +20,7 @@ function M.opts(name)
   if not plugin then
     return {}
   end
-  local Plugin = require "lazy.core.plugin"
+  local Plugin = require("lazy.core.plugin")
   return Plugin.values(plugin, "opts", false)
 end
 
@@ -55,7 +55,7 @@ end
 function M.get_root(path, root_patterns)
   root_patterns = root_patterns or M.root_patterns
   if type(root_patterns) ~= "table" then
-    root_patterns = {root_patterns}
+    root_patterns = { root_patterns }
   end
   ---@type string?
   path = path or vim.api.nvim_buf_get_name(0)
@@ -114,16 +114,11 @@ function M.telescope(builtin, opts)
     if opts.cwd and opts.cwd ~= vim.loop.cwd() then
       opts.attach_mappings = function(_, map)
         map("i", "<a-c>", function()
-          local action_state = require "telescope.actions.state"
+          local action_state = require("telescope.actions.state")
           local line = action_state.get_current_line()
           M.telescope(
             params.builtin,
-            vim.tbl_deep_extend(
-              "force",
-              {},
-              params.opts or {},
-              { cwd = false, default_text = line }
-            )
+            vim.tbl_deep_extend("force", {}, params.opts or {}, { cwd = false, default_text = line })
           )()
         end)
         return true
@@ -158,14 +153,12 @@ function M.clear_previewed_images(win)
       goto continue
     end
 
-    local window_ok, is_valid_window =
-      pcall(vim.api.nvim_win_is_valid, current_image.window)
+    local window_ok, is_valid_window = pcall(vim.api.nvim_win_is_valid, current_image.window)
     if not (window_ok and is_valid_window) then
       goto continue
     end
 
-    local buf_ok, is_valid_buffer =
-      pcall(vim.api.nvim_buf_is_valid, current_image.buffer)
+    local buf_ok, is_valid_buffer = pcall(vim.api.nvim_buf_is_valid, current_image.buffer)
     if not buf_ok or not is_valid_buffer then
       goto continue
     end
@@ -175,9 +168,7 @@ function M.clear_previewed_images(win)
       goto continue
     end
 
-    local is_buffer_in_window = vim.api.nvim_win_get_buf(
-      current_image.window
-    ) == current_image.buffer
+    local is_buffer_in_window = vim.api.nvim_win_get_buf(current_image.window) == current_image.buffer
     if not is_buffer_in_window then
       goto continue
     end
@@ -189,7 +180,7 @@ end
 
 local get_item_info = function(b, field, command)
   field = field or "note"
-  local valid_items = {"note", "pdf", "bib", "newsboat", "html", "md", "path", "title", "url"}
+  local valid_items = { "note", "pdf", "bib", "newsboat", "html", "md", "path", "title", "url" }
   local item_path
   if field == "note" then
     item_path = vim.fn.trim(vim.fn.system("mylib note @" .. b))
@@ -197,7 +188,9 @@ local get_item_info = function(b, field, command)
     item_path = vim.fn.trim(vim.fn.system("mylib get " .. field .. " -- @" .. b))
   end
   if command then
-    if vim.fn.filewritable(item_path) == 0 then return end
+    if vim.fn.filewritable(item_path) == 0 then
+      return
+    end
     vim.cmd(command .. " " .. vim.fn.fnameescape(item_path))
   else
     return item_path
@@ -205,75 +198,101 @@ local get_item_info = function(b, field, command)
 end
 
 function M.bibkey_action(bibkey)
-  if not bibkey then return end
+  if not bibkey then
+    return
+  end
   bibkey = "@" .. bibkey
   local bibkey_action = function(key)
     local command = {
-      ['e'] = function() get_item_info(bibkey, "note",     "edit ")   end,
-      ['v'] = function() get_item_info(bibkey, "note",     "vsplit ") end,
-      ['t'] = function() get_item_info(bibkey, "note",     "tabnew ") end,
-      ['s'] = function() get_item_info(bibkey, "note",     "split ")  end,
-      ['o'] = function() get_item_info(bibkey, "path",     "Lf ")     end,
-      ['n'] = function() get_item_info(bibkey, "newsboat", "edit ")   end,
-      ['p'] = function()
+      ["e"] = function()
+        get_item_info(bibkey, "note", "edit ")
+      end,
+      ["v"] = function()
+        get_item_info(bibkey, "note", "vsplit ")
+      end,
+      ["t"] = function()
+        get_item_info(bibkey, "note", "tabnew ")
+      end,
+      ["s"] = function()
+        get_item_info(bibkey, "note", "split ")
+      end,
+      ["o"] = function()
+        get_item_info(bibkey, "path", "Lf ")
+      end,
+      ["n"] = function()
+        get_item_info(bibkey, "newsboat", "edit ")
+      end,
+      ["p"] = function()
         local pdf_file = get_item_info(bibkey, "pdf")
-        if not pdf_file or vim.fn.filereadable(pdf_file) == 0 then return end
+        if not pdf_file or vim.fn.filereadable(pdf_file) == 0 then
+          return
+        end
         vim.ui.open(pdf_file)
       end,
-      ['u'] = function()
+      ["u"] = function()
         local url = get_item_info(bibkey, "url")
-        if not url then return end
+        if not url then
+          return
+        end
         vim.ui.open(url)
       end,
     }
     return command[key]
   end
   local items = {
-    { key = "e", text = "edit note"       },
-    { key = "n", text = "newsboat"        },
-    { key = "o", text = "open dir"        },
-    { key = "p", text = "open pdf file"   },
-    { key = "s", text = "split note"      },
-    { key = "t", text = "tabnew note"     },
-    { key = "u", text = "open url"        },
-    { key = "v", text = "vsplite note"    },
-    { key = "",  text = "---------------" },
-    { key = "q", text = "Quit"            },
+    { key = "e", text = "edit note" },
+    { key = "n", text = "newsboat" },
+    { key = "o", text = "open dir" },
+    { key = "p", text = "open pdf file" },
+    { key = "s", text = "split note" },
+    { key = "t", text = "tabnew note" },
+    { key = "u", text = "open url" },
+    { key = "v", text = "vsplite note" },
+    { key = "", text = "---------------" },
+    { key = "q", text = "Quit" },
   }
-  local select = require('util.ui').select
-  select(items, { title = "Choose an action:", callback = bibkey_action, })
+  local select = require("util.ui").select
+  select(items, { title = "Choose an action:", callback = bibkey_action })
 end
 
 function M.execute_async(command, callback_funs)
-    callback_funs = callback_funs or {}
-    callback_funs = vim.tbl_extend("keep", callback_funs, {
-      on_stdout = function(_, data, _)
-        if type(data) ~= "table" then data = {data} end
-        print(vim.fn.join(data, ""))
-      end,
-      on_error  = function(_, data, _)
-        if type(data) ~= "table" then data = {data} end
-        print(vim.fn.join(data, ""))
-      end,
-      on_exit   = function(_, data, _)
-        if type(data) ~= "table" then data = {data} end
-        print(vim.fn.join(data, ""))
-      end,
-    })
+  callback_funs = callback_funs or {}
+  callback_funs = vim.tbl_extend("keep", callback_funs, {
+    on_stdout = function(_, data, _)
+      if type(data) ~= "table" then
+        data = { data }
+      end
+      print(vim.fn.join(data, ""))
+    end,
+    on_error = function(_, data, _)
+      if type(data) ~= "table" then
+        data = { data }
+      end
+      print(vim.fn.join(data, ""))
+    end,
+    on_exit = function(_, data, _)
+      if type(data) ~= "table" then
+        data = { data }
+      end
+      print(vim.fn.join(data, ""))
+    end,
+  })
 
-    local job_id = vim.fn.jobstart(command, {
-        on_stdout = callback_funs.on_stdout,
-        on_stderr = callback_funs.on_stderr,
-        on_exit   = callback_funs.on_exit,
-    })
+  local job_id = vim.fn.jobstart(command, {
+    on_stdout = callback_funs.on_stdout,
+    on_stderr = callback_funs.on_stderr,
+    on_exit = callback_funs.on_exit,
+  })
 
-    return job_id
+  return job_id
 end
 
 function M.in_project()
   local cwd = vim.fn.getcwd()
-  local ok,project = pcall(require, "project_nvim")
-  if not ok then return end
+  local ok, project = pcall(require, "project_nvim")
+  if not ok then
+    return
+  end
   local projects = project.get_recent_projects()
   for _, proj in ipairs(projects) do
     if cwd == proj then
@@ -285,7 +304,9 @@ end
 
 function M.wk_reg(mapping, opts)
   local wk_ok, wk = pcall(require, "which-key")
-  if not wk_ok then return end
+  if not wk_ok then
+    return
+  end
   wk.add(mapping, opts)
 end
 
@@ -300,9 +321,9 @@ function M.border(symbol, type, neovide, highlight)
   end
 
   if type == "top" then
-    return { '', {symbol, highlight}, '', '', '', '', '', ''}
+    return { "", { symbol, highlight }, "", "", "", "", "", "" }
   elseif type == "bottom" then
-    return { '', '', '', '', '', {symbol, highlight}, '', ''}
+    return { "", "", "", "", "", { symbol, highlight }, "", "" }
   end
 end
 
@@ -326,12 +347,18 @@ function M.get_visual_selection(nl_literal)
     _, cerow, cecol, _ = unpack(vim.fn.getpos("'>"))
   end
   -- swap vars if needed
-  if cerow < csrow then csrow, cerow = cerow, csrow end
-  if cecol < cscol then cscol, cecol = cecol, cscol end
+  if cerow < csrow then
+    csrow, cerow = cerow, csrow
+  end
+  if cecol < cscol then
+    cscol, cecol = cecol, cscol
+  end
   local lines = vim.api.nvim_buf_get_lines(0, csrow - 1, cerow, false)
   -- local n = cerow-csrow+1
   local n = #lines
-  if n <= 0 then return "" end
+  if n <= 0 then
+    return ""
+  end
   lines[n] = string.sub(lines[n], 1, cecol)
   lines[1] = string.sub(lines[1], cscol)
   return table.concat(lines, nl_literal and "\\n" or "\n")
@@ -361,10 +388,8 @@ M.get_daily_filepath = function(ext, base, pre)
   else
     base = "/" .. base .. "/"
   end
-  local writing_room =
-    vim.env.WRITING_LIB
-    or vim.env.HOME .. "/Documents/writing"
-  local basename = os.date('%Y%m%d')
+  local writing_room = vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/writing"
+  local basename = os.date("%Y%m%d")
   return writing_room .. base .. pre .. basename .. ext
 end
 
@@ -374,26 +399,28 @@ function M.in_obsidian_vault(buf)
   end
   local root_dir = M.get_root(vim.api.nvim_buf_get_name(buf))
 
-  if root_dir and root_dir:match('/vaults/') then
+  if root_dir and root_dir:match("/vaults/") then
     return root_dir
   end
 end
 
 function M.get_selected_lines()
   local mode = vim.api.nvim_get_mode().mode
-  if mode ~= 'v' and mode ~= 'V' and mode ~= '\22' then
+  if mode ~= "v" and mode ~= "V" and mode ~= "\22" then
     return
   end
 
   local buf = vim.api.nvim_get_current_buf()
-  local start_line = vim.fn.line('v') - 1
+  local start_line = vim.fn.line("v") - 1
   local end_line = vim.fn.line(".")
   local lines = vim.api.nvim_buf_get_lines(buf, start_line, end_line, false)
   return lines
 end
 
 function M.is_process_running(pid)
-  local success = pcall(function() vim.uv.kill(pid, 0) end)
+  local success = pcall(function()
+    vim.uv.kill(pid, 0)
+  end)
   return success
 end
 
@@ -401,15 +428,12 @@ function M.md_preview(input)
   if not input then
     input = M.get_selected_lines()
   end
-  if not input or #input == 0 then return end
+  if not input or #input == 0 then
+    return
+  end
 
-  local outfile = vim.fn.stdpath('cache') .. "/vim_markdown_preview.html"
-  vim.system(
-    { "mdviewer", "--to", "html", "--outfile", outfile },
-    { text = true, stdin = input },
-    function() end
-  )
-
+  local outfile = vim.fn.stdpath("cache") .. "/vim_markdown_preview.html"
+  vim.system({ "mdviewer", "--to", "html", "--outfile", outfile }, { text = true, stdin = input }, function() end)
 end
 
 function M.keymap(mapping)
@@ -424,6 +448,66 @@ function M.keymap(mapping)
   mapping.mode = nil
   mapping.icon = nil
   vim.keymap.set(mode, lhs, rhs, mapping)
+end
+
+function M.pipe(cmd, opts)
+  if not cmd then
+    return
+  elseif type(cmd) == type("") then
+    cmd = vim.split(cmd, "%s+")
+  end
+  opts = opts or {}
+
+  local stdin_data
+  if opts.buf and opts.s and opts.e then
+    stdin_data = vim.api.nvim_buf_get_lines(opts.buf, opts.s - 1, opts.e, false)
+  elseif opts.buf then
+    stdin_data = vim.api.nvim_buf_get_lines(opts.buf, 0, -1, false)
+  else
+    stdin_data = vim.fn.getreg("+")
+  end
+
+  -- 构建 snacks.win 的参数
+  local default_win_opts = {
+    width = 0.35,
+    height = 0.99,
+    border = "rounded",
+    row = 0,
+    col = 0.75,
+    backdrop = 100,
+    file = opts.file or nil,
+    bo = {},
+    wo = {
+      signcolumn = "yes:1",
+      wrap = true,
+    },
+  }
+  local win_opts = vim.tbl_deep_extend("force", default_win_opts, opts.win or {})
+  if not win_opts.file then
+    win_opts.bo = vim.tbl_deep_extend("force", win_opts.bo, { buftype = "nofile", filetype = "markdown" })
+  else
+    win_opts.bo.modifiable = true
+  end
+
+  -- 异步执行命令
+  vim.system(cmd, {
+    stdin = stdin_data,
+    text = true,
+  }, function(obj)
+    local err = obj.code
+    local data = obj.stdout
+    if err ~= 0 then
+      print("Error:", err)
+      return
+    end
+    if data then
+      vim.schedule(function()
+        local win = require("snacks").win.new(win_opts)
+        local line_count = vim.api.nvim_buf_line_count(win.buf)
+        vim.api.nvim_buf_set_lines(win.buf, line_count, -1, false, vim.split(data, "\n"))
+      end)
+    end
+  end)
 end
 
 return M

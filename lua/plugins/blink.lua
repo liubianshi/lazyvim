@@ -45,7 +45,7 @@ return {
           preset = "luasnip",
         },
         keymap = {
-          preset = "enter",
+          preset = "default",
           ["<Tab>"] = { "snippet_forward", "select_next", "fallback" },
           ["<S-Tab>"] = { "snippet_backward", "select_prev", "fallback" },
         },
@@ -140,10 +140,21 @@ return {
           },
           default = { "lazydev", "lsp", "path", "snippets", "buffer", "markdown" },
           providers = {
+            buffer = {
+              enabled = function()
+                return vim.bo.buftype ~= "prompt"
+              end,
+            },
             lazydev = {
+              enabled = function()
+                return vim.bo.buftype ~= "prompt"
+              end,
               fallbacks = { "lsp" },
             },
             snippets = {
+              enabled = function()
+                return vim.bo.buftype ~= "prompt"
+              end,
               opts = {
                 use_show_condition = true,
                 show_autosnippets = true,
