@@ -450,24 +450,43 @@ function M.keymap(mapping)
   vim.keymap.set(mode, lhs, rhs, mapping)
 end
 
-function M.pipe(cmd, opts)
-  if not cmd then
-    return
-  elseif type(cmd) == type("") then
-    cmd = vim.split(cmd, "%s+")
-  end
-  opts = opts or {}
+-- 执行外部命令，并将标准输出写入窗口 ----------------------------------- {{{1
 
-  local stdin_data
-  if opts.buf and opts.s and opts.e then
-    stdin_data = vim.api.nvim_buf_get_lines(opts.buf, opts.s - 1, opts.e, false)
+---@class PipeWinOpts
+---
+---@field id? integer ID of the output window
+---@field line1? integer  Start line number
+---@field line2? integer  End line number
+---@field opts? snacks.win.Config
+
+---@class PipeOpts
+---
+---@field buf? integer|nil  Buffer number
+---@field line1? integer|nil  Start line number
+---@field line2? integer|nil  End line number
+---@field file? string|nil  File path
+---@field win? PipeWinOpts
+
+---@class PipeStdinOpts
+---
+---@field buf? integer|nil  Buffer number
+---@field line1? integer|nil  Start line number
+---@field line2? integer|nil  End line number
+
+---@param opts PipeStdinOpts
+---@return string[]|nil
+local function get_stdin_data(opts)
+  if opts.buf and opts.line1 and opts.line2 then
+    return vim.api.nvim_buf_get_lines(opts.buf, opts.line1 - 1, opts.line2, false)
   elseif opts.buf then
-    stdin_data = vim.api.nvim_buf_get_lines(opts.buf, 0, -1, false)
-  else
-    stdin_data = vim.fn.getreg("+")
+    return vim.api.nvim_buf_get_lines(opts.buf, 0, -1, false)
   end
+  return vim.split(vim.fn.getreg("+"), "\n")
+end
 
-  -- 构建 snacks.win 的参数
+---@param opts snacks.win.Config
+---@return snacks.win
+local function create_window(opts)
   local default_win_opts = {
     width = 0.35,
     height = 0.99,
@@ -475,38 +494,75 @@ function M.pipe(cmd, opts)
     row = 0,
     col = 0.75,
     backdrop = 100,
-    file = opts.file or nil,
     bo = {},
     wo = {
       signcolumn = "yes:1",
       wrap = true,
     },
   }
-  local win_opts = vim.tbl_deep_extend("force", default_win_opts, opts.win or {})
+  local win_opts = vim.tbl_deep_extend("force", default_win_opts, opts or {})
   if not win_opts.file then
     win_opts.bo = vim.tbl_deep_extend("force", win_opts.bo, { buftype = "nofile", filetype = "markdown" })
   else
     win_opts.bo.modifiable = true
   end
+  return require("snacks").win.new(win_opts)
+end
 
-  -- 异步执行命令
+---@param obj vim.SystemCompleted
+---@param opts PipeOpts
+local function handle_output(obj, opts)
+  if obj.code ~= 0 then
+    vim.notify("Error: " .. obj.code, vim.log.levels.ERROR)
+    return
+  end
+
+  if not obj.stdout then
+    return
+  end
+
+  vim.schedule(function()
+    local buf
+    if opts.win.id then
+      buf = vim.api.nvim_win_get_buf(opts.win.id)
+    else
+      if opts.file then
+        opts.win.opts = vim.tbl_extend("keep", opts.win.opts or {}, { file = opts.file })
+      end
+      local win = create_window(opts.win.opts)
+      buf = win.buf
+    end
+
+    if buf and type(buf) == "number" then
+      local line1 = opts.win.line1 or (vim.api.nvim_buf_line_count(buf) + 1)
+      local line2 = opts.win.line2 or -1
+      vim.api.nvim_buf_set_lines(buf, line1 - 1, line2, false, vim.split(obj.stdout, "\n"))
+    end
+  end)
+end
+
+---@param cmd string|string[]
+---@param opts? PipeOpts
+function M.pipe(cmd, opts)
+  if not cmd then
+    return
+  end
+  if type(cmd) == "string" then
+    cmd = vim.split(cmd, "%s+")
+  end
+  opts = opts or { buf = nil, line1 = nil, line2 = nil, win = {} }
+
+  local stdin_data = get_stdin_data({
+    buf = opts.buf,
+    line1 = opts.line1,
+    line2 = opts.line2,
+  })
+
   vim.system(cmd, {
     stdin = stdin_data,
     text = true,
   }, function(obj)
-    local err = obj.code
-    local data = obj.stdout
-    if err ~= 0 then
-      print("Error:", err)
-      return
-    end
-    if data then
-      vim.schedule(function()
-        local win = require("snacks").win.new(win_opts)
-        local line_count = vim.api.nvim_buf_line_count(win.buf)
-        vim.api.nvim_buf_set_lines(win.buf, line_count, -1, false, vim.split(data, "\n"))
-      end)
-    end
+    handle_output(obj, opts)
   end)
 end
 
