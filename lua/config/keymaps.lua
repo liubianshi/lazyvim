@@ -261,3 +261,8 @@ end)
 -- File manager --------------------------------------------------------- {{{1
 nmap("<leader>fs", "Save File", "<cmd>write<cr>")
 nmap("<leader>fS", "Save File (force)", "<cmd>write!<cr>")
+
+-- Picker --------------------------------------------------------------- {{{1
+local picker = require("pickers")
+nmap("<leader>fz", "Jump with fasd", picker.fasd)
+nmap("<leader>a/", "Fabric: clipboad as input", picker.fabric)

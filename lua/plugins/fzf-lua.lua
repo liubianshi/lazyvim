@@ -385,7 +385,7 @@ return {
     { "<leader>fq", list_mylib_items, desc = "Open my library file" },
     { "<leader>ic", insert_citation, desc = "Insert Citation Keys" },
     { "<localleader>c", insert_citation, desc = "Insert Citation Keys", mode = "i" },
-    { "<leader>fz", jump_with_fasd, desc = "Jump with fasd" },
+    -- { "<leader>fz", jump_with_fasd, desc = "Jump with fasd" },
     -- { "<leader>bB", list_all_buffers, desc = "List All Buffers" },
     { "<leader>ot", run_async_tasks, desc = "Run async tasks" },
     -- { "<A-x>", run_command, desc = "Run commands" },

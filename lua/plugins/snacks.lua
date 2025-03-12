@@ -11,7 +11,7 @@ return {
       },
       convert = {
         math = {
-          font_size = "large",
+          font_size = "small",
         },
       },
     },
