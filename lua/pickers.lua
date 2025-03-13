@@ -16,33 +16,6 @@ local function get_folders(path)
   return folders
 end
 
-local function pick_cmd_result(picker_opts)
-  local git_root = Snacks.git.get_root()
-  local function finder(opts, ctx)
-    return require("snacks.picker.source.proc").proc({
-      opts,
-      {
-        cmd = picker_opts.cmd,
-        args = picker_opts.args,
-        transform = picker_opts.transform or function(item)
-          item.file = item.text
-        end,
-      },
-    }, ctx)
-  end
-
-  local opts = {
-    source = picker_opts.name,
-    finder = finder,
-    preview = picker_opts.preview,
-    title = picker_opts.title,
-  }
-  if picker_opts.confirm then
-    opts.confirm = picker_opts.confirm
-  end
-  Snacks.picker.pick(opts)
-end
-
 M.fabric = function(opts)
   local pattern_dir = os.getenv("HOME") .. "/.config/fabric/patterns"
   local patterns = {}
@@ -94,11 +67,28 @@ M.fabric = function(opts)
 end
 
 M.fasd = function()
-  pick_cmd_result({
-    cmd = "fasd",
-    args = { "-al" },
+  pick({
+    finder = function(opts, ctx)
+      return require("snacks.picker.source.proc").proc({
+        opts,
+        {
+          cmd = "fasd",
+          args = { "-al" },
+        },
+      }, ctx)
+    end,
+    transform = function(item)
+      item.file = item.text
+    end,
     preview = function(ctx)
-      require("snacks.picker.preview").cmd({ "pistol", ctx.item.text }, ctx, {})
+      local file = ctx.item.text
+      local ext = vim.fn.fnamemodify(file, ":e")
+      local data_file = vim.tbl_contains({ "dta", "xlsx", "csv", "xls", "rdata", "tsv", "rds", "fst", "qf" }, ext)
+      if data_file or vim.fn.isdirectory(file) == 1 then
+        require("snacks.picker.preview").cmd({ "pistol", file }, ctx, {})
+      else
+        require("snacks.picker.preview").file(ctx)
+      end
     end,
     name = "path_fasd",
     title = "FASD: files and directories",
@@ -114,11 +104,99 @@ M.citation = function()
   local prefix = (cursor[2] ~= 0 and char_before_cursor ~= " ") and " " or ""
   local suffix = char_after_cursor ~= " " and " " or ""
 
-  pick_cmd_result({
-    cmd = "bibtex-ls",
-    args = { os.getenv("HOME") .. "/Documents/url_ref.bib" },
+  pick({
+    finder = function(opts, ctx)
+      return require("snacks.picker.source.proc").proc({
+        opts,
+        {
+          cmd = "bibtex2csv",
+          args = { os.getenv("HOME") .. "/Documents/url_ref.bib" },
+        },
+      }, ctx)
+    end,
     name = "bib_citation",
+    transform = function(item)
+      local fields = vim.split(item.text, "\t")
+      item.author = fields[1]
+      item.year = fields[2]
+      item.title = fields[3]
+      item.publish = fields[4]
+      item.type = fields[5]
+      item.key = fields[6]
+    end,
+    preview = function(ctx)
+      local obj = vim.system({ "mylib", "get", "file_for_preview", "--", "@" .. ctx.item.key }, { text = true }):wait()
+      if obj.code ~= 0 then
+        return
+      end
+      ctx.item.file = vim.fn.trim(obj.stdout)
+      require("snacks.picker.preview").file(ctx)
+    end,
+    format = function(item, _)
+      local ret = {}
+      local sep = { " ", virtual = true }
+      if item.author ~= "" then
+        table.insert(ret, { item.author, "SnacksPickerSpecial" })
+        table.insert(ret, sep)
+      end
+
+      if item.year ~= "" then
+        table.insert(ret, { "(" .. item.year .. ")", "SnacksPickerIndex" })
+        table.insert(ret, sep)
+      end
+
+      if item.title ~= "" then
+        table.insert(ret, { item.title, item.type == "article" and "SnacksPickerTitle" or "SnacksPickerRow" })
+        table.insert(ret, sep)
+      end
+
+      if item.publish ~= "" then
+        table.insert(ret, { "[" .. item.publish .. "]", "SnacksPickerRow" })
+      end
+
+      return ret
+    end,
     title = "Bibtex Citation",
+    confirm = function(picker, _)
+      local keys = vim.tbl_map(function(ctx)
+        return ctx.key:gsub("^%@", "")
+      end, picker:selected())
+      picker:close()
+      local obj = vim.system({ "bibtex-cite", "-mode=pandoc" }, { text = true, stdin = keys }):wait(50)
+      local r = obj.stdout
+      vim.api.nvim_win_set_cursor(0, cursor)
+      vim.api.nvim_put({ prefix .. r .. suffix }, "c", (normal_mode and cursor[2] ~= 0) or at_end_of_line(), true)
+    end,
+    actions = {
+      bracket_citation = function(picker)
+        local keys = vim.tbl_map(function(ctx)
+          return ctx.key:gsub("^%@", "")
+        end, picker:selected())
+        picker:close()
+        local obj = vim.system({ "bibtex-cite", "-mode=pandoc" }, { text = true, stdin = keys }):wait(50)
+        local r = obj.stdout
+        vim.api.nvim_win_set_cursor(0, cursor)
+        vim.api.nvim_put(
+          { prefix .. "[" .. r .. "]" .. suffix },
+          "c",
+          (normal_mode and cursor[2] ~= 0) or at_end_of_line(),
+          true
+        )
+      end,
+    },
+    win = {
+      input = {
+        keys = {
+          ["<c-i>"] = { "bracket_citation", mode = { "i", "n" } },
+        },
+      },
+      preview = {
+        wo = {
+          relativenumber = false,
+          number = false,
+        },
+      },
+    },
   })
 end
 

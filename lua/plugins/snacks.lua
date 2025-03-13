@@ -90,6 +90,16 @@ return {
       enabled = true,
       timeout = 3000,
     },
+    picker = {
+      win = {
+        preview = {
+          wo = {
+            relativenumber = false,
+            number = false,
+          },
+        },
+      },
+    },
     quickfile = { enabled = true },
     terminal = { enabled = true },
     statuscolumn = {

@@ -266,3 +266,18 @@ nmap("<leader>fS", "Save File (force)", "<cmd>write!<cr>")
 local picker = require("pickers")
 nmap("<leader>fz", "Jump with fasd", picker.fasd)
 nmap("<leader>a/", "Fabric: clipboad as input", picker.fabric)
+keymap({
+  "<leader>ic",
+  function()
+    require("pickers").citation()
+  end,
+  desc = "Insert Citation Keys",
+})
+keymap({
+  "<localleader>ic",
+  function()
+    require("pickers").citation()
+  end,
+  desc = "Insert Citation Keys",
+  mode = { "i" },
+})
