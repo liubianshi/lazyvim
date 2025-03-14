@@ -31,7 +31,6 @@ return {
           "r",
           "bash",
           "vim",
-          "org",
           "lua",
           "dot",
           "perl",

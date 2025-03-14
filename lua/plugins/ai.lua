@@ -725,9 +725,9 @@ return {
   { -- olimorris/codecompanion.nvim ------------------------------------- {{{2
     "olimorris/codecompanion.nvim",
     keys = {
-      { "<c-a>", "<cmd>CodeCompanionActions<cr>", desc = "CodeCompanion Actions", mode = { "n", "v" } },
+      { "<c-a>l", "<cmd>CodeCompanionActions<cr>", desc = "CodeCompanion Actions", mode = { "n", "v" } },
       { "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", desc = "CodeCompanion Toggle", mode = { "n", "v" } },
-      { "ga", "<cmd>CodeCompanionChat Add<cr>", desc = "CodeCompanion Toggle", mode = { "v" } },
+      { "<c-a>a", "<cmd>CodeCompanionChat Add<cr>", desc = "CodeCompanion Toggle", mode = { "v" } },
       {
         "<localleader>cp",
         function()

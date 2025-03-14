@@ -137,6 +137,7 @@ return {
           compat = { "cmp_r" },
           per_filetype = {
             codecompanion = { "codecompanion", "lsp", "path", "snippets", "buffer" },
+            org = { "orgmode" },
           },
           default = { "lazydev", "lsp", "path", "snippets", "buffer", "markdown" },
           providers = {
@@ -159,6 +160,11 @@ return {
                 use_show_condition = true,
                 show_autosnippets = true,
               },
+            },
+            orgmode = {
+              name = "Orgmode",
+              module = "orgmode.org.autocompletion.blink",
+              fallbacks = { "buffer" },
             },
             cmp_r = {
               name = "cmp_r",
