@@ -276,6 +276,30 @@ M.cheat = function()
 end
 
 M.mylib = function()
+  local function update(key)
+    return function(picker, item)
+      local default = item[key]
+      if key == "author" then
+        default = item["author_full"]
+      end
+      require("snacks.input").input({
+        prompt = "Update " .. key .. ": ",
+        default = default,
+      }, function(value)
+        if key == "tag" then
+          value = "-r " .. value
+          vim.system({ "mylib", "update", "--" .. key, value, "--", item["md5_short"] }, { text = true }, function(obj)
+            if obj.code == 0 then
+              picker:find({ refresh = true })
+            else
+              vim.notify("Failed to update " .. key .. ": " .. obj.code)
+            end
+          end)
+        end
+      end)
+    end
+  end
+
   pick({
     finder = function(opts, ctx)
       return require("snacks.picker.source.proc").proc({
@@ -289,11 +313,15 @@ M.mylib = function()
     transform = function(item)
       local fields = vim.json.decode(item.text)
       for key, value in pairs(fields) do
-        item[key] = value
+        item[key] = value ~= vim.NIL and value or ""
       end
       item.text = table.concat({ item.tag, item.year, item.author, item.title }, " ")
       item.filelist = vim.deepcopy(item.file)
-      item.file = item.filelist["file_for_preview"]
+      if item.filelist and item.filelist["file_for_preview"] ~= vim.NIL then
+        item.file = item.filelist["file_for_preview"]
+      else
+        item.file = ""
+      end
     end,
     format = function(item)
       local ret = {}
@@ -315,7 +343,7 @@ M.mylib = function()
       if item.tag and item.tag ~= "" then
         local tags = vim.split(item.tag, ":")
         for _, tag in ipairs(tags) do
-          table.insert(ret, { tag, "Underlined" })
+          table.insert(ret, { tag, "SnacksPickerDirectory" })
           table.insert(ret, sep)
         end
       end
@@ -328,6 +356,37 @@ M.mylib = function()
 
       return ret
     end,
+    actions = {
+      update_tag = update("tag"),
+      update_title = update("title"),
+      update_category = update("category"),
+      update_rate = update("rate"),
+      update_file = update("file"),
+      update_author = update("author"),
+      update_keywords = update("keywords"),
+    },
+    win = {
+      input = {
+        keys = {
+          ["ut"] = "update_tag",
+          ["uh"] = "update_title",
+          ["uc"] = "update_category",
+          ["ur"] = "update_rate",
+          ["ua"] = "update_author",
+          ["uk"] = "update_keywords",
+        },
+      },
+      list = {
+        keys = {
+          ["ut"] = "update_tag",
+          ["uh"] = "update_title",
+          ["uc"] = "update_category",
+          ["ur"] = "update_rate",
+          ["ua"] = "update_author",
+          ["uk"] = "update_keywords",
+        },
+      },
+    },
   })
 end
 
