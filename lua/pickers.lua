@@ -288,14 +288,15 @@ M.mylib = function()
       }, function(value)
         if key == "tag" then
           value = "-r " .. value
-          vim.system({ "mylib", "update", "--" .. key, value, "--", item["md5_short"] }, { text = true }, function(obj)
-            if obj.code == 0 then
-              picker:find({ refresh = true })
-            else
-              vim.notify("Failed to update " .. key .. ": " .. obj.code)
-            end
-          end)
         end
+        vim.system({ "mylib", "update", "--" .. key, value, item["md5_short"] }, { text = true }, function(obj)
+          if obj.code == 0 then
+            picker:find({ refresh = true })
+            vim.notify(key .. " updated", vim.log.levels.info)
+          else
+            vim.notify("Failed to update " .. key .. ": " .. obj.code, vim.log.levels.ERROR)
+          end
+        end)
       end)
     end
   end
@@ -364,6 +365,16 @@ M.mylib = function()
       update_file = update("file"),
       update_author = update("author"),
       update_keywords = update("keywords"),
+      delete_record = function(picker, item)
+        vim.system({ "mylib", "delete", "-f", item["md5_short"] }, { text = true }, function(obj)
+          if obj.code ~= 0 then
+            vim.notify("Failed to delete record " .. item["md5_short"] .. ": " .. obj.code)
+          else
+            vim.notify("Delete recode " .. item["md5_short"])
+            picker:find({ refresh = true })
+          end
+        end)
+      end,
     },
     win = {
       input = {
@@ -384,6 +395,7 @@ M.mylib = function()
           ["ur"] = "update_rate",
           ["ua"] = "update_author",
           ["uk"] = "update_keywords",
+          ["dD"] = "delete_record",
         },
       },
     },
