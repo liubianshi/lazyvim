@@ -291,7 +291,7 @@ M.mylib = function()
       for key, value in pairs(fields) do
         item[key] = value
       end
-      item.text = nil
+      item.text = table.concat({ item.tag, item.year, item.author, item.title }, " ")
       item.filelist = vim.deepcopy(item.file)
       item.file = item.filelist["file_for_preview"]
     end,
