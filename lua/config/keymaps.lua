@@ -266,6 +266,7 @@ nmap("<leader>fS", "Save File (force)", "<cmd>write!<cr>")
 local picker = require("pickers")
 nmap("<leader>hc", "CheatSheet: TL;DR", picker.cheat)
 nmap("<leader>fz", "Jump with fasd", picker.fasd)
+nmap("<leader>fq", "Open my library file", picker.mylib)
 nmap("<leader>a/", "Fabric: clipboad as input", picker.fabric)
 keymap({
   "<leader>ic",

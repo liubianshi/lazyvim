@@ -275,4 +275,60 @@ M.cheat = function()
   })
 end
 
+M.mylib = function()
+  pick({
+    finder = function(opts, ctx)
+      return require("snacks.picker.source.proc").proc({
+        opts,
+        {
+          cmd = "mylib",
+          args = { "list", "--json" },
+        },
+      }, ctx)
+    end,
+    transform = function(item)
+      local fields = vim.json.decode(item.text)
+      for key, value in pairs(fields) do
+        item[key] = value
+      end
+      item.text = nil
+      item.filelist = vim.deepcopy(item.file)
+      item.file = item.filelist["file_for_preview"]
+    end,
+    format = function(item)
+      local ret = {}
+      local sep = { " ", virtual = true }
+
+      -- author
+      if item.author and item.author ~= "" and item.author ~= "佚名" and item.author ~= "unknown" then
+        table.insert(ret, { item.author, "SnacksPickerSpecial" })
+        table.insert(ret, sep)
+      end
+
+      -- year
+      if item.year and item.year ~= "" then
+        table.insert(ret, { item.year, "SnacksPickerIndex" })
+        table.insert(ret, sep)
+      end
+
+      -- tags
+      if item.tag and item.tag ~= "" then
+        local tags = vim.split(item.tag, ":")
+        for _, tag in ipairs(tags) do
+          table.insert(ret, { tag, "Underlined" })
+          table.insert(ret, sep)
+        end
+      end
+
+      -- title
+      if item.title and item.title ~= "" then
+        table.insert(ret, { item.title, "SnacksPickerRow" })
+        table.insert(ret, sep)
+      end
+
+      return ret
+    end,
+  })
+end
+
 return M

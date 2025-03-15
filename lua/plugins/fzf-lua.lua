@@ -381,8 +381,8 @@ return {
     "ProjectChange",
   },
   keys = {
-    { "<leader>pp", list_projects, desc = "Select Project" },
-    { "<leader>fq", list_mylib_items, desc = "Open my library file" },
+    -- { "<leader>pp", list_projects, desc = "Select Project" },
+    -- { "<leader>fq", list_mylib_items, desc = "Open my library file" },
     -- { "<leader>ic", insert_citation, desc = "Insert Citation Keys" },
     -- { "<localleader>c", insert_citation, desc = "Insert Citation Keys", mode = "i" },
     -- { "<leader>fz", jump_with_fasd, desc = "Jump with fasd" },
@@ -400,7 +400,7 @@ return {
     -- { "<leader>sC", "<cmd>FzfLua colorschemes<cr>", desc = "FzfLua: colorschemes" },
     -- { "<leader>sR", "<cmd>FzfLua grep_project<cr>", desc = "FzfLua: Grep project" },
     -- { "<leader>pr", "<cmd>FzfLua grep_project<cr>", desc = "FzfLua: Grep project" },
-    { "<c-b>", "<cmd>FzfLua grep_cword<cr>", desc = "FzfLua: Grep cword", mode = { "n", "x" } },
+    -- { "<c-b>", "<cmd>FzfLua grep_cword<cr>", desc = "FzfLua: Grep cword", mode = { "n", "x" } },
   },
   opts = {
     hls = {
