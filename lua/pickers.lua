@@ -54,15 +54,17 @@ M.fabric = function(opts)
       return ret
     end,
     preview = "file",
-    confirm = function(picker, item)
-      picker:close()
-      local cmd = { "fabric", "--pattern", item.text, "--stream" }
-      if item.text == "translate" then
-        table.insert(cmd, "-v=lang_code:zh_cn")
-      end
+    actions = {
+      confirm = function(picker, item)
+        picker:close()
+        local cmd = { "fabric", "--pattern", item.text, "--stream" }
+        if item.text == "translate" then
+          table.insert(cmd, "-v=lang_code:zh_cn")
+        end
 
-      require("util").pipe(cmd, opts)
-    end,
+        require("util").pipe(cmd, opts)
+      end,
+    },
   })
 end
 
@@ -239,15 +241,21 @@ M.cheat = function()
       },
     },
     actions = {
-      ["rename"] = function(picker, item, action)
+      ["rename"] = function(picker, item, _)
         Snacks.input.input({ prompt = "Enter newname:", default = item.text }, function(newname)
           if not newname then
             return
           end
-          vim.system({ command, "-r", newname, item.text }, { text = true }, function() end)
+          vim.system({ command, "-r", newname, item.text }, { text = true }, function(obj)
+            if obj.code == 0 then
+              picker:find({ refresh = true })
+            else
+              vim.notify("Failed to rename `" .. item.text .. "` to `" .. newname .. "`: " .. obj.code)
+            end
+          end)
         end)
       end,
-      confirm = function(picker, _, action)
+      ["confirm"] = function(picker, _, action)
         local items = picker:selected({ fallback = true })
         if #items == 0 then
           return
