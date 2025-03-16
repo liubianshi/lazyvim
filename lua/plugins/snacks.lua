@@ -128,12 +128,16 @@ return {
     {
       "<leader>fn",
       function()
+        local ori_cmd = vim.uv.cwd()
         vim.cmd.cd(vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/writing")
         Snacks.picker.files({
           exclude = {
             "*.{bck,html}",
             "**/tags",
           },
+          on_close = function()
+            vim.cmd.cd(ori_cmd)
+          end,
         })
       end,
       desc = "Search Personal Notes",
@@ -141,12 +145,16 @@ return {
     {
       "<leader>fN",
       function()
+        local ori_cmd = vim.uv.cwd()
         vim.cmd.cd(vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/writing")
         Snacks.picker.grep({
           exclude = {
             "*.{bck,html}",
             "**/tags",
           },
+          on_close = function()
+            vim.cmd.cd(ori_cmd)
+          end,
         })
       end,
       desc = "Search Personal Notes",
