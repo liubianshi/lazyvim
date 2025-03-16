@@ -431,4 +431,46 @@ M.mylib = function()
   })
 end
 
+M.clipcat = function()
+  pick({
+    finder = function(opts, ctx)
+      return require("snacks.picker.source.proc").proc({
+        opts,
+        {
+          cmd = "clipcatctl",
+          args = { "list" },
+          transform = function(item)
+            local id, content = item.text:match("^([0-9a-f]+)%:%s(.+)$")
+            if id and content then
+              item.text = content
+              setmetatable(item, {
+                __index = function(_, k)
+                  if k == "data" then
+                    local data = vim.fn.system({ "clipcatctl", "get", id }):gsub("\\n", "\n")
+                    rawset(item, "data", data)
+                    if vim.v.shell_error ~= 0 then
+                      error(data)
+                    end
+                    return data
+                  elseif k == "preview" then
+                    return {
+                      text = item.data,
+                      ft = "text",
+                    }
+                  end
+                end,
+              })
+            else
+              return false
+            end
+          end,
+        },
+      }, ctx)
+    end,
+    format = "text",
+    preview = "preview",
+    confirm = { "copy", "close" },
+  })
+end
+
 return M

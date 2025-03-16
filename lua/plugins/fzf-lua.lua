@@ -1,4 +1,3 @@
--- vim: set fdm=marker:
 -- vim.env.FZF_DEFAULT_OPTS = vim.env.FZF_DEFAULT_OPTS .. " --color=gutter:-1"
 -- if vim.o.background == "light" then
 --   vim.env.FZF_DEFAULT_OPTS = "--select-1 --exit-0"
@@ -371,6 +370,7 @@ end
 -- config fzf-lua ------------------------------------------------------- {{{2
 return {
   "ibhagwan/fzf-lua",
+  enabled = true,
   branch = "main",
   cmd = {
     "FzfLua",
@@ -381,7 +381,7 @@ return {
     "ProjectChange",
   },
   keys = {
-    -- { "<leader>pp", list_projects, desc = "Select Project" },
+    { "<leader>pp", list_projects, desc = "Select Project" },
     -- { "<leader>fq", list_mylib_items, desc = "Open my library file" },
     -- { "<leader>ic", insert_citation, desc = "Insert Citation Keys" },
     -- { "<localleader>c", insert_citation, desc = "Insert Citation Keys", mode = "i" },
@@ -403,6 +403,7 @@ return {
     -- { "<c-b>", "<cmd>FzfLua grep_cword<cr>", desc = "FzfLua: Grep cword", mode = { "n", "x" } },
   },
   opts = {
+    register_ui_select = nil,
     hls = {
       normal = "Normal",
     },

@@ -91,6 +91,7 @@ return {
       timeout = 3000,
     },
     picker = {
+      ui_select = true,
       win = {
         preview = {
           wo = {

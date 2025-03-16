@@ -264,6 +264,7 @@ nmap("<leader>fS", "Save File (force)", "<cmd>write!<cr>")
 
 -- Picker --------------------------------------------------------------- {{{1
 local picker = require("pickers")
+nmap("<leader>sP", "System Clipboad", picker.clipcat)
 nmap("<leader>hc", "CheatSheet: TL;DR", picker.cheat)
 nmap("<leader>fz", "Jump with fasd", picker.fasd)
 nmap("<leader>fq", "Open my library file", picker.mylib)
