@@ -36,7 +36,7 @@ return {
       preset = {
         keys = {
           { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
-          { icon = "󱙺", key = "a", desc = "Chat New", action = ":GpChatNew" },
+          { icon = "󱙺", key = "a", desc = "Chat New", action = ":CodeCompanionChat" },
           { icon = " ", key = "e", desc = "New File", action = ":silent ene | startinsert" },
           { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
           { icon = " ", key = "n", desc = "Obsidian Note", action = ":ObsidianQuickSwitch" },
@@ -128,10 +128,21 @@ return {
     {
       "<leader>fn",
       function()
-        Snacks.picker.grep({
-          dirs = {
-            vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/writing",
+        vim.cmd.cd(vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/writing")
+        Snacks.picker.files({
+          exclude = {
+            "*.{bck,html}",
+            "**/tags",
           },
+        })
+      end,
+      desc = "Search Personal Notes",
+    },
+    {
+      "<leader>fN",
+      function()
+        vim.cmd.cd(vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/writing")
+        Snacks.picker.grep({
           exclude = {
             "*.{bck,html}",
             "**/tags",

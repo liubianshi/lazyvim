@@ -26,6 +26,7 @@ vim.filetype.add({
     tsv = "tsv",
     sthlp = "smcl",
     ihlp = "smcl",
+    norg = "norg",
     newsboat = "newsboat",
   },
   filename = {

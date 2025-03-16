@@ -300,7 +300,6 @@ return {
         desc = "GPT prompt Chat Finder",
         nowait = true,
       },
-
       {
         "<C-g>c",
         ":<C-u>'<,'>GpChatNew<cr>",
@@ -322,7 +321,6 @@ return {
         nowait = true,
         mode = "v",
       },
-
       {
         "<C-g><C-x>",
         "<cmd>GpChatNew split<cr>",
@@ -341,7 +339,6 @@ return {
         desc = "GPT prompt New Chat tabnew",
         nowait = true,
       },
-
       {
         "<C-g><C-x>",
         ":<C-u>'<,'>GpChatNew split<cr>",
@@ -363,7 +360,6 @@ return {
         nowait = true,
         mode = "v",
       },
-
       -- Prompt commands
       {
         "<C-g>r",
@@ -383,7 +379,6 @@ return {
         desc = "GPT prompt Prepend (before)",
         nowait = true,
       },
-
       {
         "<C-g>r",
         ":<C-u>'<,'>GpRewrite<cr>",
@@ -412,7 +407,6 @@ return {
         nowait = true,
         mode = "v",
       },
-
       {
         "<C-g>gp",
         "<cmd>GpPopup<cr>",
@@ -443,7 +437,6 @@ return {
         desc = "GPT prompt GpTabnew",
         nowait = true,
       },
-
       {
         "<C-g>gp",
         ":<C-u>'<,'>GpPopup<cr>",
@@ -479,7 +472,6 @@ return {
         nowait = true,
         mode = "v",
       },
-
       {
         "<C-g>x",
         "<cmd>GpContext<cr>",
@@ -493,7 +485,6 @@ return {
         nowait = true,
         mode = "v",
       },
-
       {
         "<C-g>s",
         "<cmd>GpStop<cr>",

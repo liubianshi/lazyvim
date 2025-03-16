@@ -300,6 +300,29 @@ M.mylib = function()
       end)
     end
   end
+  local function yank(key)
+    return function(picker)
+      local items = picker:selected({ fallback = true })
+      picker:close()
+      local re
+      if key == "key" then
+        re = table.concat(
+          vim.tbl_map(function(item)
+            return "@" .. item.key
+          end, items),
+          "; "
+        )
+      else
+        re = table.concat(
+          vim.tbl_map(function(item)
+            return item[key]
+          end, items),
+          " "
+        )
+      end
+      vim.fn.setreg("+", re)
+    end
+  end
 
   pick({
     finder = function(opts, ctx)
@@ -365,6 +388,8 @@ M.mylib = function()
       update_file = update("file"),
       update_author = update("author"),
       update_keywords = update("keywords"),
+      yank_id = yank("md5_short"),
+      yank_key = yank("key"),
       delete_record = function(picker, item)
         vim.system({ "mylib", "delete", "-f", item["md5_short"] }, { text = true }, function(obj)
           if obj.code ~= 0 then
@@ -385,6 +410,8 @@ M.mylib = function()
           ["ur"] = "update_rate",
           ["ua"] = "update_author",
           ["uk"] = "update_keywords",
+          ["yi"] = "yank_id",
+          ["yk"] = "yank_key",
         },
       },
       list = {
@@ -396,6 +423,8 @@ M.mylib = function()
           ["ua"] = "update_author",
           ["uk"] = "update_keywords",
           ["dD"] = "delete_record",
+          ["yi"] = "yank_id",
+          ["yk"] = "yank_key",
         },
       },
     },
