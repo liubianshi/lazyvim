@@ -370,7 +370,7 @@ end
 -- config fzf-lua ------------------------------------------------------- {{{2
 return {
   "ibhagwan/fzf-lua",
-  enabled = true,
+  enabled = false,
   branch = "main",
   cmd = {
     "FzfLua",
@@ -402,62 +402,61 @@ return {
     -- { "<leader>pr", "<cmd>FzfLua grep_project<cr>", desc = "FzfLua: Grep project" },
     -- { "<c-b>", "<cmd>FzfLua grep_cword<cr>", desc = "FzfLua: Grep cword", mode = { "n", "x" } },
   },
-  opts = {
-    register_ui_select = nil,
-    hls = {
-      normal = "Normal",
-    },
-    fzf_colors = true,
-    winopts = {
-      border = my_border,
-      preview = {
-        scrollchars = { "│", "" },
-        winopts = {
-          border = my_border,
-        },
+  config = function(_, _)
+    local opts = {
+      hls = {
+        normal = "Normal",
       },
-    },
-    previewers = {
-      builtin = {
-        extensions = {
-          -- neovim terminal only supports `viu` block output
-          ["png"] = { "ueberzug" },
-          ["jpg"] = { "ueberzug" },
-          ["xlsx"] = { "scope" },
-          ["xls"] = { "scope" },
-          ["csv"] = { "scope" },
-          ["dta"] = { "scope" },
-          ["Rds"] = { "scope" },
-          ["pdf"] = { "scope" },
-        },
-      },
-      man = {
-        cmd = "echo %s | tr -d '()'  | xargs -r man | col -bx",
-      },
-    },
-    files = {
-      previewer = "builtin",
-      prompt = "Files❯ ",
-      file_icons = true,
-      fzf_opts = {
-        ["--preview"] = vim.fn.shellescape("printf {1} | perl -plE 's!\\A[^\\s\\/A-z]+\\s!!' | xargs scope"),
-      },
-    },
-    grep = {
+      fzf_colors = true,
       winopts = {
-        -- split = "belowright new",
-        height = 0.4,
-        width = 1,
-        row = 1,
-        col = 0,
+        border = my_border,
         preview = {
-          horizontal = "right:40%",
-          layout = "horizontal",
+          scrollchars = { "│", "" },
+          winopts = {
+            border = my_border,
+          },
         },
       },
-    },
-  },
-  config = function(_, opts)
+      previewers = {
+        builtin = {
+          extensions = {
+            -- neovim terminal only supports `viu` block output
+            ["png"] = { "ueberzug" },
+            ["jpg"] = { "ueberzug" },
+            ["xlsx"] = { "scope" },
+            ["xls"] = { "scope" },
+            ["csv"] = { "scope" },
+            ["dta"] = { "scope" },
+            ["Rds"] = { "scope" },
+            ["pdf"] = { "scope" },
+          },
+        },
+        man = {
+          cmd = "echo %s | tr -d '()'  | xargs -r man | col -bx",
+        },
+      },
+      files = {
+        previewer = "builtin",
+        prompt = "Files❯ ",
+        file_icons = true,
+        fzf_opts = {
+          ["--preview"] = vim.fn.shellescape("printf {1} | perl -plE 's!\\A[^\\s\\/A-z]+\\s!!' | xargs scope"),
+        },
+      },
+      grep = {
+        winopts = {
+          -- split = "belowright new",
+          height = 0.4,
+          width = 1,
+          row = 1,
+          col = 0,
+          preview = {
+            horizontal = "right:40%",
+            layout = "horizontal",
+          },
+        },
+      },
+    }
     vim.api.nvim_create_user_command("Shelp", function(opt)
       require("fzf-lua").fzf_exec(",sh -l " .. opt.args, {
         preview = "scope {2..}",

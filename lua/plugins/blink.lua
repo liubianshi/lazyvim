@@ -137,7 +137,8 @@ return {
           compat = { "cmp_r" },
           per_filetype = {
             codecompanion = { "codecompanion", "lsp", "path", "snippets", "buffer" },
-            org = { "orgmode" },
+            org = { "orgmode", "lsp", "path", "snippets", "buffer" },
+            ["snacks_picker_input"] = { "lsp" },
           },
           default = { "lazydev", "lsp", "path", "snippets", "buffer", "markdown" },
           providers = {
