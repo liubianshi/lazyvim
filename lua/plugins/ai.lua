@@ -652,19 +652,21 @@ return {
     -- lazy = false,
     version = "*", -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
     opts = {
-      -- add any opts here
-      -- for example
       provider = "deepseek",
       vendors = {
         ["deepseek"] = {
           __inherited_from = "openai",
-          model = "deepseek-coder",
-          endpoint = "https://api.deepseek.com",
-          api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh deepseek",
+          model = "DeepSeek-R1",
+          endpoint = "https://aihubmix.com/v1",
+          api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
         },
       },
       openai = {
-        api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh openai",
+        endpoint = "https://aihubmix.com/v1",
+        api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+        model = "claude-3-7-sonnet-20250219",
+        temperature = 0,
+        max_tokens = 10000,
       },
       hints = {
         enabled = false,
@@ -674,7 +676,6 @@ return {
     build = "make",
     -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
     dependencies = {
-      "stevearc/dressing.nvim",
       "nvim-lua/plenary.nvim",
       "MunifTanjim/nui.nvim",
     },

@@ -12,6 +12,7 @@ local function cheatsheets_filetype(path, bufnr)
     nvim = "vim",
     vim = "vim",
     bash = "sh",
+    org = "org",
   }
 
   local key = string.match(path:lower(), "/cheatsheets/personal/(%w+)/")
