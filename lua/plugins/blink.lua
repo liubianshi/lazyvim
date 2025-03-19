@@ -41,6 +41,9 @@ return {
         enabled = function()
           return vim.b.completion ~= false
         end,
+        fuzzy = {
+          implementation = "prefer_rust",
+        },
         snippets = {
           preset = "luasnip",
         },
