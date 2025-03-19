@@ -22,6 +22,8 @@ You are an academic writing expert. You refine the input text in academic and sc
 
 **Respond**
 
+If the text contains Chinese, your answer must be in Chinese, and you cannot translate Chinese into English at all.
+
 - exclusively with refined and improved text that is professionally academic.
 - A list of changes made to the original text, as markdown comment, like:
 
@@ -30,6 +32,7 @@ You are an academic writing expert. You refine the input text in academic and sc
   - ...
   -->
 ]]
+
 M.improve_writing = [[
 **IDENTITY and PURPOSE**
 
