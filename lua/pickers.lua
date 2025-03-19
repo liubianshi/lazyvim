@@ -473,31 +473,6 @@ M.clipcat = function()
   })
 end
 
-local function roam_action(cmd)
-  cmd = cmd or "cite"
-  local item = picker:selected({ fallback = true })[1]
-  if cmd == "cite" then
-    return function(picker, _)
-      picker:close()
-      if not vim.fn["utils#IsPrintable_CharUnderCursor"]() then
-        vim.cmd("normal! a ")
-      end
-      local buf = vim.fn.bufnr()
-      local row_col = vim.api.nvim_win_get_cursor(0)
-      local row = row_col[1] - 1
-      local col = row_col[2] + 1
-      local cite = vim.fn.system("roam_id_title --cite  -n '" .. item.id .. "'")
-      vim.api.nvim_buf_set_text(buf, row, col, row, col, { cite })
-      vim.cmd("normal! 3f]")
-    end
-  else
-    return function(picker, _, action)
-      local file = vim.fn.system("roam_id_title  -n '" .. item .. "'  | cut -f1 | xargs -I {} roam_id_title -i {}")
-      vim.cmd[action](file)
-    end
-  end
-end
-
 M.roam = function()
   local ROAM_CACHE = table.concat({ os.getenv("HOME"), ".cache", "org_roam", "id_title.tsv" }, "/")
   local ROAM_LIB = table.concat({ os.getenv("HOME"), "Documents", "Writing", "roam" }, "/")
@@ -551,7 +526,7 @@ M.roam = function()
         local row_col = vim.api.nvim_win_get_cursor(0)
         local row = row_col[1] - 1
         local col = row_col[2] + 1
-        local cite = vim.fn.system("roam_id_title --cite  -i '" .. item.id .. "'")
+        local cite = string.format("[[%s]][[%s]]", "id:" .. item.id, item.title)
         dd(cite)
         vim.api.nvim_buf_set_text(buf, row, col, row, col, { cite })
         vim.cmd("normal! 3f]")
@@ -568,7 +543,6 @@ M.roam = function()
       end,
     },
     preview = function(ctx)
-      -- ctx.item.file = ROAM_LIB .. "/" .. ctx.item.file
       ctx.picker.opts.previewers.file.ft = "org"
       require("snacks.picker.preview").file(ctx)
     end,
