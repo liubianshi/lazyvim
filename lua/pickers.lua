@@ -16,6 +16,19 @@ local function get_folders(path)
   return folders
 end
 
+local function get_reference(picker)
+  local cmd = { "bibref" }
+  for _, item in ipairs(picker:selected({ fallback = true })) do
+    table.insert(cmd, item.key)
+  end
+  picker:close()
+  local job = vim.system(cmd, { text = true }):wait()
+  if job.code == 0 and job.stdout ~= "" then
+    local ref = job.stdout:gsub("\n+$", "")
+    vim.fn.setreg("+", ref)
+  end
+end
+
 M.fabric = function(opts)
   local pattern_dir = os.getenv("HOME") .. "/.config/fabric/patterns"
   local patterns = {}
@@ -163,7 +176,7 @@ M.citation = function()
     confirm = function(picker, _)
       local keys = vim.tbl_map(function(ctx)
         return ctx.key:gsub("^%@", "")
-      end, picker:selected())
+      end, picker:selected({ fallback = true }))
       picker:close()
       local obj = vim.system({ "bibtex-cite", "-mode=pandoc" }, { text = true, stdin = keys }):wait(50)
       local r = obj.stdout
@@ -186,11 +199,19 @@ M.citation = function()
           true
         )
       end,
+      yank_reference = get_reference,
     },
     win = {
       input = {
         keys = {
           ["<c-i>"] = { "bracket_citation", mode = { "i", "n" } },
+          ["<c-x>y"] = { "yank_reference", mode = { "i", "n" } },
+          ["yr"] = "yank_reference",
+        },
+      },
+      liest = {
+        keys = {
+          ["yr"] = "yank_reference",
         },
       },
       preview = {
@@ -390,6 +411,7 @@ M.mylib = function()
       update_keywords = update("keywords"),
       yank_id = yank("md5_short"),
       yank_key = yank("key"),
+      yank_reference = get_reference,
       delete_record = function(picker, item)
         vim.system({ "mylib", "delete", "-f", item["md5_short"] }, { text = true }, function(obj)
           if obj.code ~= 0 then
@@ -412,6 +434,7 @@ M.mylib = function()
           ["uk"] = "update_keywords",
           ["yi"] = "yank_id",
           ["yk"] = "yank_key",
+          ["yr"] = "yank_reference",
         },
       },
       list = {
@@ -425,6 +448,7 @@ M.mylib = function()
           ["dD"] = "delete_record",
           ["yi"] = "yank_id",
           ["yk"] = "yank_key",
+          ["yr"] = "yank_reference",
         },
       },
     },
