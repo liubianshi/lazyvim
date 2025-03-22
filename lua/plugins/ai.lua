@@ -666,7 +666,6 @@ return {
         api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
         model = "claude-3-7-sonnet-20250219",
         temperature = 0,
-        max_tokens = 10000,
       },
       hints = {
         enabled = false,

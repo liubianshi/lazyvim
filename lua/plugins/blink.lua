@@ -49,7 +49,18 @@ return {
         },
         keymap = {
           preset = "default",
-          ["<Tab>"] = { "snippet_forward", "select_next", "fallback" },
+          ["<Tab>"] = {
+            function(cmp)
+              if cmp.snippet_active() then
+                return cmp.accept()
+              else
+                return cmp.select_and_accept()
+              end
+            end,
+            "snippet_forward",
+            "select_next",
+            "fallback",
+          },
           ["<S-Tab>"] = { "snippet_backward", "select_prev", "fallback" },
         },
         completion = {
