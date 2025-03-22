@@ -758,7 +758,7 @@ return {
       },
       strategies = {
         chat = {
-          adapter = "gemini-search",
+          adapter = "deepseek-r1",
         },
         inline = {
           adapter = "gemini-flash",
