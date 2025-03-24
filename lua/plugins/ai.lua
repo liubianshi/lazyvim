@@ -664,6 +664,7 @@ return {
       openai = {
         endpoint = "https://aihubmix.com/v1",
         api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+        -- model = "claude-3-7-sonnet-20250219",
         model = "claude-3-7-sonnet-20250219",
         temperature = 0,
       },
@@ -758,7 +759,7 @@ return {
       },
       strategies = {
         chat = {
-          adapter = "deepseek-r1",
+          adapter = "gemini-thinking",
         },
         inline = {
           adapter = "gemini-flash",
@@ -805,6 +806,28 @@ return {
             schema = {
               model = {
                 default = "gemini-2.0-flash-search",
+              },
+              temperature = {
+                default = 0,
+              },
+            },
+          })
+        end,
+        ["gemini-thinking"] = function()
+          return require("codecompanion.adapters").extend("openai_compatible", {
+            roles = {
+              llm = "model",
+            },
+            env = {
+              url = "https://aihubmix.com",
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+            },
+            handlers = {
+              chat_output = codecampanion_utils.handlers.gemini.chat_output,
+            },
+            schema = {
+              model = {
+                default = "gemini-2.0-flash-thinking-exp-01-21",
               },
               temperature = {
                 default = 0,
