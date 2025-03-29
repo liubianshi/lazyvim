@@ -3,6 +3,7 @@ return {
   opts = {
     formatters_by_ft = {
       bib = { "bibtex-tidy" },
+      bash = { "shfmt" },
       json = { "jq" },
       xml = { "xmllint" },
       yaml = { "yq" },

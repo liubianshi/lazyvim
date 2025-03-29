@@ -49,12 +49,13 @@ return {
         },
         keymap = {
           preset = "default",
-          ["<c-l>"] = {
+          ["<Enter>"] = {
             function(cmp)
               if cmp.snippet_active() then
                 return cmp.accept()
               end
             end,
+            "fallback_to_mappings",
           },
           ["<Tab>"] = {
             "snippet_forward",

@@ -10,6 +10,11 @@ return {
         name = "阮一峰的网络日志",
         tags = { "blog", "tech" }, -- tags given are inherited by all its entries
       },
+      {
+        "https://feedx.net/rss/nikkei.xml",
+        name = "日经中文网",
+        tags = { "news" },
+      },
     },
   },
 }
