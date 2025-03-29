@@ -399,7 +399,7 @@ return {
   { -- gbprod/yanky.nvim: Improved Yank and Put functionalities for Neovim  {{{3
     "gbprod/yanky.nvim",
     keys = {
-      { "<leader>sp", "<cmd>YankyRingHistory<cr>", desc = "Open Yank History" },
+      { "<leader>sy", "<cmd>YankyRingHistory<cr>", desc = "Open Yank History" },
       { "y", "<Plug>(YankyYank)", mode = { "n", "x" }, desc = "Yank text" },
       {
         "p",
