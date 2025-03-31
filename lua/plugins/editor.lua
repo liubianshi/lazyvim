@@ -298,8 +298,10 @@ return {
     opts = {
       keepFoldsAcrossSessions = true,
       pauseFoldsOnSearch = true,
-      setupFoldKeymaps = true,
-      hOnlyOpensOnFirstColumn = true,
+      FoldKeymaps = {
+        setup = ture,
+        hOnlyOpensOnFirstColumn = true,
+      },
     },
   },
   { -- kylechui/nvim-surround: Surround selections, stylishly ----------- {{{3

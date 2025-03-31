@@ -20,9 +20,9 @@ syntax match perldocBullet "\t*  \* "
 syntax match perldocItem "^\t.*"
 
 highlight default link perldocHead String
-highlight default link perldocCode Identifier 
-highlight default link perldocIgnore Ignore 
-highlight default link perldocItem Statement 
+highlight default link perldocCode Identifier
+highlight default link perldocIgnore Ignore
+highlight default link perldocItem Statement
 highlight default link perldocBullet Statement
 
 syntax sync fromstart

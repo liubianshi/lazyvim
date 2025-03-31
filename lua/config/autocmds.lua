@@ -154,36 +154,34 @@ aucmd({ "BufWinEnter", "BufRead", "BufEnter" }, {
 })
 
 -- Keywordprg ----------------------------------------------------------- {{{1
-aucmd({ "FileType" }, {
-  group = augroups.Keywordprg,
-  pattern = { "perl", "perldoc" },
-  callback = function(ev)
-    vim.bo[ev.buf].keywordprg = ":Perldoc"
-  end,
-})
-aucmd({ "FileType" }, {
-  group = augroups.Keywordprg,
-  pattern = { "stata", "statadoc" },
-  callback = function(ev)
-    vim.bo[ev.buf].keywordprg = ":Shelp"
-  end,
-})
-aucmd({ "FileType" }, {
-  group = augroups.Keywordprg,
-  pattern = { "man", "sh", "bash" },
-  callback = function(ev)
-    vim.bo[ev.buf].keywordprg = ":Man"
-  end,
-})
-aucmd({ "FileType" }, {
-  group = augroups.Keywordprg,
-  pattern = { "r", "rmd", "rdoc" },
-  callback = function(ev)
+local function show_document(ft)
+  local keyword = vim.fn.expand("<cword>")
+  if vim.tbl_contains({ "vim", "help" }, ft) then
+    vim.cmd.help(keyword)
+  elseif vim.tbl_contains({ "perl", "perldoc" }, ft) then
+    vim.cmd.Perldoc(keyword)
+  elseif vim.tbl_contains({ "stata", "statadoc" }, ft) then
+    vim.cmd.Shelp(keyword)
+  elseif vim.tbl_contains({ "r", "quarto", "rdoc", "rmd" }, ft) then
     if vim.g.R_Nvim_status and vim.g.R_Nvim_status == 7 then
-      vim.bo[ev.buf].keywordprg = ":RHelp"
+      vim.cmd.RHelp(keyword)
     else
-      vim.bo[ev.buf].keywordprg = ":Rdoc"
+      vim.cmd.Rdoc(keyword)
     end
+  else
+  end
+end
+aucmd({ "FileType" }, {
+  group = augroups.Keywordprg,
+  pattern = { "perl", "perldoc", "vim", "help", "stata", "statadoc", "r", "quarto", "rdoc" },
+  callback = function(ev)
+    local ft = vim.bo[ev.buf].filetype
+    vim.keymap.set("n", "gk", function()
+      show_document(ft)
+    end, {
+      desc = "Show Document",
+      buffer = ev.buf,
+    })
   end,
 })
 

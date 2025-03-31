@@ -58,11 +58,10 @@ return {
             "fallback_to_mappings",
           },
           ["<Tab>"] = {
-            "snippet_forward",
             "select_next",
             "fallback_to_mappings",
           },
-          ["<S-Tab>"] = { "snippet_backward", "select_prev", "fallback_to_mappings" },
+          ["<S-Tab>"] = { "select_prev", "fallback_to_mappings" },
         },
         completion = {
           accept = {
