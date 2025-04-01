@@ -33,7 +33,9 @@ end
 -- 源文件转测试文件路径
 -- @param fname 源文件名
 -- @return 测试文件路径
-local function source_to_test_filepath(fname)
+function M.source_to_test_filepath(fname)
+  fname = fname or vim.api.nvim_buf_get_name(0)
+  fname = vim.fn.fnamemodify(fname, ":t")
   local test_name = "tests/testthat/test_" .. fname
   return vim.fn.filewritable(test_name) == 1 and test_name or "tests/testthat/test-" .. fname
 end
@@ -55,12 +57,12 @@ end
 -- @param cmd 窗口分割方式（默认 split）
 function M.edit_test_file(cmd)
   cmd = cmd or "split"
-  local current_file = vim.api.nvim_buf_get_name(0)
+  local current_file = vim.fn.expand("%")
   if is_test_file(current_file) then
     return
   end
 
-  local target_file = source_to_test_filepath(current_file)
+  local target_file = M.source_to_test_filepath(current_file)
   if not target_file then
     return
   end
@@ -68,17 +70,15 @@ function M.edit_test_file(cmd)
   -- 仅当处理源文件且测试目录不存在时初始化
   if vim.fn.isdirectory("tests") == 0 then
     init_test_files()
+  end
+
+  if not vim.uv.fs_access(target_file, "R") then
     -- 创建对应测试文件模板
     local test_content = {
       "library(testthat)",
-      string.format('source("%s")', current_file),
+      string.format('source("%s", local = TRUE)', current_file),
     }
     vim.fn.writefile(test_content, target_file)
-  end
-
-  -- 确保测试入口文件存在（仅在需要时创建）
-  if vim.uv.fs_access("tests/testthat.R", "W") then
-    vim.fn.writefile({ 'require("testthat")' }, "tests/testthat.R")
   end
 
   -- 智能窗口切换逻辑
@@ -93,12 +93,13 @@ end
 
 -- 测试当前文件
 function M.test_file(fname)
-  fname = fname or vim.api.nvim_buf_get_name(0)
+  fname = fname or vim.fn.expand("%")
+
   if not fname:lower():match("^r/.+%.r$") or is_test_file(fname) then
     return
   end
-  local testfile = source_to_test_filepath(fname)
-  vim.cmd('RSend testthat::test_file("' .. testfile .. '")')
+  local testfile = M.source_to_test_filepath(fname)
+  vim.cmd.RSend(string.format([[testthat::test_file("%s")]], testfile))
 end
 
 -- 测试整个项目

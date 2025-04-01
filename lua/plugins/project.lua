@@ -24,8 +24,8 @@ return {
       -- refer to the configuration section below
       silent_chdir = true,
     },
-    config = function()
-      require("project_nvim").setup()
+    config = function(_, opts)
+      require("project_nvim").setup(opts)
     end,
   },
   { -- rachartier/tiny-inline-diagnostic.nvim --------------------------- {{{3
@@ -120,10 +120,14 @@ return {
   },
   { -- stevearc/overseer.nvim: task runner and joib management ---------- {{{2
     "stevearc/overseer.nvim",
+    keys = {
+      { "<leader>ot", "<cmd>OverseerRun<cr>", desc = "Overseer Run" },
+      { "<leader>uo", "<cmd>OverseerToggle<cr>", desc = "Overseer Toggle" },
+    },
     opts = {},
     config = function(opts)
       require("overseer").setup({
-        templates = { "builtin", "mytasks.source" },
+        templates = { "builtin", "mytasks.source", "r" },
       })
     end,
   },

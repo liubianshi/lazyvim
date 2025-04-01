@@ -1,13 +1,46 @@
 return {
   { -- junegunn/vim-easy-align: text alignment tool --------------------- {{{3
     "junegunn/vim-easy-align",
-    keys = {
-      "ga",
-      "<Plug>(EasyAlign)",
-      mode = { "n", "x" },
-      desc = "Easy Align",
-    },
+    init = function()
+      vim.keymap.set({ "n", "x" }, "ga", "<Plug>(EasyAlign)", { desc = "Easy Align" })
+    end,
+    keys = { "ga" },
     cmd = "EasyAlign",
+    event = "VeryLazy",
+  },
+  { -- stevearc/quicker.nvim: Improved quickfix ------------------------- {{{3
+    "stevearc/quicker.nvim",
+    event = "FileType qf",
+    config = function()
+      vim.keymap.set("n", "<leader>uq", function()
+        require("quicker").toggle()
+      end, {
+        desc = "Toggle quickfix",
+      })
+      vim.keymap.set("n", "<leader>ql", function()
+        require("quicker").toggle({ loclist = true })
+      end, {
+        desc = "Toggle loclist",
+      })
+      require("quicker").setup({
+        keys = {
+          {
+            ">",
+            function()
+              require("quicker").expand({ before = 2, after = 2, add_to_existing = true })
+            end,
+            desc = "Expand quickfix context",
+          },
+          {
+            "<",
+            function()
+              require("quicker").collapse()
+            end,
+            desc = "Collapse quickfix context",
+          },
+        },
+      })
+    end,
   },
   { -- folke/flash.nvim: Navigate tools --------------------------------- {{{3
     "folke/flash.nvim",
@@ -109,7 +142,7 @@ return {
       },
     },
   },
-  { -- rainzm/flash-zh.nvim --------------------------------------------- {{{2
+  { -- rainzm/flash-zh.nvim --------------------------------------------- {{{3
     "rainzm/flash-zh.nvim",
     event = "VeryLazy",
     keys = {
