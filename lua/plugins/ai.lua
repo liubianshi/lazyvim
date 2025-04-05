@@ -870,7 +870,7 @@ return {
             adapter = {
               name = "gemini-flash",
             },
-            is_slash_cmd = false,
+            is_slash_cmd = true,
             modes = { "v" },
             short_name = "polish",
             auto_submit = true,
@@ -891,6 +891,47 @@ return {
               content = function(context)
                 local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
                 return string.format("Please polish the text from buffer %d:\n\n```\n%s\n```\n\n", context.bufnr, code)
+              end,
+              opts = {
+                contains_code = true,
+              },
+            },
+          },
+        },
+        ["Optimize and Comment"] = {
+          strategy = "inline",
+          description = "Optimize and add necessary comments",
+          opts = {
+            index = 14,
+            short_name = "optimize",
+            adapter = {
+              name = "gemini-thinking",
+            },
+            is_slash_cmd = true,
+            modes = { "v" },
+            auto_submit = true,
+            user_prompt = false,
+            stop_context_insertion = true,
+            placement = "replace",
+          },
+          prompts = {
+            {
+              role = "system",
+              content = PROMPTS.optimize_with_comment,
+              opts = {
+                visible = false,
+              },
+            },
+            {
+              role = "user",
+              content = function(context)
+                local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
+                return string.format(
+                  "Please optimize the text from buffer %d:\n\n```%s\n%s\n```\n\n",
+                  context.bufnr,
+                  context.filetype,
+                  code
+                )
               end,
               opts = {
                 contains_code = true,
