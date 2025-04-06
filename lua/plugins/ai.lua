@@ -762,7 +762,7 @@ return {
           adapter = "gemini-thinking",
         },
         inline = {
-          adapter = "gemini-flash",
+          adapter = "gemini-thinking",
         },
         cmd = {
           adapter = "gemini-flash",
@@ -827,7 +827,7 @@ return {
             },
             schema = {
               model = {
-                default = "gemini-2.5-pro-exp-03-25",
+                default = "gemini-2.5-pro-preview-03-25",
               },
               temperature = {
                 default = 0,
@@ -868,7 +868,7 @@ return {
           opts = {
             index = 13,
             adapter = {
-              name = "gemini-flash",
+              name = "gemini-thinking",
             },
             is_slash_cmd = true,
             modes = { "v" },
