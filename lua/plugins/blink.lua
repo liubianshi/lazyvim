@@ -54,6 +54,9 @@ return {
               if cmp.snippet_active() then
                 return cmp.accept()
               end
+              if cmp.get_selected_item() then
+                return cmp.accept_and_enter()
+              end
             end,
             "fallback_to_mappings",
           },
@@ -71,7 +74,7 @@ return {
           },
           trigger = {
             prefetch_on_insert = false,
-            show_in_snippet = false,
+            show_in_snippet = true,
             show_on_trigger_character = true,
           },
           documentation = {
@@ -152,6 +155,7 @@ return {
           per_filetype = {
             codecompanion = { "codecompanion", "lsp", "path", "snippets", "buffer" },
             org = { "orgmode", "lsp", "path", "snippets", "buffer" },
+            ["r"] = { "cmp_r", "lsp", "path", "snippets", "buffer" },
             ["snacks_picker_input"] = { "lsp" },
           },
           default = { "lazydev", "lsp", "path", "snippets", "buffer", "markdown" },
@@ -187,7 +191,6 @@ return {
               enabled = function()
                 return vim.tbl_contains({ "r", "rmd", "quarto", "rdoc" }, vim.bo.filetype)
               end,
-              fallbacks = { "lsp", "buffer" },
               opts = {
                 trigger_characters = { " ", ":", "(", '"', "@", "$" },
                 keyword_pattern = "[-`\\._@\\$:_[:digit:][:lower:][:upper:]]*",

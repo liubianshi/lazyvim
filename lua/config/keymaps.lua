@@ -243,6 +243,8 @@ vimkey("il", "Object: current line", "^o$h", { mode = "x" })
 vimkey("il", "Object: current line", "<cmd>normal vil<cr>", { mode = "o" })
 vimkey("al", "Object: current line (with \\n)", "^o$", { mode = "x" })
 vimkey("al", "Object: current line (with \\n)", "<cmd>normal val<cr>", { mode = "o" })
+vimkey("ic", "Object: Markdown chunk", "<cmd>call text_obj#MdCodeBlock('i')", { mode = { "o", "x" } })
+vimkey("ac", "Object: Markdown chunk", "<cmd>call text_obj#MdCodeBlock('a')", { mode = { "o", "x" } })
 
 -- Translate ------------------------------------------------------------ {{{1
 vimkey("L", "Translate", "utils#Trans2clip()", { mode = { "v", "n" }, expr = true })

@@ -652,7 +652,7 @@ return {
     -- lazy = false,
     version = "*", -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
     opts = {
-      provider = "deepseek",
+      provider = "openai",
       vendors = {
         ["deepseek"] = {
           __inherited_from = "openai",
@@ -661,11 +661,11 @@ return {
           api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
         },
       },
-      openai = {
+      ["openai"] = {
         endpoint = "https://aihubmix.com/v1",
         api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
         -- model = "claude-3-7-sonnet-20250219",
-        model = "claude-3-7-sonnet-20250219",
+        model = "gemini-2.5-pro-exp-03-25",
         temperature = 0,
       },
       hints = {
