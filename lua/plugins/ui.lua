@@ -5,7 +5,7 @@ return {
     keys = {
       {
         "<leader>hn",
-        "<cmd>NoiceFzf<cr>",
+        "<cmd>NoiceSnacks<cr>",
         desc = "Noice: Search Notifications",
       },
       {
