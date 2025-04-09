@@ -270,7 +270,13 @@ nmap("<leader>sP", "System Clipboad", picker.clipcat)
 nmap("<leader>hc", "CheatSheet: TL;DR", picker.cheat)
 nmap("<leader>fz", "Jump with fasd", picker.fasd)
 nmap("<leader>fq", "Open my library file", picker.mylib)
-nmap("<leader>a/", "Fabric: clipboad as input", picker.fabric)
+keymap({
+  "<leader>a/",
+  picker.fabric,
+  desc = "Fabric: clipboad as input",
+  mode = { "n", "v" },
+  icon = { icon = "", hl = "WhichKeyIconOrange" },
+})
 keymap({
   "<leader>ic",
   function()

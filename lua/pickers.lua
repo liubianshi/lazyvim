@@ -30,6 +30,7 @@ local function get_reference(picker)
 end
 
 M.fabric = function(opts)
+  local mode = vim.api.nvim_get_mode().mode
   local pattern_dir = os.getenv("HOME") .. "/.config/fabric/patterns"
   local patterns = {}
   local pattern_names = get_folders(pattern_dir)
@@ -75,6 +76,10 @@ M.fabric = function(opts)
           table.insert(cmd, "-v=lang_code:zh_cn")
         end
 
+        opts = opts or {}
+        if mode == "v" or mode == "V" or mode == "\22" then
+          opts.stdin = require("util").get_visual_selection()
+        end
         require("util").pipe(cmd, opts)
       end,
     },
@@ -313,7 +318,7 @@ M.mylib = function()
         vim.system({ "mylib", "update", "--" .. key, value, item["md5_short"] }, { text = true }, function(obj)
           if obj.code == 0 then
             picker:find({ refresh = true })
-            vim.notify(key .. " updated", vim.log.levels.info)
+            vim.notify(key .. " updated", vim.log.levels.INFO)
           else
             vim.notify("Failed to update " .. key .. ": " .. obj.code, vim.log.levels.ERROR)
           end

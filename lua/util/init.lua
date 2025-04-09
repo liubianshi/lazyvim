@@ -327,41 +327,67 @@ function M.border(symbol, type, neovide, highlight)
   end
 end
 
+---@class VisualCoordinate
+---@field start_line number Start line number (1-based)
+---@field start_col number Start column number (1-based)
+---@field end_line number End line number (1-based)
+---@field end_col number End column number (1-based)
+
+--- Gets the start and end coordinates (line and column) of the last visual selection.
+--- Ensures that the start position always comes before the end position,
+--- regardless of the direction the visual selection was made.
+---@return VisualCoordinate|nil A table containing the start and end coordinates: { start_line, start_col, end_line, end_col }
+function M.get_visual_coordinate()
+  -- Get the start and end positions of the last visual selection
+  -- getpos("'<") returns the start marker
+  -- getpos("'>") returns the end marker
+  -- The format is [bufnum, lnum, col, off]
+  local start_pos, end_pos
+  local mode = vim.api.nvim_get_mode().mode
+  if mode ~= "v" and mode ~= "V" and mode ~= "\22" then
+    start_pos = vim.fn.getpos("'<")
+    end_pos = vim.fn.getpos("'>")
+  else
+    start_pos = vim.fn.getpos(".")
+    end_pos = vim.fn.getpos("v")
+  end
+  if not start_pos or not end_pos then
+    return
+  end
+
+  -- Ensure start_pos represents the position that comes first in the buffer
+  -- Compare line numbers first, then column numbers if lines are the same
+  if start_pos[2] > end_pos[2] or (start_pos[2] == end_pos[2] and start_pos[3] > end_pos[3]) then
+    start_pos, end_pos = end_pos, start_pos -- Swap if start_pos is after end_pos
+  end
+
+  -- Return the relevant coordinates: start line, start col, end line, end col
+  return { start_pos[2], start_pos[3], end_pos[2], end_pos[3] }
+end
+
 -- https://github.com/ibhagwan/nvim-lua/blob/main/lua/utils.lua
-function M.get_visual_selection(nl_literal)
+---@return string[]|nil A table containing the start and end coordinates: { start_line, start_col, end_line, end_col }
+function M.get_visual_selection()
   -- this will exit visual mode
   -- use 'gv' to reselect the text
-  local _, csrow, cscol, cerow, cecol
-  local mode = vim.fn.mode()
-  if mode == "v" or mode == "V" or mode == "" then
-    -- if we are in visual mode use the live position
-    _, csrow, cscol, _ = unpack(vim.fn.getpos("."))
-    _, cerow, cecol, _ = unpack(vim.fn.getpos("v"))
-    if mode == "V" then
-      -- visual line doesn't provide columns
-      cscol, cecol = 0, 999
-    end
-  else
-    -- otherwise, use the last known visual position
-    _, csrow, cscol, _ = unpack(vim.fn.getpos("'<"))
-    _, cerow, cecol, _ = unpack(vim.fn.getpos("'>"))
+  local visual_coordiate = M.get_visual_coordinate()
+  if not visual_coordiate then
+    return
   end
-  -- swap vars if needed
-  if cerow < csrow then
-    csrow, cerow = cerow, csrow
-  end
-  if cecol < cscol then
-    cscol, cecol = cecol, cscol
-  end
+  local csrow, cscol, cerow, cecol = unpack(visual_coordiate)
   local lines = vim.api.nvim_buf_get_lines(0, csrow - 1, cerow, false)
-  -- local n = cerow-csrow+1
   local n = #lines
   if n <= 0 then
-    return ""
+    return
   end
-  lines[n] = string.sub(lines[n], 1, cecol)
-  lines[1] = string.sub(lines[1], cscol)
-  return table.concat(lines, nl_literal and "\\n" or "\n")
+  if not cecol then
+    lines[n] = string.sub(lines[n], 1, cecol)
+  end
+  if not cscol then
+    lines[1] = string.sub(lines[1], cscol)
+  end
+
+  return lines
 end
 
 -- https://github.com/ibhagwan/nvim-lua/blob/main/lua/utils.lua
@@ -466,6 +492,7 @@ end
 ---@field line2? integer|nil  End line number
 ---@field file? string|nil  File path
 ---@field win? PipeWinOpts
+---@field stdin? string[]|nil
 
 ---@class PipeStdinOpts
 ---
@@ -480,6 +507,11 @@ local function get_stdin_data(opts)
     return vim.api.nvim_buf_get_lines(opts.buf, opts.line1 - 1, opts.line2, false)
   elseif opts.buf then
     return vim.api.nvim_buf_get_lines(opts.buf, 0, -1, false)
+  else
+    local mode = vim.api.nvim_get_mode().mode
+    if mode == "v" or mode == "V" or mode == "\22" then
+      return M.get_visual_selection()
+    end
   end
   return vim.split(vim.fn.getreg("+"), "\n")
 end
@@ -550,13 +582,14 @@ function M.pipe(cmd, opts)
   if type(cmd) == "string" then
     cmd = vim.split(cmd, "%s+")
   end
-  opts = opts or { buf = nil, line1 = nil, line2 = nil, win = {} }
+  opts = vim.tbl_extend("force", { buf = nil, line1 = nil, line2 = nil, win = {} }, opts or {})
 
-  local stdin_data = get_stdin_data({
-    buf = opts.buf,
-    line1 = opts.line1,
-    line2 = opts.line2,
-  })
+  local stdin_data = opts.stdin
+    or get_stdin_data({
+      buf = opts.buf,
+      line1 = opts.line1,
+      line2 = opts.line2,
+    })
 
   vim.system(cmd, {
     stdin = stdin_data,
