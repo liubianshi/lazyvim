@@ -71,15 +71,33 @@ M.fabric = function(opts)
     actions = {
       confirm = function(picker, item)
         picker:close()
-        local cmd = { "fabric", "--pattern", item.text, "--stream" }
-        if item.text == "translate" then
-          table.insert(cmd, "-v=lang_code:zh_cn")
-        end
-
         opts = opts or {}
         if mode == "v" or mode == "V" or mode == "\22" then
-          opts.stdin = require("util").get_visual_selection()
+          opts.stdin = require("util").get_pipe_stdin({ mode = mode })
         end
+
+        local cmd = { "fabric", "--pattern", item.text, "--stream" }
+
+        if item.text ~= "translate" then
+          require("util").pipe(cmd, opts)
+        end
+
+        if item.text == "translate" and not opts.stdin then
+          table.insert(cmd, "-v=lang_code:en_US")
+          require("util").pipe(cmd, opts)
+        end
+
+        opts.stdin = require("util").join_strings_by_paragraph(opts.stdin)
+        if opts.stdin and opts.stdin[1]:match("^[%s0-9]*[A-Za-z]") then
+          table.insert(cmd, "-v=lang_code:zh_cn")
+        else
+          table.insert(cmd, "-v=lang_code:en_US")
+        end
+
+        local reqest = {
+          data = {},
+        }
+
         require("util").pipe(cmd, opts)
       end,
     },

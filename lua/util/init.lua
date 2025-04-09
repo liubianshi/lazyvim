@@ -497,18 +497,20 @@ end
 ---@class PipeStdinOpts
 ---
 ---@field buf? integer|nil  Buffer number
+---@field mode? string      Vim mode
 ---@field line1? integer|nil  Start line number
 ---@field line2? integer|nil  End line number
 
 ---@param opts PipeStdinOpts
 ---@return string[]|nil
-local function get_stdin_data(opts)
+function M.get_pipe_stdin(opts)
+  opts = opts or {}
   if opts.buf and opts.line1 and opts.line2 then
     return vim.api.nvim_buf_get_lines(opts.buf, opts.line1 - 1, opts.line2, false)
   elseif opts.buf then
     return vim.api.nvim_buf_get_lines(opts.buf, 0, -1, false)
   else
-    local mode = vim.api.nvim_get_mode().mode
+    local mode = opts.mode or vim.api.nvim_get_mode().mode
     if mode == "v" or mode == "V" or mode == "\22" then
       return M.get_visual_selection()
     end
@@ -585,7 +587,7 @@ function M.pipe(cmd, opts)
   opts = vim.tbl_extend("force", { buf = nil, line1 = nil, line2 = nil, win = {} }, opts or {})
 
   local stdin_data = opts.stdin
-    or get_stdin_data({
+    or M.get_pipe_stdin({
       buf = opts.buf,
       line1 = opts.line1,
       line2 = opts.line2,
@@ -597,6 +599,80 @@ function M.pipe(cmd, opts)
   }, function(obj)
     handle_output(obj, opts)
   end)
+end
+
+--- Joins lines within paragraphs in a list of strings.
+-- Paragraphs are defined as sequences of non-blank lines separated by one or more blank lines.
+--
+-- @param lines table A list of strings, where each string represents a line.
+-- @return table A new list of strings with lines within each paragraph joined together.
+--         Returns an empty table if the input is nil or empty.
+function M.join_strings_by_paragraph(lines)
+  if not lines or #lines == 0 then
+    return {}
+  end
+
+  -- 创建临时缓冲区
+  local temp_bufnr = vim.api.nvim_create_buf(false, true)
+  if temp_bufnr <= 0 then
+    vim.notify("Error: Could not create temporary buffer.", vim.log.levels.ERROR)
+    return lines -- Return original lines on error
+  end
+
+  -- 销毁临时缓冲区
+  local cleanup = function()
+    if vim.api.nvim_buf_is_valid(temp_bufnr) then
+      vim.api.nvim_buf_delete(temp_bufnr, { force = true })
+    end
+  end
+
+  -- 将 list 写入缓冲区
+  local ft = vim.api.nvim_get_option_value("filetype", { buf = 0 })
+  vim.api.nvim_set_option_value("filetype", ft, { buf = temp_bufnr })
+  vim.api.nvim_buf_set_lines(temp_bufnr, 0, -1, false, lines)
+
+  -- 扫描整个 buffer 的内容，读取每段的起始和结束行
+  local paragraph_ranges = {}
+  local current_paragraph_start = 0
+  local line_count = vim.api.nvim_buf_line_count(temp_bufnr)
+  local buffer_lines = vim.api.nvim_buf_get_lines(temp_bufnr, 0, -1, false) -- Get lines once
+
+  for i = 1, line_count do
+    local line = buffer_lines[i]
+    local trimmed_line = vim.trim(line or "") -- Handle potential nil
+
+    if #trimmed_line > 0 then -- Non-blank line
+      if current_paragraph_start == 0 then
+        current_paragraph_start = i
+      end
+    else -- Blank line
+      if current_paragraph_start > 0 then
+        -- Paragraph ended before this blank line
+        table.insert(paragraph_ranges, { start = current_paragraph_start, finish = i - 1 })
+        current_paragraph_start = 0
+      end
+      -- Ignore consecutive blank lines for range finding
+    end
+  end
+
+  -- Check for paragraph ending at the last line
+  if current_paragraph_start > 0 then
+    table.insert(paragraph_ranges, { start = current_paragraph_start, finish = line_count })
+  end
+
+  -- Join paragraphs in reverse order to avoid messing up line numbers
+  vim.api.nvim_buf_call(temp_bufnr, function()
+    for i = #paragraph_ranges, 1, -1 do
+      local range = paragraph_ranges[i]
+      if range.finish > range.start then -- Only join if paragraph has more than 1 line
+        vim.cmd(string.format("%d,%djoin", range.start, range.finish))
+      end
+    end
+  end)
+
+  local final_lines = vim.api.nvim_buf_get_lines(temp_bufnr, 0, -1, false)
+  cleanup()
+  return final_lines
 end
 
 return M
