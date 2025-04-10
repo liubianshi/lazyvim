@@ -1,5 +1,3 @@
--- lua/plugins/codecompanion/fidget-spinner.lua
-
 local progress = require("fidget.progress")
 
 local M = {}

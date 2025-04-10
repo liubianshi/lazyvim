@@ -77,27 +77,51 @@ M.fabric = function(opts)
         end
 
         local cmd = { "fabric", "--pattern", item.text, "--stream" }
-
-        if item.text ~= "translate" then
-          require("util").pipe(cmd, opts)
+        local ok, progress = pcall(require, "fidget.progress")
+        local progress_handle
+        if ok then
+          progress_handle = progress.handle.create({
+            title = " Requesting Fabric (" .. item.text .. ")",
+            message = "In progress...",
+            lsp_client = {
+              name = "Fabric",
+            },
+          })
+          opts.handle = {
+            name = "fidget",
+            handle = progress_handle,
+            on_exit = function(handle, status)
+              if status == "success" then
+                handle.message = "Completed"
+              elseif status == "error" then
+                handle.message = " Error"
+              else
+                handle.message = "󰜺 Cancelled"
+              end
+              handle:finish()
+            end,
+          }
         end
 
         if item.text == "translate" and not opts.stdin then
           table.insert(cmd, "-v=lang_code:en_US")
           require("util").pipe(cmd, opts)
+        elseif item.text == "translate" then
+          opts.stdin = require("util").join_strings_by_paragraph(opts.stdin)
+          local head_chars = vim.trim(opts.stdin[1]):sub(1, 20)
+          local is_cjk = false
+          for _, char in ipairs(vim.fn.split(head_chars, "\\zs")) do
+            if is_cjk_character(char) then
+              is_cjk = true
+              break
+            end
+          end
+          if is_cjk then
+            table.insert(cmd, "-v=lang_code:en_US")
+          else
+            table.insert(cmd, "-v=lang_code:zh_cn")
+          end
         end
-
-        opts.stdin = require("util").join_strings_by_paragraph(opts.stdin)
-        if opts.stdin and opts.stdin[1]:match("^[%s0-9]*[A-Za-z]") then
-          table.insert(cmd, "-v=lang_code:zh_cn")
-        else
-          table.insert(cmd, "-v=lang_code:en_US")
-        end
-
-        local reqest = {
-          data = {},
-        }
-
         require("util").pipe(cmd, opts)
       end,
     },

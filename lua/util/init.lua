@@ -478,6 +478,11 @@ end
 
 -- 执行外部命令，并将标准输出写入窗口 ----------------------------------- {{{1
 
+---@class PipeHandle
+---@field name string
+---@field handle any
+---@field on_exit? function|nil
+
 ---@class PipeWinOpts
 ---
 ---@field id? integer ID of the output window
@@ -493,6 +498,7 @@ end
 ---@field file? string|nil  File path
 ---@field win? PipeWinOpts
 ---@field stdin? string[]|nil
+---@field handle? PipeHandle
 
 ---@class PipeStdinOpts
 ---
@@ -546,7 +552,14 @@ end
 ---@param obj vim.SystemCompleted
 ---@param opts PipeOpts
 local function handle_output(obj, opts)
-  if obj.code ~= 0 then
+  opts = opts or {}
+  local status = obj.code == 0 and "success" or "error"
+
+  if opts.handle and opts.handle.on_exit then
+    opts.handle.on_exit(opts.handle.handle, status)
+  end
+
+  if status == "error" then
     vim.notify("Error: " .. obj.code, vim.log.levels.ERROR)
     return
   end
@@ -595,8 +608,8 @@ function M.pipe(cmd, opts)
 
   vim.system(cmd, {
     stdin = stdin_data,
-    text = true,
   }, function(obj)
+    dd(obj)
     handle_output(obj, opts)
   end)
 end

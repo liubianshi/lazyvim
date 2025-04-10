@@ -737,7 +737,7 @@ return {
       vim.cmd([[cabbrev cc CodeCompanion]])
       local has_fidget, _ = pcall(require, "fidget")
       if has_fidget then
-        require("util.codecompanion.fidget-spinner"):init()
+        require("util.fidget"):init()
       end
     end,
     opts = {
