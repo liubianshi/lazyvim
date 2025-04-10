@@ -103,6 +103,10 @@ M.fabric = function(opts)
           }
         end
 
+        if item.text == "translate" then
+          table.insert(cmd, "-m=gemini-2.0-flash-exp")
+        end
+
         if item.text == "translate" and not opts.stdin then
           table.insert(cmd, "-v=lang_code:en_US")
           require("util").pipe(cmd, opts)

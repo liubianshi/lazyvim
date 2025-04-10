@@ -542,7 +542,8 @@ local function create_window(opts)
   }
   local win_opts = vim.tbl_deep_extend("force", default_win_opts, opts or {})
   if not win_opts.file then
-    win_opts.bo = vim.tbl_deep_extend("force", win_opts.bo, { buftype = "nofile", filetype = "markdown" })
+    win_opts.bo =
+      vim.tbl_deep_extend("force", win_opts.bo, { buftype = "nofile", filetype = "markdown", formatexpr = nil })
   else
     win_opts.bo.modifiable = true
   end
@@ -609,7 +610,18 @@ function M.pipe(cmd, opts)
   vim.system(cmd, {
     stdin = stdin_data,
   }, function(obj)
-    dd(obj)
+    local combined_output = {}
+    if obj.stdout and table.concat(cmd, " "):match("fabric %-%-pattern translate") then
+      local stdout = vim.split(obj.stdout, "\n")
+      for i = 1, #stdout do
+        if stdin_data and stdin_data[i] and stdout[i] and stdout[i]:match("%S") then
+          vim.list_extend(combined_output, { stdin_data[i], "", stdout[i] })
+        else
+          table.insert(combined_output, stdout[i])
+        end
+      end
+    end
+    obj.stdout = table.concat(combined_output, "\n")
     handle_output(obj, opts)
   end)
 end
