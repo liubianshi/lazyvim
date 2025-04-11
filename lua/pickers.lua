@@ -73,7 +73,7 @@ M.fabric = function(opts)
         picker:close()
         opts = opts or {}
         if mode == "v" or mode == "V" or mode == "\22" then
-          opts.stdin = require("util").get_pipe_stdin({ mode = mode })
+          opts.stdin = require("util.term").get_pipe_stdin({ mode = mode })
         end
 
         local cmd = { "fabric", "--pattern", item.text, "--stream" }
@@ -109,7 +109,7 @@ M.fabric = function(opts)
 
         if item.text == "translate" and not opts.stdin then
           table.insert(cmd, "-v=lang_code:en_US")
-          require("util").pipe(cmd, opts)
+          require("util.term").pipe(cmd, opts)
         elseif item.text == "translate" then
           opts.stdin = require("util").join_strings_by_paragraph(opts.stdin)
           local head_chars = vim.trim(opts.stdin[1]):sub(1, 20)
@@ -126,7 +126,7 @@ M.fabric = function(opts)
             table.insert(cmd, "-v=lang_code:zh_cn")
           end
         end
-        require("util").pipe(cmd, opts)
+        require("util.term").pipe(cmd, opts)
       end,
     },
   })
