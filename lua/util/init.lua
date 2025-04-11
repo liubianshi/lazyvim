@@ -360,9 +360,23 @@ function M.get_visual_coordinate()
   if start_pos[2] > end_pos[2] or (start_pos[2] == end_pos[2] and start_pos[3] > end_pos[3]) then
     start_pos, end_pos = end_pos, start_pos -- Swap if start_pos is after end_pos
   end
+  local srow, scol, erow, ecol = start_pos[2], start_pos[3], end_pos[2], end_pos[3]
+
+  -- handle unicode char
+  if srow == erow then
+    local line = vim.fn.getline(srow)
+    local end_char_byte = ecol < line:len() and line:byte(ecol) or 0
+    if end_char_byte >= 192 and end_char_byte <= 223 then
+      ecol = ecol + 1
+    elseif end_char_byte >= 224 and end_char_byte <= 239 then
+      ecol = ecol + 2
+    elseif end_char_byte >= 240 and end_char_byte <= 247 then
+      ecol = ecol + 2
+    end
+  end
 
   -- Return the relevant coordinates: start line, start col, end line, end col
-  return { start_pos[2], start_pos[3], end_pos[2], end_pos[3] }
+  return { srow, scol, erow, ecol }
 end
 
 -- https://github.com/ibhagwan/nvim-lua/blob/main/lua/utils.lua
@@ -380,10 +394,10 @@ function M.get_visual_selection()
   if n <= 0 then
     return
   end
-  if not cecol then
+  if cecol then
     lines[n] = string.sub(lines[n], 1, cecol)
   end
-  if not cscol then
+  if cscol then
     lines[1] = string.sub(lines[1], cscol)
   end
 
@@ -547,7 +561,7 @@ function M.join_strings_by_paragraph(lines)
 
   local final_lines = vim.api.nvim_buf_get_lines(temp_bufnr, 0, -1, false)
   cleanup()
-  return final_lines
+  return final_lines, paragraph_ranges
 end
 
 return M
