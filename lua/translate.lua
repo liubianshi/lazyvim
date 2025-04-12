@@ -1,5 +1,6 @@
 local M = {}
-M.ns = vim.api.nvim_create_namespace("LBS_Translate")
+M.ns_id = vim.api.nvim_create_namespace("LBS_Translate")
+local default_hl_group = "Comment"
 
 ---@param buf integer buffer number, 0 for current buffer
 ---@param row integer Line where to place the mark, 0-based
@@ -11,8 +12,8 @@ local function set_text_extmark(buf, row, col, text, opts)
     virt_text_repeat_linebreak = true,
     hl_mode = "combine",
   })
-  opts.virt_text = { { string.format("[%s]", text), "Comment" } }
-  vim.api.nvim_buf_set_extmark(buf, M.ns, row, col, opts)
+  opts.virt_text = { { string.format("[%s]", text), default_hl_group } }
+  vim.api.nvim_buf_set_extmark(buf, M.ns_id, row, col, opts)
 end
 
 ---@param buf integer buffer number, 0 for current buffer
@@ -24,9 +25,9 @@ local function set_line_extmark(buf, row, lines, opts)
     virt_lines_leftcol = false,
   })
   opts.virt_lines = vim.tbl_map(function(line)
-    return { { line, "Comment" } }
+    return { { line, default_hl_group } }
   end, lines)
-  vim.api.nvim_buf_set_extmark(buf, M.ns, row, 0, opts)
+  vim.api.nvim_buf_set_extmark(buf, M.ns_id, row, 0, opts)
 end
 
 ---@param content string
@@ -152,7 +153,7 @@ end
 function M.clear()
   local buf = vim.api.nvim_win_get_buf(0)
   local line = vim.api.nvim_win_get_cursor(0)[1]
-  vim.api.nvim_buf_clear_namespace(buf, M.ns, line - 1, line)
+  vim.api.nvim_buf_clear_namespace(buf, M.ns_id, line - 1, line)
 end
 
 return M
