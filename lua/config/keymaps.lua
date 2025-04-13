@@ -247,7 +247,7 @@ vimkey("ic", "Object: Markdown chunk", "<cmd>call text_obj#MdCodeBlock('i')", { 
 vimkey("ac", "Object: Markdown chunk", "<cmd>call text_obj#MdCodeBlock('a')", { mode = { "o", "x" } })
 
 -- Translate ------------------------------------------------------------ {{{1
-keymap({ "<F4>", require("translate").run, mode = "v", desc = "Translate" })
+keymap({ "<F4>", require("translate").run, mode = { "v" }, desc = "Translate" })
 keymap({ "<F4>", require("translate").toggle, mode = "n", desc = "Translate" })
 vimkey("L", "Translate", "utils#Trans2clip()", { mode = { "v", "n" }, expr = true })
 imap("<localleader>l", "Translate", "<esc>:call utils#Trans_Subs()<cr>")

@@ -36,7 +36,7 @@ Marks.__index = Marks
 
 -- Creates a new Marks manager instance.
 ---@param ns_name string The namespace name (a new namespace will be created). Required.
----@param opts? {ns_track_prefix?: string, track_name_prefix?: string} Initialization options.
+---@param opts? {ns_track_prefix?: string, track_name_prefix?: string, track_sign?: string} Initialization options.
 ---@return Marks The new Marks instance.
 function Marks.new(ns_name, opts)
   opts = opts or {}
@@ -51,6 +51,7 @@ function Marks.new(ns_name, opts)
 
   -- Store other configuration options
   self.track_name_prefix = opts.track_name_prefix or "track_"
+  self.track_sign = opts.track_sign or "󰊿"
 
   -- Initialize the cache for hidden extmarks (buffer number -> tracking mark name -> details)
   self.marks = {}
@@ -146,7 +147,7 @@ function Marks:hide_extmark(bufnr, extmark_details)
   -- Place a tracking extmark in the tracking namespace at the original start position.
   -- This mark acts as a placeholder to find hidden marks later.
   local set_track_ok, track_extmark_id_or_err =
-    pcall(set_extmark, bufnr, self.ns_track_id, start_row_0, start_col_0, {}) -- No special options needed
+    pcall(set_extmark, bufnr, self.ns_track_id, start_row_0, start_col_0, { sign_text = self.track_sign })
   if not set_track_ok then
     notify(
       "Error setting tracking extmark in ns " .. self.ns_track_id .. ": " .. tostring(track_extmark_id_or_err),

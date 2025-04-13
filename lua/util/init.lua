@@ -355,15 +355,22 @@ function M.get_visual_coordinate()
     return
   end
 
-  -- Ensure start_pos represents the position that comes first in the buffer
-  -- Compare line numbers first, then column numbers if lines are the same
-  if start_pos[2] > end_pos[2] or (start_pos[2] == end_pos[2] and start_pos[3] > end_pos[3]) then
-    start_pos, end_pos = end_pos, start_pos -- Swap if start_pos is after end_pos
-  end
   local srow, scol, erow, ecol = start_pos[2], start_pos[3], end_pos[2], end_pos[3]
 
+  -- Ensure start_pos represents the position that comes first in the buffer
+  -- Compare line numbers first, then column numbers if lines are the same
+  if srow > erow or (srow == erow and scol > ecol and mode ~= "V") then
+    srow, erow = erow, srow
+    scol, ecol = ecol, scol
+  end
+
+  if mode == "V" then
+    scol = 1
+    ecol = -1
+  end
+
   -- handle unicode char
-  if srow == erow then
+  if srow == erow and mode ~= "V" then
     local line = vim.fn.getline(srow)
     local end_char_byte = ecol < line:len() and line:byte(ecol) or 0
     if end_char_byte >= 192 and end_char_byte <= 223 then

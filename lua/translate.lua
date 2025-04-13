@@ -1,7 +1,6 @@
 local default_opts = {
   ns_name = "LBS_Translate",
   hl_group = "Comment",
-  key = "L",
 }
 local function init(opts)
   return {
@@ -38,7 +37,7 @@ local function set_line_extmark(buf, row, lines, opts)
   opts.virt_lines = vim.tbl_map(function(line)
     return { { line, M.opts.hl_group } }
   end, lines)
-  vim.api.nvim_buf_set_extmark(buf, M.ns_id, row, 0, opts)
+  vim.api.nvim_buf_set_extmark(buf, M.ns_id, row, vim.fn.indent(row + 1), opts)
 end
 
 ---@param content string
@@ -125,12 +124,13 @@ function M.run()
   local buf = vim.api.nvim_win_get_buf(winid)
   local visual_coordiate = require("util").get_visual_coordinate()
   local content = require("util").get_visual_selection()
+  local mode = vim.api.nvim_get_mode()
   if not visual_coordiate or not content or #content == 0 then
     return
   end
-  local srow, scol, erow, ecol = unpack(visual_coordiate)
+  local srow, _, erow, ecol = unpack(visual_coordiate)
 
-  if srow == erow and (scol ~= 1 or ecol < vim.fn.getline(srow):len()) then
+  if mode == "v" then
     M.translate_phrase(content[1], function(text)
       set_text_extmark(buf, erow - 1, ecol, text)
     end)
