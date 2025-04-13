@@ -1,6 +1,17 @@
-local M = {}
-M.ns_id = vim.api.nvim_create_namespace("LBS_Translate")
-local default_hl_group = "Comment"
+local default_opts = {
+  ns_name = "LBS_Translate",
+  hl_group = "Comment",
+  key = "L",
+}
+local function init(opts)
+  return {
+    opts = opts,
+    extmark = require("util.extmark").new(opts.ns_name),
+    ns_id = vim.api.nvim_get_namespaces()[opts.ns_name] or vim.api.nvim_create_namespace(opts.ns_name),
+  }
+end
+
+local M = init(default_opts)
 
 ---@param buf integer buffer number, 0 for current buffer
 ---@param row integer Line where to place the mark, 0-based
@@ -12,7 +23,7 @@ local function set_text_extmark(buf, row, col, text, opts)
     virt_text_repeat_linebreak = true,
     hl_mode = "combine",
   })
-  opts.virt_text = { { string.format("[%s]", text), default_hl_group } }
+  opts.virt_text = { { string.format("[%s]", text), M.opts.hl_group } }
   vim.api.nvim_buf_set_extmark(buf, M.ns_id, row, col, opts)
 end
 
@@ -25,7 +36,7 @@ local function set_line_extmark(buf, row, lines, opts)
     virt_lines_leftcol = false,
   })
   opts.virt_lines = vim.tbl_map(function(line)
-    return { { line, default_hl_group } }
+    return { { line, M.opts.hl_group } }
   end, lines)
   vim.api.nvim_buf_set_extmark(buf, M.ns_id, row, 0, opts)
 end
@@ -150,10 +161,23 @@ function M.run()
   end
 end
 
-function M.clear()
-  local buf = vim.api.nvim_win_get_buf(0)
-  local line = vim.api.nvim_win_get_cursor(0)[1]
-  vim.api.nvim_buf_clear_namespace(buf, M.ns_id, line - 1, line)
+function M.trans_op(type)
+  local commands = {
+    line = "'[V']",
+    char = "`[v`]",
+    block = "`[\\<C-V>`]",
+  }
+  if not type or #type == 0 then
+    vim.opt.opfunc = "v:lua.require'translate'.trans_op"
+    vim.api.nvim_feedkeys("g@", "m", false)
+  else
+    vim.cmd.normal(commands[type])
+    M.run()
+  end
+end
+
+function M.toggle()
+  M.extmark:toggle_extmarks()
 end
 
 return M

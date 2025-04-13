@@ -1,41 +1,76 @@
+local api = vim.api
+local set_extmark = api.nvim_buf_set_extmark
+local del_extmark = api.nvim_buf_del_extmark
+local function notify(info, level)
+  vim.notify(info, vim.log.levels[level] or vim.log.levels.INFO, { title = "Extmark Toggle" })
+end
+
+--- Manages hiding and restoring Neovim extmarks within a specific namespace.
+-- This module allows toggling the visibility of sets of extmarks (e.g., diagnostics,
+-- inline virtual text) on a line-by-line basis. It achieves this by temporarily
+-- replacing original extmarks with lightweight "tracking" extmarks and caching
+-- the original extmark details.
 local Marks = {}
 Marks.__index = Marks
-local api = vim.api
 
----@alias Extmarks.Detail vim.api.keyset.extmark_details
+--- Type Definitions ---
 
----@class Marks.Option
----@field ns_name string: The namespace name (a new namespace will be created). Required if ns_id is not provided.
----@field ns_track_prefix? string: Prefix for internal tracking marks. Defaults to "_extmark_hide_".
----@field default_hl_group? string: Default highlight group for restored extmarks if original had none. Defaults to "Comment".
+---@alias Extmarks.Detail vim.api.keyset.extmark_details Contains details of an extmark: {id, row, col, opts}
+
+---@class Marks An instance managing extmark visibility for a namespace.
+---@field ns_id integer The ID of the main namespace managed by this instance.
+---@field ns_track_id integer The ID of the namespace used for tracking hidden extmarks.
+---@field track_name_prefix string Prefix used for cache keys and tracking mark names.
+---@field marks table<integer, table<string, Extmarks.Detail>> Cache storing hidden extmark details. Keyed by buffer number, then by tracking mark name (e.g., `track_prefix .. track_mark_id`).
+-- Static methods
+---@field new fun(ns_id, opts?: {ns_track_prefix?: string, track_name_prefix?: string}): Marks Creates a new Marks instance.
+---@field find_visible_extmarks fun(bufnr: integer, row_0: integer, ns_id: integer): Extmarks.Detail[] Finds visible extmarks in a namespace on a line.
+-- Instance methods
+---@field hide_extmark fun(self: Marks, bufnr: integer, extmark_details: Extmarks.Detail): boolean|nil Hide a single extmark
+---@field restore_extmark fun(self: Marks, bufnr: integer, track_extmark: Extmarks.Detail, cached_extmark: Extmarks.Detail): boolean|nil Restores a single extmark based on its tracking mark and cached details.
+---@field hide_extmarks fun(self: Marks, bufnr: integer, row: integer): boolean|nil Hides visible extmarks on a line. Returns true if any marks were hidden, false if none found, nil on failure during hiding.
+---@field restore_extmarks fun(self: Marks, bufnr: integer, row: integer): boolean Restores hidden extmarks on a line. Returns true if tracking marks were found and processed, false otherwise.
+---@field toggle_extmarks fun(self: Marks, opts?: {winid?: integer, bufnr?: integer, row?:integer}): true|nil Toggles extmark visibility on the specified line. Returns true on completion, nil on initial error.
+
+--- Constructor ---
 
 -- Creates a new Marks manager instance.
---- @param opts Marks.Option
---- @return (table): The Marks instance.
-function Marks.new(opts)
+---@param ns_name string The namespace name (a new namespace will be created). Required.
+---@param opts? {ns_track_prefix?: string, track_name_prefix?: string} Initialization options.
+---@return Marks The new Marks instance.
+function Marks.new(ns_name, opts)
   opts = opts or {}
   local self = setmetatable({}, Marks)
 
-  self.ns_id = api.nvim_create_namespace(opts.ns_name)
-  self.mark_prefix = opts.ns_track_prefix or opts.ns_name .. "_track"
-  self.ns_track_id = api.nvim_create_namespace(opts.ns_track_prefix)
-  self.default_hl_group = opts.default_hl_group or "Comment"
+  -- Create the main namespace for the extmarks to be managed
+  self.ns_id = api.nvim_get_namespaces()[ns_name] or api.nvim_create_namespace(ns_name)
+
+  -- Create a separate namespace for the tracking extmarks
+  local mark_prefix = opts.ns_track_prefix or ns_name .. "_track"
+  self.ns_track_id = api.nvim_create_namespace(mark_prefix)
+
+  -- Store other configuration options
+  self.track_name_prefix = opts.track_name_prefix or "track_"
+
+  -- Initialize the cache for hidden extmarks (buffer number -> tracking mark name -> details)
   self.marks = {}
 
-  -- Use a more unique augroup name based on the namespace ID
-  local augroup_name = "LbsMarksCleanup_" .. self.ns_id
+  -- Set up automatic cleanup for the buffer cache when a buffer is wiped out
+  -- Use a unique augroup name based on the main namespace ID to avoid conflicts
+  local augroup_name = "MarksCleanup_" .. self.ns_id
   local augroup_id = api.nvim_create_augroup(augroup_name, { clear = true })
 
   api.nvim_create_autocmd("BufWipeOut", {
     group = augroup_id,
-    pattern = "*", -- Apply to all buffers; callback checks if cache exists for the buffer
+    pattern = "*", -- Apply to all buffers; callback checks if cache exists
     callback = function(args)
-      -- args.buf contains the buffer number being wiped out
       local bufnr = args.buf
+      -- Check if the wiped buffer has an entry in our cache
       if bufnr and self.marks[bufnr] then
-        -- Clear cache for the wiped buffer to prevent memory leaks
+        -- Clear the cache for the wiped buffer to prevent memory leaks
         self.marks[bufnr] = nil
-        -- vim.notify("Cleared extmark cache for wiped buffer: " .. bufnr, vim.log.levels.DEBUG)
+        -- Optional debug logging:
+        notify("Cleared extmark cache for wiped buffer: " .. bufnr, "DEBUG")
       end
     end,
     desc = "Clean extmark toggle cache on buffer wipeout for namespace " .. self.ns_id,
@@ -44,257 +79,301 @@ function Marks.new(opts)
   return self
 end
 
----Gets the cache for a specific buffer, creating it if it doesn't exist.
----@param bufnr (integer): The buffer number.
----@return table: The cache table for the buffer.
-function Marks:get_buffer_cache(bufnr)
+--- Private Helper Methods ---
+
+--- Gets the cache for a specific buffer, creating it if it doesn't exist.
+--- Ensures that each buffer has its own isolated cache of hidden marks.
+---@param self Marks The Marks instance.
+---@param bufnr integer The buffer number.
+---@return table<string, Extmarks.Detail> The cache table for the specified buffer.
+local function _get_buffer_cache(self, bufnr)
   if not self.marks[bufnr] then
-    self.marks[bufnr] = {}
+    self.marks[bufnr] = {} -- Lazily initialize the cache for this buffer
   end
   return self.marks[bufnr]
 end
 
----Finds visible extmarks within the managed namespace on a specific line.
----@param bufnr integer: The buffer number.
----@param row_0 integer: The 0-indexed row number.
----@param ns_id integer: the namespace id
----@return Extmarks.Detail[]
+--- Finds visible extmarks within a given namespace on a specific line.
+--- This is a static method as it doesn't depend on instance state (`self`).
+---@param bufnr integer The buffer number.
+---@param row_0 integer The 0-indexed row number.
+---@param ns_id integer The namespace ID to search within.
+---@return Extmarks.Detail[] A list of extmark details found on the line. Returns an empty list on error or if none found.
 function Marks.find_visible_extmarks(bufnr, row_0, ns_id)
   local ok, visible_extmarks = pcall(
     api.nvim_buf_get_extmarks,
     bufnr,
     ns_id,
-    { row_0, 0 }, -- Start of the line
-    { row_0, -1 }, -- End of the line
-    { details = true } -- Include extmark options
+    { row_0, 0 }, -- Start position: beginning of the line
+    { row_0, -1 }, -- End position: end of the line (-1 signifies end of line)
+    { details = true } -- Request details (id, row, col, opts)
   )
   if not ok then
+    -- Log error if needed, but return empty list for graceful failure
+    notify(
+      string.format("Error finding extmarks in ns %s on line %s: %s", ns_id, (row_0 + 1), tostring(visible_extmarks)),
+      "WARN"
+    )
     return {}
   end
   return visible_extmarks
 end
 
----Hides a single extmark: places a tracking mark, caches details, deletes the extmark.
----@param bufnr integer: The buffer number.
----@param extmark_details Extmarks.Detail
----@return boolean: true if hidden successfully, false otherwise.
+--- Core Logic Methods ---
+
+--- Hides a single extmark:
+--- 1. Caches its details using a deep copy.
+--- 2. Deletes the original extmark from the main namespace (`self.ns_id`).
+--- 3. Places a lightweight tracking extmark in the tracking namespace (`self.ns_track_id`) at the original start position.
+---@param self Marks The Marks instance.
+---@param bufnr integer The buffer number.
+---@param extmark_details Extmarks.Detail The details of the extmark to hide.
+---@return boolean True if the extmark was hidden successfully, false otherwise.
 function Marks:hide_extmark(bufnr, extmark_details)
   local id, start_row_0, start_col_0, _ = unpack(extmark_details)
 
-  -- Set the tracking mark (API uses 1-based row, 0-based col)
-  -- Use pcall as buffer/mark operations can fail
-  local set_track_extmark_ok, track_extmark_id =
-    pcall(api.nvim_buf_set_extmark, bufnr, self.ns_track_id, start_row_0, start_col_0, {})
-  if not set_track_extmark_ok then
-    vim.notify("Error setting tracking extmark: " .. track_extmark_id, vim.log.levels.ERROR)
-    return false
-  end
+  -- Make a deep copy of the details *before* deleting the original extmark.
+  -- This ensures we cache the correct state.
+  local cached_extmark = vim.deepcopy(extmark_details)
 
-  local buffer_cache = self:get_buffer_cache(bufnr)
-  local track_name = "track_" .. track_extmark_id
-
-  -- Store necessary details for restoration, making a deep copy of opts
-  buffer_cache[track_name] = vim.deepcopy(extmark_details)
-
-  -- Delete the original extmark
-  local del_ok, del_err = pcall(api.nvim_buf_del_extmark, bufnr, self.ns_id, id)
+  -- Delete the original extmark from the main namespace
+  local del_ok, del_err = pcall(del_extmark, bufnr, self.ns_id, id)
   if not del_ok then
-    vim.notify("Error deleting extmark " .. id .. ": " .. del_err, vim.log.levels.ERROR)
-    -- Clean up the tracking mark if extmark deletion fails
-    pcall(api.nvim_buf_del_extmark, bufnr, self.ns_track_id, track_extmark_id)
-    buffer_cache[track_name] = nil
-    return false
+    notify("Error deleting extmark " .. id .. " from ns " .. self.ns_id .. ": " .. tostring(del_err), "ERROR")
+    return false -- Failed to hide
   end
 
-  return true
+  -- Place a tracking extmark in the tracking namespace at the original start position.
+  -- This mark acts as a placeholder to find hidden marks later.
+  local set_track_ok, track_extmark_id_or_err =
+    pcall(set_extmark, bufnr, self.ns_track_id, start_row_0, start_col_0, {}) -- No special options needed
+  if not set_track_ok then
+    notify(
+      "Error setting tracking extmark in ns " .. self.ns_track_id .. ": " .. tostring(track_extmark_id_or_err),
+      "ERROR"
+    )
+    -- The original extmark was deleted, but tracking failed. This leaves an orphaned state.
+    -- Consider potential recovery or more detailed logging if this becomes an issue.
+    return false -- Report failure as the hiding process wasn't fully completed.
+  end
+
+  -- Store the cached details, using the tracking extmark's ID to create a unique key.
+  local buffer_cache = _get_buffer_cache(self, bufnr)
+  local track_name = self.track_name_prefix .. track_extmark_id_or_err -- Key based on tracking mark ID
+  buffer_cache[track_name] = cached_extmark
+
+  return true -- Successfully hidden and tracked
 end
 
----Restores a single extmark based on its tracking mark name and cached details.
----@param bufnr integer: The buffer number.
----@param track_extmark Extmarks.Detail
----@param cached_extmark Extmarks.Detail: The cached extmark
----@return (boolean): true if restored successfully, false otherwise. Cache entry should be cleaned by caller on failure.
+--- Restores a single extmark based on its tracking mark and cached details.
+--- 1. Reads the current position of the tracking mark.
+--- 2. Re-creates the original extmark at the tracking mark's *current* position, adjusting the end position based on original dimensions relative to the original start position.
+--- 3. Deletes the tracking extmark and removes the cache entry *after* successful restoration.
+---@param self Marks The Marks instance.
+---@param bufnr integer The buffer number.
+---@param track_extmark Extmarks.Detail The details of the *tracking* extmark (provides current position).
+---@param cached_extmark Extmarks.Detail The *cached* details of the original extmark (provides original opts and dimensions).
+---@return boolean True if restored successfully, false otherwise.
 function Marks:restore_extmark(bufnr, track_extmark, cached_extmark)
-  local _, current_row_0, current_col_0, _ = unpack(track_extmark)
+  local track_id, current_row, current_col, _ = unpack(track_extmark)
 
-  -- Make a deep copy of options to restore to avoid modifying the cache directly
-  local _, start_row_0, start_col_0, extmark_opts = unpack(cached_extmark)
-  extmark_opts = extmark_opts or {}
-  local opts_to_restore = vim.deepcopy(extmark_opts)
-  opts_to_restore.id = nil
+  -- Delete track extmark
+  pcall(del_extmark, bufnr, self.ns_track_id, track_id)
+  local buffer_cache = _get_buffer_cache(self, bufnr) -- Get buffer-specific cache
+  buffer_cache[self.track_name_prefix .. track_id] = nil
 
-  -- Calculate the new end position based on the original dimensions relative
-  -- to the new start position
-  if extmark_opts.end_row then
-    local row_diff = (extmark_opts.end_row or start_row_0) - start_row_0
-    local new_end_row_0 = current_row_0 + row_diff
-    opts_to_restore.end_row = new_end_row_0
+  local original_id, original_start_row, original_start_col, original_opts = unpack(cached_extmark)
+  original_opts = original_opts or {}
+
+  -- Create a deep copy of the original options to modify for restoration.
+  -- Avoid modifying the cached data directly.
+  local opts_to_restore = vim.deepcopy(original_opts)
+  opts_to_restore.ns_id = nil -- Cannot reuse the old ID; Neovim assigns a new one.
+
+  -- Adjust the end position relative to the new start position (current_row_0, current_col_0).
+  -- This preserves the original span of the extmark.
+  if opts_to_restore.end_row then
+    local row_diff = opts_to_restore.end_row - original_start_row
+    opts_to_restore.end_row = current_row + row_diff
   end
 
-  if extmark_opts.end_col then
-    local new_end_col_0
-    if extmark_opts.end_col ~= -1 and extmark_opts.end_row and extmark_opts.end_row == start_row_0 then
-      -- Single line extmark: calculate end column based on original length relative to new start column
-      local col_diff = extmark_opts.end_col - start_col_0
-      new_end_col_0 = current_col_0 + col_diff
+  if opts_to_restore.end_col then
+    local new_end_col
+    -- Check if it was a single-line extmark originally (not spanning multiple lines).
+    if opts_to_restore.end_col ~= -1 and original_opts.end_row and original_opts.end_row == original_start_row then
+      -- Calculate end column based on original length relative to the new start column.
+      local col_diff = original_opts.end_col - original_start_col
+      new_end_col = current_col + col_diff
     else
-      new_end_col_0 = extmark_opts.end_col
+      -- For multi-line extmarks or those ending at EOL (`end_col` might be -1 or a specific column),
+      -- keep the original end column value. The `end_row` adjustment handles the vertical shift.
+      new_end_col = original_opts.end_col
     end
-    opts_to_restore.end_col = new_end_col_0
+    opts_to_restore.end_col = new_end_col
   end
 
-  -- Recreate the extmark at the new position
-  local set_ok, set_err =
-    pcall(api.nvim_buf_set_extmark, bufnr, self.ns_id, current_row_0, current_col_0, opts_to_restore)
+  -- Recreate the original extmark in the main namespace at the tracking mark's current position.
+  local set_ok, set_err_or_new_id = pcall(
+    set_extmark,
+    bufnr,
+    self.ns_id, -- Restore to the main namespace
+    current_row,
+    current_col,
+    opts_to_restore
+  )
+
   if not set_ok then
-    vim.notify("Error restoring extmark: " .. tostring(set_err), vim.log.levels.ERROR)
-    -- Don't delete the tracking mark yet, as restore failed. Caller handles cache cleanup.
+    notify("Error restoring extmark (original ID: " .. original_id .. "): " .. tostring(set_err_or_new_id), "ERROR")
+    -- Do NOT delete the tracking mark or cache entry yet, as restoration failed.
+    -- The caller (`restore_extmarks`) might handle cleanup, or it could be retried.
     return false
   end
 
-  -- Caller is responsible for removing the entry from the buffer_cache upon success.
   return true
 end
 
----@param bufnr integer
----@param row integer -- 1-based row
----@return boolean
+--- Public API Methods ---
+
+--- Hides all managed extmarks (from `self.ns_id`) found on a specific line.
+--- Iterates through visible extmarks on the line and attempts to hide each one using `hide_extmark`.
+---@param self Marks The Marks instance.
+---@param bufnr integer The buffer number.
+---@param row integer The 1-based row number.
+---@return boolean True if at least one extmark was successfully hidden, false otherwise.
 function Marks:hide_extmarks(bufnr, row)
-  local row_0 = row - 1 -- API functions use 0-based row indices
+  local row_0 = row - 1 -- Convert to 0-based index for API calls
   local visible_marks_to_hide = self.find_visible_extmarks(bufnr, row_0, self.ns_id)
+
   if #visible_marks_to_hide == 0 then
-    return false -- No extmarks found in the namespace on this line
+    -- Optional debug log:
+    notify("No extmarks found to hide on line " .. row .. " in ns " .. self.ns_id, "DEBUG")
+    return false -- No extmarks found in the managed namespace on this line
   end
 
   local hidden_count = 0
   for _, extmark_details in ipairs(visible_marks_to_hide) do
-    -- Attempt to hide each extmark individually
-    -- hide_extmark handles setting the tracking mark, caching, and deleting the original
+    -- Attempt to hide each extmark individually.
+    -- `hide_extmark` handles caching, deleting original, and placing tracker.
     if self:hide_extmark(bufnr, extmark_details) then
       hidden_count = hidden_count + 1
     else
-      -- Error was logged/notified within hide_extmark
-      vim.notify(
-        "Failed to hide extmark " .. extmark_details[1] .. "on line" .. row .. ".",
-        vim.log.levels.WARN,
-        { title = "Extmark Toggle" }
-      )
+      -- Error was already logged/notified within `hide_extmark`
+      -- Optional additional warning:
+      notify("Failed attempt to hide extmark " .. extmark_details[1] .. " on line " .. row, "WARN")
     end
   end
 
   if hidden_count > 0 then
-    vim.notify(
-      "Hid " .. hidden_count .. " extmark(s) on line " .. row .. ".",
-      vim.log.levels.INFO,
-      { title = "Extmark Toggle" }
-    )
-    return true -- Indicate that hiding occurred
+    notify("Hid " .. hidden_count .. " extmark(s) on line " .. row .. ".")
   end
 
-  return false -- No extmarks were successfully hidden (either none found or all hides failed)
-end
-
----@param bufnr integer
----@param row integer -- 1-based row
----@return boolean
-function Marks:restore_extmarks(bufnr, row)
-  -- Find tracking extmarks placed by hide_extmarks on the target line
-  local track_extmarks = self.find_visible_extmarks(bufnr, row - 1, self.ns_track_id)
-  if #track_extmarks == 0 then
-    -- No tracking marks found on this line, nothing to restore
-    return false
-  end
-
-  local restored_count = 0
-  local cache_keys_to_delete = {}
-  local buffer_cache = self:get_buffer_cache(bufnr) -- Get buffer-specific cache
-
-  for _, track_extmark in ipairs(track_extmarks) do
-    local track_id = track_extmark[1] -- ID of the tracking extmark
-    local track_name = "track_" .. track_id -- Key used for caching original extmark details
-    local cached_extmark = buffer_cache[track_name] -- Retrieve cached details
-
-    if cached_extmark then
-      -- Attempt to restore the original extmark using cached details and current track position
-      local restore_result = self:restore_extmark(bufnr, track_extmark, cached_extmark)
-      if restore_result then
-        -- Successfully restored: Delete the tracking extmark
-        pcall(api.nvim_buf_del_extmark, bufnr, self.ns_track_id, track_id)
-        -- Mark the cache entry for deletion
-        table.insert(cache_keys_to_delete, track_name)
-        restored_count = restored_count + 1
-      else
-        -- Restore failed (e.g., invalid position after edits):
-        -- Still delete the tracking mark as it's no longer valid/restorable.
-        pcall(api.nvim_buf_del_extmark, bufnr, self.ns_track_id, track_id)
-        -- Mark the cache entry for deletion
-        table.insert(cache_keys_to_delete, track_name)
-        vim.notify(
-          "Failed to restore extmark (original ID: "
-            .. tostring(cached_extmark[1])
-            .. ") on line "
-            .. row
-            .. ". Removing tracking mark.",
-          vim.log.levels.WARN,
-          { title = "Extmark Toggle" }
-        )
-      end
-    else
-      -- Orphaned tracking mark (no corresponding cache entry found):
-      -- This indicates an inconsistent state, possibly due to manual cache manipulation
-      -- or an error during hiding. Clean up the orphaned tracking mark.
-      pcall(api.nvim_buf_del_extmark, bufnr, self.ns_track_id, track_id)
-      vim.notify(
-        "Found orphaned tracking extmark (ID: " .. track_id .. ") on line " .. row .. ". Removing.",
-        vim.log.levels.WARN,
-        { title = "Extmark Toggle" }
-      )
-      -- No cache entry to delete in this case.
-    end
-  end
-
-  -- Clean up cache entries for successfully restored or failed extmarks
-  if #cache_keys_to_delete > 0 then
-    for _, key in ipairs(cache_keys_to_delete) do
-      buffer_cache[key] = nil -- Remove entry from cache
-    end
-    -- vim.notify("Cleaned " .. #cache_keys_to_delete .. " cache entries.", vim.log.levels.DEBUG)
-  end
-
-  -- Notify about successful restorations only if any occurred
-  if restored_count > 0 then
-    vim.notify(
-      "Restored " .. restored_count .. " extmark(s) on line " .. row .. ".",
-      vim.log.levels.INFO,
-      { title = "Extmark Toggle" }
-    )
-  end
-
-  -- Return true if any tracking marks were processed (even if restoration failed)
-  -- Return false only if no tracking marks were found initially.
   return true
 end
 
--- Toggles the visibility of extmarks (managed by this instance) on the current cursor line.
--- If visible extmarks exist on the line, they are hidden.
--- If no visible extmarks exist, any hidden extmarks whose tracking mark is on the line are restored.
-function Marks:toggle_extmarks_under_cursor_line()
-  local winid = api.nvim_get_current_win()
-  local bufnr = api.nvim_win_get_buf(winid)
+--- Restores hidden extmarks whose tracking marks are found on the specified line.
+--- Finds tracking marks, retrieves cached details, attempts restoration via `restore_extmark`,
+--- and cleans up tracking marks/cache entries for processed marks (successful or failed).
+---@param self Marks The Marks instance.
+---@param bufnr integer The buffer number.
+---@param row integer The 1-based row number.
+---@return boolean True if any tracking marks were found and processed on the line (regardless of success), false if no tracking marks were found initially.
+function Marks:restore_extmarks(bufnr, row)
+  local row_0 = row - 1 -- Convert to 0-based index
+  -- Find tracking extmarks (placeholders for hidden marks) on the target line.
+  local track_extmarks = self.find_visible_extmarks(bufnr, row_0, self.ns_track_id)
+
+  if #track_extmarks == 0 then
+    notify("No tracking marks found to restore on line " .. row .. " in ns " .. self.ns_track_id, "DEBUG")
+    return false -- No tracking marks found, nothing to restore
+  end
+
+  local restored_count = 0
+  local buffer_cache = _get_buffer_cache(self, bufnr) -- Get buffer-specific cache
+
+  for _, track_extmark in ipairs(track_extmarks) do
+    restored_count = restored_count + 1
+    local track_id = track_extmark[1] -- ID of the tracking extmark
+    local track_name = self.track_name_prefix .. track_id -- Key used for caching original extmark details
+    local cached_extmark = buffer_cache[track_name] -- Retrieve cached details using the key
+
+    if cached_extmark then
+      -- Found cached details, attempt to restore the original extmark.
+      -- `restore_extmark` handles restoration, cache cleanup, and track mark deletion on success.
+      local restore_success = self:restore_extmark(bufnr, track_extmark, cached_extmark)
+      if restore_success then
+        restored_count = restored_count + 1
+      else
+        -- Restore failed (error logged in `restore_extmark`).
+        notify(
+          "Failed restoration for track mark " .. track_id .. " on line " .. row .. ". Cleaning up tracker.",
+          "WARN"
+        )
+      end
+    else
+      -- Orphaned tracking mark: Found a tracking mark but no corresponding cache entry.
+      -- This indicates an inconsistent state, likely due to a previous error.
+      notify("Found orphaned tracking extmark (ID: " .. track_id .. ") on line " .. row .. ". Removing.", "WARN")
+      pcall(del_extmark, bufnr, self.ns_track_id, track_id)
+    end
+  end
+
+  -- Notify user about successful restorations only if any occurred.
+  if restored_count > 0 then
+    notify("Restored " .. restored_count .. " extmark(s) on line " .. row)
+  end
+
+  -- Return true because we found and processed tracking marks, even if some restorations failed.
+  -- Return false only signifies that *no* tracking marks were present on the line initially.
+  return true -- Indicates processing occurred.
+end
+
+--- Toggles the visibility of managed extmarks on the current cursor line.
+--- If visible extmarks (in `self.ns_id`) exist on the line, they are hidden.
+--- Otherwise, if hidden extmarks (tracked by `self.ns_track_id`) exist on the line, they are restored.
+---@param self Marks The Marks instance.
+---@param opts? {winid?: integer, bufnr?: integer, row?:integer}
+---@return boolean|nil
+function Marks:toggle_extmarks(opts)
+  opts = opts or {}
+  local bufnr, cursor_row
+  if not opts.bufnr or not opts.row then
+    local winid = opts.winid or api.nvim_get_current_win()
+    bufnr = api.nvim_win_get_buf(winid)
+    cursor_row = api.nvim_win_get_cursor(winid)[1]
+  else
+    bufnr, cursor_row = opts.bufnr, opts.row
+  end
+
   if not bufnr or bufnr <= 0 then
+    notify("Invalid buffer.", "ERROR")
     return
   end -- Ensure valid buffer
 
-  local cursor_pos = api.nvim_win_get_cursor(winid)
-  local cursor_row = cursor_pos[1]
-
-  -- 1. Try to HIDE visible extmarks at cursor line
-  if Marks:hide_extmarks(bufnr, cursor_row) then
+  if not cursor_row then
+    notify("Invalid Row.", "ERROR")
     return
   end
 
-  -- 2. Try to RESTORE hidden extmarks whose tracking mark is on the current line
-  Marks:restore_extmarks(bufnr, cursor_row)
+  -- Priority 1: Check for visible extmarks in the main namespace and try to HIDE them.
+  -- We use `find_visible_extmarks` first to avoid unnecessary notifications from `hide_extmarks` if nothing is there.
+  if self:hide_extmarks(bufnr, cursor_row) then
+    notify("Hid extmarks on line " .. cursor_row)
+    return
+  end
+
+  -- Priority 2: No visible marks found, check for hidden (tracking) marks and try to RESTORE them.
+  local restored = self:restore_extmarks(bufnr, cursor_row)
+  if restored then
+    -- `restore_extmarks` returns true if *any* tracking marks were found and processed.
+    -- Notifications about success/failure/orphans happen inside `restore_extmarks`.
+    -- We can add a general notification here if needed.
+    vim.notify("Restored extmarks on line " .. cursor_row)
+  else
+    -- No visible marks were found, and no tracking marks were found either.
+    vim.notify("No managed extmarks found on line " .. cursor_row)
+  end
+
+  return true
 end
 
 return Marks
