@@ -37,7 +37,7 @@ local function set_line_extmark(buf, row, lines, opts)
   opts.virt_lines = vim.tbl_map(function(line)
     return { { line, M.opts.hl_group } }
   end, lines)
-  vim.api.nvim_buf_set_extmark(buf, M.ns_id, row, vim.fn.indent(row + 1), opts)
+  vim.api.nvim_buf_set_extmark(buf, M.ns_id, row, 0, opts)
 end
 
 ---@param content string
@@ -159,7 +159,7 @@ function M.run()
     end
 
     -- Number of indented characters for the translated line
-    local indent = vim.api.nvim_buf_call(buf, function()
+    local indent_num = vim.api.nvim_buf_call(buf, function()
       return vim.fn.indent(paragraph_end[#paragraph_end])
     end)
 
@@ -179,7 +179,7 @@ function M.run()
     -- buffer where the original text is located in the form of extmark
     M.translate_paragraph(grouped_content, {
       textwidth = textwidth,
-      indent = vim.fn.indent() or 0,
+      indent = indent_num or 0,
       callback = function(lines)
         local para = {}
         local para_id = 1
@@ -188,13 +188,13 @@ function M.run()
           if #trimmed_line > 0 then
             table.insert(para, trimmed_line)
           else
-            set_line_extmark(buf, paragraph_end[para_id] - 1, 0, para))
+            set_line_extmark(buf, paragraph_end[para_id] - 1, indent_para(paragraph_end[para_id], para))
             para_id = para_id + 1
             para = {}
           end
         end
         if #para > 0 then
-          set_line_extmark(buf, paragraph_end[para_id] - 1, 0, para))
+          set_line_extmark(buf, paragraph_end[para_id] - 1, indent_para(paragraph_end[para_id], para))
         end
       end,
     })

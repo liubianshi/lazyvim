@@ -82,4 +82,19 @@ return {
     ft = { "stata", "sh", "bash", "perl" },
     dev = true,
   },
+  { -- mikesmithgh/kitty-scrollback.nvim: Open kitty scrollback
+    "mikesmithgh/kitty-scrollback.nvim",
+    enabled = true,
+    lazy = true,
+    cmd = {
+      "KittyScrollbackGenerateKittens",
+      "KittyScrollbackCheckHealth",
+      "KittyScrollbackGenerateCommandLineEditing",
+    },
+    event = { "User KittyScrollbackLaunch" },
+    version = "*", -- latest stable version, may have breaking changes if major version changed
+    config = function()
+      require("kitty-scrollback").setup()
+    end,
+  },
 }
