@@ -60,9 +60,9 @@ function M.translate_phrase(content, callback)
 end
 
 ---@param content string[] Content to be translated
----@param callback function
+---@param opts {textwidth: integer, indent: integer, callback: fun(lines: string[])}
 ---@return string[]|nil
-function M.translate_paragraph(content, callback)
+function M.translate_paragraph(content, opts)
   if not content or #content == 0 then
     return
   end
@@ -106,16 +106,20 @@ function M.translate_paragraph(content, callback)
       end
     end
 
-    vim.system({ "mdwrap" }, { stdin = vim.split(obj_trans.stdout, "\n") }, function(obj_format)
-      if progress_handle then
-        progress_handle.message = obj_format.code == 0 and "Completed" or " Failed to formatting"
-        progress_handle:finish()
+    vim.system(
+      { "mdwrap", "--line-width=" .. (opts.textwidth - opts.indent) },
+      { stdin = vim.split(obj_trans.stdout, "\n") },
+      function(obj_format)
+        if progress_handle then
+          progress_handle.message = obj_format.code == 0 and "Completed" or " Failed to formatting"
+          progress_handle:finish()
+        end
+        local translated_lines = vim.split(vim.trim(obj_format.stdout), "\n")
+        vim.schedule(function()
+          opts.callback(translated_lines)
+        end)
       end
-      local translated_liens = vim.split(vim.trim(obj_format.stdout), "\n")
-      vim.schedule(function()
-        callback(translated_liens)
-      end)
-    end)
+    )
   end)
 end
 
@@ -137,27 +141,63 @@ function M.run()
   else
     local grouped_content, paragraph_range = require("util").join_strings_by_paragraph(content)
     table.insert(grouped_content, "")
+
+    --  Where the paragraph ends
     local paragraph_end = vim.tbl_map(function(range)
       return range.finish + srow - 1
     end, paragraph_range or {})
 
-    M.translate_paragraph(grouped_content, function(lines)
-      local para = {}
-      local para_id = 1
-      for _, line in ipairs(lines) do
-        local trimmed_line = vim.trim(line or "")
-        if #trimmed_line > 0 then
-          table.insert(para, trimmed_line)
-        else
-          set_line_extmark(buf, paragraph_end[para_id] - 1, para)
-          para_id = para_id + 1
-          para = {}
-        end
-      end
-      if #para > 0 then
-        set_line_extmark(buf, paragraph_end[para_id] - 1, para)
-      end
+    -- Line width of the translated line
+    local textwidth = vim.bo[buf].textwidth
+    if not textwidth or textwidth == 0 then
+      textwidth = math.min(
+        math.min(unpack(vim.tbl_map(function(l)
+          return vim.fn.strdisplaywidth(l)
+        end, content))),
+        78
+      )
+    end
+
+    -- Number of indented characters for the translated line
+    local indent = vim.api.nvim_buf_call(buf, function()
+      return vim.fn.indent(paragraph_end[#paragraph_end])
     end)
+
+    -- Insert indent space at the front of the translated line
+    local function indent_para(linenr, para)
+      para = para or {}
+      local indent = vim.fn.indent(linenr)
+      if indent == 0 or #para == 0 then
+        return para
+      end
+      return vim.tbl_map(function(line)
+        return string.rep(" ", indent) .. line
+      end, para)
+    end
+
+    -- Perform paragraph translation and insert the translated line into the
+    -- buffer where the original text is located in the form of extmark
+    M.translate_paragraph(grouped_content, {
+      textwidth = textwidth,
+      indent = vim.fn.indent() or 0,
+      callback = function(lines)
+        local para = {}
+        local para_id = 1
+        for _, line in ipairs(lines) do
+          local trimmed_line = vim.trim(line or "")
+          if #trimmed_line > 0 then
+            table.insert(para, trimmed_line)
+          else
+            set_line_extmark(buf, paragraph_end[para_id] - 1, 0, para))
+            para_id = para_id + 1
+            para = {}
+          end
+        end
+        if #para > 0 then
+          set_line_extmark(buf, paragraph_end[para_id] - 1, 0, para))
+        end
+      end,
+    })
   end
 end
 

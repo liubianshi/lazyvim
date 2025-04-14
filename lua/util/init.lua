@@ -497,12 +497,14 @@ function M.keymap(mapping)
   vim.keymap.set(mode, lhs, rhs, mapping)
 end
 
---- Joins lines within paragraphs in a list of strings.
--- Paragraphs are defined as sequences of non-blank lines separated by one or more blank lines.
---
--- @param lines table A list of strings, where each string represents a line.
--- @return table A new list of strings with lines within each paragraph joined together.
---         Returns an empty table if the input is nil or empty.
+---@class Paragraphs.Position
+---@field start integer start of the paragraph
+---@field finish integer end of the paragraph
+
+---Joins lines within paragraphs in a list of strings.
+---Paragraphs are defined as sequences of non-blank lines separated by one or more blank lines.
+---@param lines? string[] A list of strings, where each string represents a line.
+---@return string[], Paragraphs.Position[]|nil A new list of strings with lines within each paragraph joined together. Returns an empty table if the input is nil or empty.
 function M.join_strings_by_paragraph(lines)
   if not lines or #lines == 0 then
     return {}
@@ -524,7 +526,7 @@ function M.join_strings_by_paragraph(lines)
 
   -- 将 list 写入缓冲区
   local ft = vim.api.nvim_get_option_value("filetype", { buf = 0 })
-  vim.api.nvim_set_option_value("filetype", ft, { buf = temp_bufnr })
+  -- vim.api.nvim_set_option_value("filetype", ft, { buf = temp_bufnr })
   vim.api.nvim_buf_set_lines(temp_bufnr, 0, -1, false, lines)
 
   -- 扫描整个 buffer 的内容，读取每段的起始和结束行

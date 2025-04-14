@@ -21,7 +21,8 @@ Marks.__index = Marks
 ---@field ns_id integer The ID of the main namespace managed by this instance.
 ---@field ns_track_id integer The ID of the namespace used for tracking hidden extmarks.
 ---@field track_name_prefix string Prefix used for cache keys and tracking mark names.
----@field marks table<integer, table<string, Extmarks.Detail>> Cache storing hidden extmark details. Keyed by buffer number, then by tracking mark name (e.g., `track_prefix .. track_mark_id`).
+---@field track_sign string String of length 1-2 used to display track extmark in the sign column.
+---@field marks table<string, Extmarks.Detail> Cache storing hidden extmark details. Keyed by buffer number, then by tracking mark name (e.g., `track_prefix .. track_mark_id`).
 -- Static methods
 ---@field new fun(ns_id, opts?: {ns_track_prefix?: string, track_name_prefix?: string}): Marks Creates a new Marks instance.
 ---@field find_visible_extmarks fun(bufnr: integer, row_0: integer, ns_id: integer): Extmarks.Detail[] Finds visible extmarks in a namespace on a line.
@@ -50,48 +51,34 @@ function Marks.new(ns_name, opts)
   self.ns_track_id = api.nvim_create_namespace(mark_prefix)
 
   -- Store other configuration options
-  self.track_name_prefix = opts.track_name_prefix or "track_"
+  self.track_name_prefix = opts.track_name_prefix or "track"
   self.track_sign = opts.track_sign or "󰊿"
 
-  -- Initialize the cache for hidden extmarks (buffer number -> tracking mark name -> details)
+  -- Initialize the cache for hidden extmarks (tracking mark name -> details)
   self.marks = {}
-
-  -- Set up automatic cleanup for the buffer cache when a buffer is wiped out
-  -- Use a unique augroup name based on the main namespace ID to avoid conflicts
-  local augroup_name = "MarksCleanup_" .. self.ns_id
-  local augroup_id = api.nvim_create_augroup(augroup_name, { clear = true })
-
-  api.nvim_create_autocmd("BufWipeOut", {
-    group = augroup_id,
-    pattern = "*", -- Apply to all buffers; callback checks if cache exists
-    callback = function(args)
-      local bufnr = args.buf
-      -- Check if the wiped buffer has an entry in our cache
-      if bufnr and self.marks[bufnr] then
-        -- Clear the cache for the wiped buffer to prevent memory leaks
-        self.marks[bufnr] = nil
-        -- Optional debug logging:
-        notify("Cleared extmark cache for wiped buffer: " .. bufnr, "DEBUG")
-      end
-    end,
-    desc = "Clean extmark toggle cache on buffer wipeout for namespace " .. self.ns_id,
-  })
 
   return self
 end
 
 --- Private Helper Methods ---
 
---- Gets the cache for a specific buffer, creating it if it doesn't exist.
---- Ensures that each buffer has its own isolated cache of hidden marks.
+---Gets the cache for a specific buffer, creating it if it doesn't exist.
+---Ensures that each buffer has its own isolated cache of hidden marks.
 ---@param self Marks The Marks instance.
----@param bufnr integer The buffer number.
 ---@return table<string, Extmarks.Detail> The cache table for the specified buffer.
-local function _get_buffer_cache(self, bufnr)
-  if not self.marks[bufnr] then
-    self.marks[bufnr] = {} -- Lazily initialize the cache for this buffer
+local function _get_cache(self)
+  if not self.marks then
+    self.marks = {} -- Lazily initialize the cache for this buffer
   end
-  return self.marks[bufnr]
+  return self.marks
+end
+
+---Generate the name of track extmark
+---@param bufnr integer The buffer number.
+---@param track_id integer The track extmark id
+---@return string
+local function _generate_track_name(bufnr, track_id)
+  return string.format("%s:%d:%d", Marks.track_name_praefix, bufnr, track_id)
 end
 
 --- Finds visible extmarks within a given namespace on a specific line.
@@ -159,8 +146,8 @@ function Marks:hide_extmark(bufnr, extmark_details)
   end
 
   -- Store the cached details, using the tracking extmark's ID to create a unique key.
-  local buffer_cache = _get_buffer_cache(self, bufnr)
-  local track_name = self.track_name_prefix .. track_extmark_id_or_err -- Key based on tracking mark ID
+  local buffer_cache = _get_cache(self)
+  local track_name = _generate_track_name(bufnr, track_extmark_id_or_err) -- Key based on tracking mark ID
   buffer_cache[track_name] = cached_extmark
 
   return true -- Successfully hidden and tracked
@@ -180,8 +167,9 @@ function Marks:restore_extmark(bufnr, track_extmark, cached_extmark)
 
   -- Delete track extmark
   pcall(del_extmark, bufnr, self.ns_track_id, track_id)
-  local buffer_cache = _get_buffer_cache(self, bufnr) -- Get buffer-specific cache
-  buffer_cache[self.track_name_prefix .. track_id] = nil
+  local buffer_cache = _get_cache(self) -- Get buffer-specific cache
+  local track_name = _generate_track_name(bufnr, track_id)
+  buffer_cache[track_name] = nil
 
   local original_id, original_start_row, original_start_col, original_opts = unpack(cached_extmark)
   original_opts = original_opts or {}
@@ -289,12 +277,12 @@ function Marks:restore_extmarks(bufnr, row)
   end
 
   local restored_count = 0
-  local buffer_cache = _get_buffer_cache(self, bufnr) -- Get buffer-specific cache
+  local buffer_cache = _get_cache(self) -- Get buffer-specific cache
 
   for _, track_extmark in ipairs(track_extmarks) do
     restored_count = restored_count + 1
     local track_id = track_extmark[1] -- ID of the tracking extmark
-    local track_name = self.track_name_prefix .. track_id -- Key used for caching original extmark details
+    local track_name = _generate_track_name(bufnr, track_id) -- Key used for caching original extmark details
     local cached_extmark = buffer_cache[track_name] -- Retrieve cached details using the key
 
     if cached_extmark then
