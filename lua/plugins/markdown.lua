@@ -439,7 +439,7 @@ return {
       },
       dash = {
         enabled = true,
-        width = 20,
+        width = 76,
       },
       heading = {
         sign = false,
