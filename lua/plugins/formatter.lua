@@ -10,7 +10,6 @@ return {
       r = { "air" },
       markdown = { "mdwrap" },
       codecompanion = { "mdwrap" },
-      quarto = { "mdwrap" },
       perl = { "perltidy" },
     },
     formatters = {

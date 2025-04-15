@@ -983,11 +983,17 @@ return {
               content = function(context)
                 local lines = vim.api.nvim_buf_get_lines(context.bufnr, context.start_line - 1, context.end_line, false)
                 local grouped_strings = table.concat(require("util").join_strings_by_paragraph(lines), "\n")
-                return string.format(
-                  "Please translate and polish the text from buffer %d:\n\n```\n%s\n```\n\n",
-                  context.bufnr,
-                  grouped_strings
-                )
+
+                local head_chars = vim.trim(grouped_strings):sub(1, 20)
+                local is_cjk = false
+                for _, char in ipairs(vim.fn.split(head_chars, "\\zs")) do
+                  if is_cjk_character(char) then
+                    is_cjk = true
+                    break
+                  end
+                end
+
+                return string.format("%s\n\n%s", (is_cjk and "en_US" or "zh_CN"), grouped_strings)
               end,
               opts = {
                 contains_code = true,

@@ -9,9 +9,10 @@ return {
         inline = true,
         float = true,
       },
-      convert = {
-        math = {
-          font_size = "small",
+      math = {
+        enabled = false,
+        latex = {
+          font_size = "tiny",
         },
       },
     },
