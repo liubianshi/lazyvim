@@ -31,6 +31,7 @@ end
 
 M.fabric = function(opts)
   local mode = vim.api.nvim_get_mode().mode
+  local filetype = vim.bo.filetype
   local pattern_dir = os.getenv("HOME") .. "/.config/fabric/patterns"
   local patterns = {}
   local pattern_names = get_folders(pattern_dir)
@@ -104,11 +105,12 @@ M.fabric = function(opts)
         end
 
         if item.text == "translate" then
-          table.insert(cmd, "-m=gemini-2.0-flash-exp")
+          local translate_model = vim.tbl_contains({ "quarto" }, filetype) and "-m=gpt-4.1" or "-m=gemini-2.0-flash-exp"
+          table.insert(cmd, translate_model)
         end
 
         if item.text == "translate" and not opts.stdin then
-          table.insert(cmd, "-v=lang_code:en_US")
+          table.insert(cmd, "-v=lang_code:zh_CN")
           require("util.term").pipe(cmd, opts)
         elseif item.text == "translate" then
           opts.stdin = require("util").join_strings_by_paragraph(opts.stdin)
@@ -123,7 +125,7 @@ M.fabric = function(opts)
           if is_cjk then
             table.insert(cmd, "-v=lang_code:en_US")
           else
-            table.insert(cmd, "-v=lang_code:zh_cn")
+            table.insert(cmd, "-v=lang_code:zh_CN")
           end
         end
         require("util.term").pipe(cmd, opts)

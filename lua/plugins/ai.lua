@@ -1,5 +1,3 @@
-local gpt4 = "gpt-4o"
-local gpt35 = "gpt-3.5-turbo"
 local PROMPTS = require("llm_prompts")
 
 local codecampanion_utils = {
@@ -527,6 +525,7 @@ return {
           local template = "Please polish the text from {{filename}}:\n\n" .. "```{{filetype}}\n{{selection}}\n```\n\n"
           local agent = gp.agents["Writing_Optimizer"]
           if vim.bo.filetype == "quarto" then
+            agent.model.model = "gpt-4.1"
             agent.system_prompt = PROMPTS.improve_academic_writing
           end
           gp.logger.info("Implementing selection with agent: " .. agent.name)
@@ -835,6 +834,22 @@ return {
             },
           })
         end,
+        ["aihubmix-opeanai"] = function()
+          return require("codecompanion.adapters").extend("openai_compatible", {
+            env = {
+              url = "https://aihubmix.com",
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+            },
+            schema = {
+              model = {
+                default = "gpt-4.1",
+              },
+              temperature = {
+                default = 0,
+              },
+            },
+          })
+        end,
         ["deepseek-r1"] = function()
           return require("codecompanion.adapters").extend("openai_compatible", {
             env = {
@@ -868,7 +883,7 @@ return {
           opts = {
             index = 13,
             adapter = {
-              name = "gemini-thinking",
+              name = "aihubmix-opeanai",
             },
             is_slash_cmd = true,
             modes = { "v" },
@@ -931,6 +946,47 @@ return {
                   context.bufnr,
                   context.filetype,
                   code
+                )
+              end,
+              opts = {
+                contains_code = true,
+              },
+            },
+          },
+        },
+        ["Translate and Polish"] = {
+          strategy = "inline",
+          description = "Translate then Polish the selected text",
+          opts = {
+            index = 15,
+            adapter = {
+              name = "aihubmix-opeanai",
+            },
+            is_slash_cmd = true,
+            modes = { "v" },
+            short_name = "trans",
+            auto_submit = true,
+            user_prompt = false,
+            stop_context_insertion = true,
+            placement = "replace",
+          },
+          prompts = {
+            {
+              role = "system",
+              content = PROMPTS.translate_then_improve_academic_writing,
+              opts = {
+                visible = false,
+              },
+            },
+            {
+              role = "user",
+              content = function(context)
+                local lines = vim.api.nvim_buf_get_lines(context.bufnr, context.start_line - 1, context.end_line, false)
+                local grouped_strings = table.concat(require("util").join_strings_by_paragraph(lines), "\n")
+                return string.format(
+                  "Please translate and polish the text from buffer %d:\n\n```\n%s\n```\n\n",
+                  context.bufnr,
+                  grouped_strings
                 )
               end,
               opts = {
