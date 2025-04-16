@@ -141,7 +141,6 @@ opt.fillchars = {
   eob = " ",
 }
 opt.foldcolumn = "0"
--- opt.foldexpr = "v:lua.require('util.ui').foldexpr()"
 opt.foldlevel = 99
 opt.foldmethod = "expr"
 opt.formatlistpat = "\\v^\\s*(\\d{1,2}\\.|\\(\\d{1,2}\\)|\\[\\d{1,2}\\]|[-+*])\\s+"
@@ -224,5 +223,5 @@ opt.winminwidth = 5 -- Minimum window width
 opt.wrap = vim.tbl_contains({ "markdown", "quarto", "norg", "org", "mial" }, vim.bo.filetype)
 opt.linebreak = true
 opt.breakindent = true
-opt.wrapmargin = 0 -- 指定拆行处与编辑窗口右边缘之间空出的字符数
+opt.wrapmargin = 2 -- 指定拆行处与编辑窗口右边缘之间空出的字符数
 opt.writebackup = false

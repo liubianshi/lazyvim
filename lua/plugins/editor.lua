@@ -405,8 +405,9 @@ return {
       vim.g.rsi_no_meta = 1
     end,
   },
-  { -- liubianshi/icon-picker.nvim -------------------------------------- {{{2
+  { -- liubianshi/icon-picker.nvim -------------------------------------- {{{3
     "liubianshi/icon-picker.nvim",
+    enabled = true,
     dev = true,
     cmd = { "IconPickerNormal", "IconPickerYank" },
     keys = {
@@ -431,7 +432,7 @@ return {
       require("icon-picker").setup({ history_path = vim.env.HOME .. "/.config/diySync/uni_history" })
     end,
   },
-  { -- gbprod/yanky.nvim: Improved Yank and Put functionalities for Neovim  {{{3
+  { -- gbprod/yanky.nvim: Improved Yank and Put functionalities --------- {{{3
     "gbprod/yanky.nvim",
     keys = {
       { "<leader>sy", "<cmd>YankyRingHistory<cr>", desc = "Open Yank History" },
@@ -631,6 +632,16 @@ return {
         ]],
         { output = false }
       )
+    end,
+  },
+  { -- Wraps long lines virtually at a specific column ------------------ {{{3
+    "rickhowe/wrapwidth",
+    init = function()
+      vim.g.wrapwidth_sign = "↵"
+      vim.g.wrapwidth_number = 0
+    end,
+    config = function()
+      vim.cmd("Wrapwidth 80")
     end,
   },
 }

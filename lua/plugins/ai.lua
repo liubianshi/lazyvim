@@ -531,7 +531,7 @@ return {
           gp.logger.info("Implementing selection with agent: " .. agent.name)
           gp.Prompt(
             params,
-            gp.Target.append,
+            gp.Target.rewrite,
             agent,
             template,
             nil, -- command will run directly without any prompting for user input
