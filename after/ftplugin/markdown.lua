@@ -1,5 +1,3 @@
-vim.opt_local.formatexpr = "v:lua.require'conform'.formatexpr()"
-
 vim.keymap.set("n", "<c-x>m", function()
   vim.cmd.normal("EvT@")
   local text = require("util").get_visual_selection()

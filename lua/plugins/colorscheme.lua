@@ -20,7 +20,8 @@ return {
       ---@diagnostic disable: missing-fields
       require("everforest").setup({
         background = "hard",
-        transparent_background_level = 2,
+        transparent_background_level = 0,
+        float_style = "dim",
         italics = true,
         disable_italic_comments = true,
       })
