@@ -247,8 +247,28 @@ vimkey("ic", "Object: Markdown chunk", "<cmd>call text_obj#MdCodeBlock('i')", { 
 vimkey("ac", "Object: Markdown chunk", "<cmd>call text_obj#MdCodeBlock('a')", { mode = { "o", "x" } })
 
 -- Translate ------------------------------------------------------------ {{{1
-keymap({ "<F4>", require("translate").run, mode = { "v" }, desc = "Translate" })
-keymap({ "<F4>", require("translate").toggle, mode = "n", desc = "Translate" })
+keymap({
+  "<F4>",
+  function()
+    local trans_ok, trans = pcall(require, "translate")
+    if not trans_ok or not trans then
+      vim.notify("Failed to load module translate", vim.log.levels.ERROR)
+      return
+    end
+    local current_mode = vim.api.nvim_get_mode().mode
+    if current_mode == "n" then
+      local toggle_re = trans.toggle()
+      if toggle_re and toggle_re == 0 then
+        trans.translate_line()
+      end
+    else
+      trans.translate_selection()
+    end
+  end,
+  mode = { "n", "v" },
+  desc = "Translate",
+})
+
 vimkey("L", "Translate", "utils#Trans2clip()", { mode = { "v", "n" }, expr = true })
 imap("<localleader>l", "Translate", "<esc>:call utils#Trans_Subs()<cr>")
 nmap("<c-x>l", "Translate", function()

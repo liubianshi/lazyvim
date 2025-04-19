@@ -234,8 +234,6 @@ function Marks:hide_extmarks(bufnr, row)
   local visible_marks_to_hide = self.find_visible_extmarks(bufnr, row_0, self.ns_id)
 
   if #visible_marks_to_hide == 0 then
-    -- Optional debug log:
-    notify("No extmarks found to hide on line " .. row .. " in ns " .. self.ns_id, "DEBUG")
     return false -- No extmarks found in the managed namespace on this line
   end
 
@@ -250,10 +248,6 @@ function Marks:hide_extmarks(bufnr, row)
       -- Optional additional warning:
       notify("Failed attempt to hide extmark " .. extmark_details[1] .. " on line " .. row, "WARN")
     end
-  end
-
-  if hidden_count > 0 then
-    notify("Hid " .. hidden_count .. " extmark(s) on line " .. row .. ".")
   end
 
   return true
@@ -272,7 +266,6 @@ function Marks:restore_extmarks(bufnr, row)
   local track_extmarks = self.find_visible_extmarks(bufnr, row_0, self.ns_track_id)
 
   if #track_extmarks == 0 then
-    notify("No tracking marks found to restore on line " .. row .. " in ns " .. self.ns_track_id, "DEBUG")
     return false -- No tracking marks found, nothing to restore
   end
 
@@ -306,11 +299,6 @@ function Marks:restore_extmarks(bufnr, row)
     end
   end
 
-  -- Notify user about successful restorations only if any occurred.
-  if restored_count > 0 then
-    notify("Restored " .. restored_count .. " extmark(s) on line " .. row)
-  end
-
   -- Return true because we found and processed tracking marks, even if some restorations failed.
   -- Return false only signifies that *no* tracking marks were present on the line initially.
   return true -- Indicates processing occurred.
@@ -321,10 +309,11 @@ end
 --- Otherwise, if hidden extmarks (tracked by `self.ns_track_id`) exist on the line, they are restored.
 ---@param self Marks The Marks instance.
 ---@param opts? {winid?: integer, bufnr?: integer, row?:integer}
----@return boolean|nil
+---@return integer|nil
 function Marks:toggle_extmarks(opts)
   opts = opts or {}
   local bufnr, cursor_row
+  local RE = { PASS = 0, HIDE = 1, RESTORE = 2 }
   if not opts.bufnr or not opts.row then
     local winid = opts.winid or api.nvim_get_current_win()
     bufnr = api.nvim_win_get_buf(winid)
@@ -346,23 +335,12 @@ function Marks:toggle_extmarks(opts)
   -- Priority 1: Check for visible extmarks in the main namespace and try to HIDE them.
   -- We use `find_visible_extmarks` first to avoid unnecessary notifications from `hide_extmarks` if nothing is there.
   if self:hide_extmarks(bufnr, cursor_row) then
-    notify("Hid extmarks on line " .. cursor_row)
-    return
+    return RE.HIDE
   end
 
   -- Priority 2: No visible marks found, check for hidden (tracking) marks and try to RESTORE them.
   local restored = self:restore_extmarks(bufnr, cursor_row)
-  if restored then
-    -- `restore_extmarks` returns true if *any* tracking marks were found and processed.
-    -- Notifications about success/failure/orphans happen inside `restore_extmarks`.
-    -- We can add a general notification here if needed.
-    vim.notify("Restored extmarks on line " .. cursor_row)
-  else
-    -- No visible marks were found, and no tracking marks were found either.
-    vim.notify("No managed extmarks found on line " .. cursor_row)
-  end
-
-  return true
+  return restored and RE.RESTORE or RE.PASS
 end
 
 return Marks

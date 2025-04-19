@@ -1,29 +1,105 @@
+-- Default configuration options for the module.
 local default_opts = {
-  ns_name = "LBS_Translate",
-  hl_group = "Comment",
+  ns_name = "LBS_Translate", -- Namespace name used for extmarks.
+  hl_group = "Comment", -- Highlight group applied to virtual text/lines.
 }
+
+-- Initializes the module's state and configuration.
+-- Merges user-provided options with defaults and sets up necessary Neovim components.
+--
+---@param opts table|nil User-provided options to override the default settings.
+---@return table The initialized module state, including merged options, extmark utility instance, and namespace ID.
 local function init(opts)
+  -- Merge user options with defaults. User options take precedence ("keep" strategy).
+  -- If no user options are provided, use an empty table.
+  local resolved_opts = vim.tbl_deep_extend("keep", opts or {}, default_opts)
+
+  -- Obtain or create the Neovim namespace for managing extmarks specific to this module.
+  -- This function is idempotent: it returns the existing ID if the namespace already exists.
+  local ns_id = vim.api.nvim_create_namespace(resolved_opts.ns_name)
+
+  -- Instantiate the extmark utility helper with the determined namespace name.
+  local extmark_util = require("util.extmark").new(resolved_opts.ns_name)
+
+  -- Return the module's state table, containing configuration and utilities.
   return {
-    opts = opts,
-    extmark = require("util.extmark").new(opts.ns_name),
-    ns_id = vim.api.nvim_get_namespaces()[opts.ns_name] or vim.api.nvim_create_namespace(opts.ns_name),
+    opts = resolved_opts, -- Store the final, merged options.
+    extmark = extmark_util, -- Store the initialized extmark utility instance.
+    ns_id = ns_id, -- Store the namespace ID for later use.
   }
 end
 
-local M = init(default_opts)
+--- Prepends the indentation of a specific line to each line in a given table of strings.
+---
+--- This function retrieves the indentation level (number of leading spaces) from a
+--- specified line number in the current buffer. It then prepends this amount of
+--- whitespace to every string within the provided table (representing a paragraph).
+--- If the specified line has no indentation or the input table is empty, the
+--- original table is returned unchanged.
+---
+--- @param linenr number The 1-based line number in the current buffer to fetch the indentation from.
+--- @param para table|nil A table where each element is a string representing a line of text. Defaults to an empty table if nil.
+--- @return table A new table with each line prepended with the calculated indentation, or the original `para` table if no indentation is needed or `para` is empty.
+local function indent_para(linenr, para)
+  -- Ensure 'para' is a table; default to an empty table if it's nil.
+  para = para or {}
 
----@param buf integer buffer number, 0 for current buffer
----@param row integer Line where to place the mark, 0-based
----@param col integer Column where to place the mark, 0-based
----@param text string virtual text to add
+  -- Retrieve the indentation level (number of spaces) of the target line.
+  -- vim.fn.indent() returns the number of leading spaces.
+  local indent_level = vim.fn.indent(linenr)
+
+  -- Optimization: Return early if there's no indentation to add
+  -- or if the input paragraph table is empty.
+  if indent_level == 0 or #para == 0 then
+    return para
+  end
+
+  -- Pre-calculate the indentation string (repeated spaces) for efficiency.
+  -- Avoids recalculating string.rep inside the loop/map.
+  local indent_str = string.rep(" ", indent_level)
+
+  -- Apply the indentation string to the beginning of each line in the paragraph.
+  -- vim.tbl_map creates a new table by applying the function to each element of 'para'.
+  return vim.tbl_map(function(line)
+    -- Concatenate the indentation string with the original line content.
+    return indent_str .. line
+  end, para)
+end
+
+local M = init()
+
+--- Sets an extmark with inline virtual text in a buffer.
+--- Merges provided options with defaults (`virt_text_pos = "inline"`,
+--- `virt_text_repeat_linebreak = true`, `hl_mode = "combine"`) using
+--- `vim.tbl_deep_extend("keep", ...)`, meaning existing keys in `opts` are preserved.
+--- The `virt_text` option is always constructed and overwrites any provided value.
+---
+---@param buf integer Buffer handle (0 for current buffer).
+---@param row integer 0-based line index for the mark.
+---@param col integer 0-based column index for the mark.
+---@param text string The virtual text content to display (wrapped in '[]').
+---@param opts? table Additional options for `nvim_buf_set_extmark`. See `:h nvim_buf_set_extmark()`.
 local function set_text_extmark(buf, row, col, text, opts)
-  opts = vim.tbl_deep_extend("keep", opts or {}, {
+  -- Ensure opts is a table if nil was passed.
+  opts = opts or {}
+
+  -- Define default settings for the extmark appearance and behavior.
+  local default = {
     virt_text_pos = "inline",
     virt_text_repeat_linebreak = true,
     hl_mode = "combine",
-  })
-  opts.virt_text = { { string.format("[%s]", text), M.opts.hl_group } }
-  vim.api.nvim_buf_set_extmark(buf, M.ns_id, row, col, opts)
+  }
+
+  local merged_opts = vim.tbl_deep_extend("keep", opts, default)
+
+  -- Format the virtual text chunk with the specified highlight group.
+  -- This structure is required by the API: { { text_chunk, hl_group }, ... }
+  -- Assumes M.opts.hl_group is defined in the surrounding module scope.
+  merged_opts.virt_text = { { string.format("[%s]", text), M.opts.hl_group } }
+
+  -- Place the extmark using the Neovim API.
+  -- Assumes M.ns_id (namespace ID) is defined in the surrounding module scope.
+  vim.api.nvim_buf_set_extmark(buf, M.ns_id, row, col, merged_opts)
 end
 
 ---@param buf integer buffer number, 0 for current buffer
@@ -123,7 +199,61 @@ function M.translate_paragraph(content, opts)
   end)
 end
 
-function M.run()
+---@param buf? integer buf number
+---@param line? integer line number (1-based)
+function M.translate_line(buf, line)
+  buf = buf or vim.api.nvim_get_current_buf()
+  line = line or vim.api.nvim_win_get_cursor(0)[1]
+  -- Get the content of the line. Note: API uses 0-based indexing.
+  local content_lines = vim.api.nvim_buf_get_lines(buf, line - 1, line, false)
+  if not content_lines or #content_lines == 0 then
+    vim.notify("Error: Could not get content for line " .. line .. " in buffer " .. buf, vim.log.levels.ERROR)
+    return -- Return early if content is empty/invalid
+  end
+  local content = content_lines[1] -- We requested exactly one line
+
+  -- Get the indentation of the line in the target buffer
+  local indent_num = vim.api.nvim_buf_call(buf, function()
+    local indent_num = 0
+    if line > 0 and line <= vim.api.nvim_buf_line_count(0) then -- Use 0 for current buffer in this context
+      indent_num = math.max(vim.fn.indent(line), 0)
+    end
+    return indent_num
+  end)
+
+  -- Determine the target text width
+  local textwidth = vim.bo[buf].textwidth
+  if not textwidth or textwidth <= 0 then
+    -- Calculate width based on content, ensuring content is not nil
+    local display_width = math.max(vim.fn.strdisplaywidth(content or ""), 0)
+    textwidth = math.min(display_width, 78) -- Fallback width capped at 78
+  end
+
+  -- Call the translate_paragraph function with the single line content (as a table)
+  M.translate_paragraph({ content }, {
+    textwidth = textwidth,
+    indent = indent_num, -- Guaranteed non-negative now
+    callback = function(translated_lines)
+      if not translated_lines or #translated_lines == 0 then
+        return -- Nothing to display
+      end
+      -- Map the translated lines, adding indentation and trimming whitespace
+      local prepared_lines = vim.tbl_map(function(l)
+        -- Ensure l is a string before trimming
+        local trimmed_line = vim.trim(l or "")
+        return string.rep(" ", indent_num) .. trimmed_line
+      end, translated_lines)
+
+      -- Set the extmark only if there are prepared lines
+      if #prepared_lines > 0 then
+        -- Add extmark relative to the original line (0-based index)
+        set_line_extmark(buf, line - 1, prepared_lines)
+      end
+    end,
+  })
+end
+
+function M.translate_selection()
   local winid = vim.api.nvim_get_current_win()
   local buf = vim.api.nvim_win_get_buf(winid)
   local visual_coordiate = require("util").get_visual_coordinate()
@@ -162,18 +292,6 @@ function M.run()
     local indent_num = vim.api.nvim_buf_call(buf, function()
       return vim.fn.indent(paragraph_end[#paragraph_end])
     end)
-
-    -- Insert indent space at the front of the translated line
-    local function indent_para(linenr, para)
-      para = para or {}
-      local indent = vim.fn.indent(linenr)
-      if indent == 0 or #para == 0 then
-        return para
-      end
-      return vim.tbl_map(function(line)
-        return string.rep(" ", indent) .. line
-      end, para)
-    end
 
     -- Perform paragraph translation and insert the translated line into the
     -- buffer where the original text is located in the form of extmark
@@ -217,7 +335,7 @@ function M.trans_op(type)
 end
 
 function M.toggle()
-  M.extmark:toggle_extmarks()
+  return M.extmark:toggle_extmarks()
 end
 
 return M
