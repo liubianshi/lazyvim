@@ -644,4 +644,17 @@ return {
       vim.cmd("Wrapwidth 80")
     end,
   },
+  { -- Efficient targetted menu built for fast buffer navigation {{{3 --- {{{2
+    "leath-dub/snipe.nvim",
+    keys = {
+      {
+        "gb",
+        function()
+          require("snipe").open_buffer_menu()
+        end,
+        desc = "Open Snipe buffer menu",
+      },
+    },
+    opts = {},
+  },
 }
