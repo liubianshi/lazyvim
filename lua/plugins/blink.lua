@@ -122,13 +122,12 @@ return {
         cmdline = {
           enabled = true,
           keymap = {
+            preset = "cmdline",
             ["<cr>"] = { "accept_and_enter", "fallback" },
           },
           completion = {
             menu = {
-              auto_show = function(ctx)
-                return vim.fn.getcmdtype() == ":"
-              end,
+              auto_show = true,
             },
             list = {
               selection = {
