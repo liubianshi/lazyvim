@@ -57,17 +57,31 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
     { "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", desc = "CodeCompanion Toggle", mode = { "n", "v" } },
     { "<c-a>a", "<cmd>CodeCompanionChat Add<cr>", desc = "CodeCompanion Toggle", mode = { "v" } },
     {
-      "<leader>ap",
+      "<A-o>",
       function()
-        local buftype = vim.bo.buftype
-        if buftype == "quarto" then
-          require("codecompanion").prompt("apolish")
-        else
-          require("codecompanion").prompt("polish")
+        -- Determine the appropriate polish prompt based on the filetype.
+        local filetype = vim.bo.filetype
+        local prompt_name = (filetype == "quarto") and "apolish" or "polish"
+
+        -- Get the current mode.
+        local current_mode = vim.fn.mode() -- Use vim.fn.mode() for simplicity
+
+        -- If in normal mode, visually select the current line before proceeding.
+        if current_mode == "n" then
+          vim.cmd.normal({ "V", bang = true }) -- Select current line visually
+        -- Ensure we are in some form of visual mode (visual, visual line, visual block)
+        elseif not (current_mode == "v" or current_mode == "V" or current_mode == "\22") then -- \22 is Ctrl-V/blockwise
+          vim.notify("Mapping <A-o> requires normal or visual mode.", vim.log.levels.WARN)
+          return
         end
+
+        -- Construct and execute the CodeCompanion command for the visual selection.
+        vim.schedule(function()
+          require("codecompanion").prompt(prompt_name)
+        end)
       end,
-      desc = "CodeCompanion: polish selected text",
-      mode = { "v" },
+      desc = "CodeCompanion: Polish selected text (Academic for Quarto)", -- Updated description
+      mode = { "n", "v" }, -- Retain original modes
     },
   },
   cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions" },
@@ -149,7 +163,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "gemini-2.0-flash",
+              default = "gemini-2.5-flash-preview-04-17-nothink",
             },
             temperature = {
               default = 0.4,

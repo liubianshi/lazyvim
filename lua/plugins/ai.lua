@@ -227,13 +227,13 @@ return {
       "GpTranslator",
     },
     keys = {
-      {
-        "<M-o>",
-        ":<C-u>'<,'>GpTextOptimize<cr>",
-        desc = "Optimize Text",
-        nowait = true,
-        mode = { "v" },
-      },
+      -- {
+      --   "<M-o>",
+      --   ":<C-u>'<,'>GpTextOptimize<cr>",
+      --   desc = "Optimize Text",
+      --   nowait = true,
+      --   mode = { "v" },
+      -- },
       {
         "<C-g>c",
         "<cmd>GpChatNew vsplit<cr>",

@@ -143,7 +143,7 @@ function M.translate_paragraph(content, opts)
     return
   end
 
-  local cmd = { "fabric", "--pattern", "translate", "-m=gemini-2.0-flash-exp", "--stream" }
+  local cmd = { "fabric", "--pattern", "translate", "-m=gemini-2.5-flash-preview-04-17-nothink", "--stream" }
 
   local head_chars = vim.trim(content[1]):sub(1, 20)
   local is_cjk = false
