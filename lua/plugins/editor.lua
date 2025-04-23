@@ -660,7 +660,13 @@ return {
   { -- simulates wrapping a single line at a time ----------------------- {{{3
     "benlubas/wrapping-paper.nvim",
     keys = {
-      { "gww", require("wrapping-paper").wrap_line, desc = "fake wrap current line" },
+      {
+        "gww",
+        function()
+          require("wrapping-paper").wrap_line()
+        end,
+        desc = "fake wrap current line",
+      },
     },
     config = true,
   },
