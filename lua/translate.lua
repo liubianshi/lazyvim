@@ -143,7 +143,7 @@ function M.translate_paragraph(content, opts)
     return
   end
 
-  local cmd = { "fabric", "--pattern", "translate", "-m=gemini-2.5-flash-preview-04-17-nothink", "--stream" }
+  local cmd = { "fabric-ai", "--pattern", "translate", "-m=gemini-2.5-flash-preview-04-17-nothink", "--stream" }
 
   local head_chars = vim.trim(content[1]):sub(1, 20)
   local is_cjk = false
@@ -156,7 +156,7 @@ function M.translate_paragraph(content, opts)
   if is_cjk then
     table.insert(cmd, "-v=lang_code:en_US")
   else
-    table.insert(cmd, "-v=lang_code:zh_cn")
+    table.insert(cmd, "-v=lang_code:zh_CN")
   end
 
   local ok, progress = pcall(require, "fidget.progress")

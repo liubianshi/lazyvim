@@ -153,7 +153,7 @@ function M.handle_stdout(obj, opts)
   end
 
   local cmd_string = table.concat(opts.cmd, " ")
-  local is_fabric_translate = cmd_string:match("fabric %-%-pattern translate")
+  local is_fabric_translate = cmd_string:match("fabric%-ai %-%-pattern translate")
   if is_fabric_translate then
     return process_fabric_translate(obj, opts)
   end
