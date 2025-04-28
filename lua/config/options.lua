@@ -142,6 +142,7 @@ opt.fillchars = {
 }
 opt.foldcolumn = "0"
 opt.foldlevel = 99
+opt.foldexpr = ""
 opt.foldmethod = "expr"
 opt.formatexpr = ""
 opt.formatlistpat = "\\v^\\s*(\\d{1,2}\\.|\\(\\d{1,2}\\)|\\[\\d{1,2}\\]|[-+*])\\s+"
