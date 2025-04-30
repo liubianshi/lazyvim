@@ -338,4 +338,51 @@ function M.toggle()
   return M.extmark:toggle_extmarks()
 end
 
+function M.translate_word(word, backfile)
+  word = word or vim.fn.expand("<cword>")
+  local cmd_string = "parse-kd-output " .. word
+  local cmd = vim.split(cmd_string, "%s+")
+  local win_height = 15
+  local win_width = 70
+  local nvim_height = vim.api.nvim_win_get_height(0)
+  local current_row = vim.fn.winline()
+  local current_col = vim.fn.wincol()
+
+  if nvim_height - current_row < win_height then
+    current_row = current_row - win_height - 1
+  end
+
+  local win = require("snacks.win").new({
+    backdrop = false,
+    relative = "editor",
+    row = current_row,
+    col = current_col,
+    width = win_width,
+    height = win_height,
+    bo = {
+      filetype = "markdown",
+    },
+    wo = {
+      signcolumn = "yes:1",
+      wrap = true,
+      linebreak = true,
+    },
+    text = function()
+      local obj = vim.system(cmd, { text = true }):wait(50)
+      if obj.code ~= 0 then
+        return ""
+      end
+      return "<!-- start_anki word -->\n" .. obj.stdout .. "<!-- end_anki -->"
+    end,
+  })
+
+  win:show()
+
+  if backfile and vim.uv.fs_access(backfile, "W") then
+    vim.fn.writefile(win:lines(), backfile, "a")
+  end
+
+  return win:lines(), win
+end
+
 return M

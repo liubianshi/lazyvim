@@ -134,7 +134,7 @@ local function process_fabric_translate(obj, opts)
 end
 
 ---@param obj vim.SystemCompleted
----@param opts Term.PipeOpts
+---@param opts? Term.PipeOpts
 function M.handle_stdout(obj, opts)
   opts = opts or {}
   local status = obj.code == 0 and "success" or "error"

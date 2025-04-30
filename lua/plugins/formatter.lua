@@ -7,7 +7,7 @@ return {
       json = { "jq" },
       xml = { "xmllint" },
       yaml = { "yq" },
-      r = { "air" },
+      r = { "r-format" },
       markdown = { "mdwrap" },
       codecompanion = { "mdwrap" },
       perl = { "perltidy" },

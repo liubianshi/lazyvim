@@ -255,11 +255,11 @@ return {
         lua = { "treesitter", "indent" },
         norg = { "treesitter" },
         org = { "treesitter" },
-        r = { "treesitter", "indent" },
+        r = nil,
         markdown = { "treesitter", "indent" },
-        vim = "",
+        vim = nil,
         sagaoutline = "",
-        git = "",
+        git = nil,
       }
       local ufo = require("ufo")
       local handler = function(virtText, lnum, endLnum, width, truncate)
