@@ -645,23 +645,9 @@ function! utils#Trans_string(str)
     if ! filereadable(daily_trans_file)
       call writefile(["# Daily translation ", ""], daily_trans_file, "a")
     endif
-    if len(split(a:str, ' ')) <= 5 && a:str =~? '\v^[a-z]'
-        call v:lua.require'translate'.translate_word(a:str, daily_trans_file)
+    if len(split(a:str, ' ')) <= 3 && a:str =~? '\v^[a-z]'
+        call v:lua.require'kd'.translate_word(a:str, daily_trans_file)
         return ""
-        "
-        " let cmd = "sdcv -j " .. a:str
-        " let re = system(cmd)
-        " if v:shell_error != 0 | return | endif
-        " let re = json_decode(re)
-        " let wd = trim(re[0]['word'])
-        " let re = trim(re[0]['definition'])
-        " call luaeval("vim.notify(_A[2], vim.log.levels.INFO, {title = _A[1]})", [a:str, re])
-        "
-        " let re = substitute(re, '\v\*(\[[^\]]+\])\ze\n', '`\1`', "")
-        " let re = substitute(re, "\n", "\n>\n> ", "g")
-        " let re = "> [!ANKI word] " . wd . "\n>\n> " . re
-        " call writefile([""] + split(re, "\n") + [""], daily_trans_file, 'a')
-        " return re
     endif
     let cmd = printf(cmd, a:str)
     let re = systemlist(cmd)
