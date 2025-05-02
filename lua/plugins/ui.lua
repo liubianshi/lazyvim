@@ -90,6 +90,8 @@ return {
             icon = " ",
             lang = "regex",
           },
+          lua = { pattern = "^:%s*lua%s+", icon = "", lang = "lua" },
+          lua_p = { pattern = { "^:%s*lua%s*=%s*", "^:%s*=%s*" }, icon = " 󰵪", lang = "lua" },
         },
       },
       routes = {

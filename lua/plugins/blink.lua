@@ -123,7 +123,39 @@ return {
           enabled = true,
           keymap = {
             preset = "cmdline",
-            ["<cr>"] = { "accept_and_enter", "fallback" },
+            ["<cr>"] = {
+              function(cmp)
+                if cmp.is_menu_visible() and cmp.get_selected_item() then
+                  if vim.fn.getcmdpos() > #vim.fn.getcmdline() then
+                    return cmp.accept_and_entter()
+                  else
+                    return cmp.accept()
+                  end
+                end
+                if cmp.is_menu_visible then
+                  cmp.cancel()
+                end
+              end,
+              "fallback",
+            },
+            ["<Left>"] = {
+              function(cmp)
+                if cmp.is_menu_visible() then
+                  cmp.cancel()
+                end
+              end,
+              "fallback",
+            },
+            ["<Right>"] = {
+              function(cmp)
+                if cmp.is_menu_visible() then
+                  cmp.cancel()
+                end
+              end,
+              "fallback",
+            },
+            ["<Up>"] = { "select_prev", "fallback" },
+            ["<Down>"] = { "select_next", "fallback" },
           },
           completion = {
             menu = {
