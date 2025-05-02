@@ -67,6 +67,9 @@ return {
           ["<S-Tab>"] = { "select_prev", "fallback_to_mappings" },
         },
         completion = {
+          ghost_text = {
+            enabled = true,
+          },
           accept = {
             auto_brackets = {
               enabled = true,
@@ -74,8 +77,6 @@ return {
           },
           trigger = {
             prefetch_on_insert = false,
-            show_in_snippet = true,
-            show_on_trigger_character = true,
           },
           documentation = {
             window = { border = border },
@@ -127,7 +128,7 @@ return {
               function(cmp)
                 if cmp.is_menu_visible() and cmp.get_selected_item() then
                   if vim.fn.getcmdpos() > #vim.fn.getcmdline() then
-                    return cmp.accept_and_entter()
+                    return cmp.accept_and_enter()
                   else
                     return cmp.accept()
                   end
@@ -158,6 +159,7 @@ return {
             ["<Down>"] = { "select_next", "fallback" },
           },
           completion = {
+            ghost_text = { enabled = true },
             menu = {
               auto_show = true,
             },
