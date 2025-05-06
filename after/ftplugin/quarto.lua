@@ -1,3 +1,10 @@
+-- Guard clause: Exit if this configuration has already been applied to the buffer
+if vim.b.lbs_quarto_config then
+  return
+end
+-- Mark this buffer as having the configuration applied
+vim.b.lbs_quarto_config = true
+
 vim.b.slime_cell_delimiter = "```"
 vim.b["quarto_is_r_mode"] = nil
 vim.b["reticulate_running"] = false
@@ -8,15 +15,6 @@ vim.wo.wrap = false
 vim.wo.linebreak = false
 vim.wo.breakindent = true
 -- vim.wo.showbreak = '|'
-
--- don't run vim ftplugin on top
-vim.api.nvim_buf_set_var(0, "did_ftplugin", true)
-
--- markdown vs. quarto hacks
-local ns = vim.api.nvim_create_namespace("QuartoHighlight")
-vim.api.nvim_set_hl(ns, "@markup.strikethrough", { strikethrough = false })
-vim.api.nvim_set_hl(ns, "@markup.doublestrikethrough", { strikethrough = true })
-vim.api.nvim_win_set_hl_ns(0, ns)
 
 -- vim.cmd.UltiSnipsAddFiletype "quarto.r.markdown"
 vim.api.nvim_set_option_value("formatexpr", nil, { scope = "local" })
@@ -47,17 +45,13 @@ local preview = function()
 
   --- @diagnostic disable: undefined-global
   Snacks.notify.info("Quarto Start Render", { title = "Quarto", icon = "" })
-  local job = vim.system(
-    { "fexport", "--to", "html", "--from", "quarto", "--preview", file },
-    { text = true },
-    function(obj)
-      if obj and obj.code == 0 then
-        Snacks.notify.info("Render Success\n" .. obj.stdout, { title = "Quarto", icon = "" })
-      else
-        Snacks.notify.error("Failed to Render:\n" .. obj.stderr, { title = "Quarto", icon = "" })
-      end
+  vim.system({ "fexport", "--to", "html", "--from", "quarto", "--preview", file }, { text = true }, function(obj)
+    if obj and obj.code == 0 then
+      Snacks.notify.info("Render Success\n" .. obj.stdout, { title = "Quarto", icon = "" })
+    else
+      Snacks.notify.error("Failed to Render:\n" .. obj.stderr, { title = "Quarto", icon = "" })
     end
-  )
+  end)
   keymap({
     "<localleader>xP",
     function()
@@ -146,8 +140,17 @@ vim.keymap.set({ "x", "o" }, "ac", function()
   vim.fn["text_obj#MdCodeBlock"]("a")
 end, { desc = "Chunk a", silent = true, buffer = true })
 
--- Hightlight
-vim.cmd([[
-syntax match QuartoCrossRef /\v[^-_0-9A-Za-z]\zs\@[^ ]+[-_0-9A-Za-z]/
-exec "highlight def QuartoCrossRef guifg=" . g:lbs_colors['orange']
-]])
+-- Custom syntax highlighting
+vim.schedule(function()
+  -- markdown vs. quarto hacks
+  local ns = vim.api.nvim_create_namespace("QuartoHighlight")
+  vim.api.nvim_set_hl(ns, "@markup.strikethrough", { strikethrough = false })
+  vim.api.nvim_set_hl(ns, "@markup.doublestrikethrough", { strikethrough = true })
+  vim.api.nvim_set_hl(ns, "@markup.strong.markdown_inline", { underline = true })
+  vim.api.nvim_win_set_hl_ns(0, ns)
+
+  vim.cmd([[
+  syntax match QuartoCrossRef /\v[^-_0-9A-Za-z]\zs\@[^ ]+[-_0-9A-Za-z]/
+  exec "highlight link QuartoCrossRef @markup.link.label"
+  ]])
+end)

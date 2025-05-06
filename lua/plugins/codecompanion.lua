@@ -99,8 +99,8 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
   opts = {
     display = {
       chat = {
-        show_settings = true,
-        auto_scroll = false,
+        show_settings = false,
+        auto_scroll = true,
         window = {
           width = 0.375,
           opts = {
@@ -111,7 +111,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         },
       },
       diff = {
-        provider = "mini_diff",
+        provider = "default",
       },
     },
     strategies = {
@@ -163,7 +163,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "gemini-2.5-flash-preview-04-17-nothink",
+              default = "gemini-2.5-flash-preview-04-17",
             },
             temperature = {
               default = 0.4,
@@ -190,6 +190,20 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
             temperature = {
               default = 0.4,
             },
+          },
+        })
+      end,
+      ["gemini"] = function()
+        return require("codecompanion.adapters").extend("gemini", {
+          env = {
+            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh gemini",
+          },
+        })
+      end,
+      ["xai"] = function()
+        return require("codecompanion.adapters").extend("xai", {
+          env = {
+            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh xai",
           },
         })
       end,
@@ -394,6 +408,16 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
               contains_code = true,
             },
           },
+        },
+      },
+    },
+    extensions = {
+      mcphub = {
+        callback = "mcphub.extensions.codecompanion",
+        opts = {
+          show_result_in_chat = true, -- Show mcp tool results in chat
+          make_vars = true, -- Convert resources to #variables
+          make_slash_commands = true, -- Add prompts as /slash commands
         },
       },
     },

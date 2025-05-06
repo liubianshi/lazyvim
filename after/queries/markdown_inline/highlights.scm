@@ -1,4 +1,4 @@
-;extends
+; extends
 
 [
   (shortcut_link)
@@ -10,3 +10,4 @@
     (emphasis_delimiter)
     (emphasis_delimiter))
   (emphasis_delimiter))@markup.doublestrikethrough
+

@@ -66,6 +66,7 @@ return {
         min_editor_width = 72,
         rconsole_width = 78,
         compl_method = "buffer",
+        register_treesitter = true,
         objbr_openlist = true,
         objbr_place = "console,left",
         objbr_opendf = true,

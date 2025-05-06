@@ -268,7 +268,7 @@ keymap({
   mode = { "n", "v" },
   desc = "Translate",
 })
-
+vimkey("T", "Translate", "utils#Trans2clip()", { mode = { "v", "n" }, expr = true })
 vimkey("L", "Translate", "utils#Trans2clip()", { mode = { "v", "n" }, expr = true })
 imap("<localleader>l", "Translate", "<esc>:call utils#Trans_Subs()<cr>")
 nmap("<c-x>l", "Translate", function()
