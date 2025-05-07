@@ -268,7 +268,14 @@ keymap({
   mode = { "n", "v" },
   desc = "Translate",
 })
-vimkey("T", "Translate", "utils#Trans2clip()", { mode = { "v", "n" }, expr = true })
+vimkey("T", "Translate", function()
+  local trans_ok, trans = pcall(require, "translate")
+  if not trans_ok or not trans then
+    vim.notify("Failed to load module translate", vim.log.levels.ERROR)
+    return
+  end
+  trans.trans_op()
+end, { mode = { "v", "n" } })
 vimkey("L", "Translate", "utils#Trans2clip()", { mode = { "v", "n" }, expr = true })
 imap("<localleader>l", "Translate", "<esc>:call utils#Trans_Subs()<cr>")
 nmap("<c-x>l", "Translate", function()

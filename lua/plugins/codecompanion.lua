@@ -113,6 +113,9 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
       diff = {
         provider = "default",
       },
+      action_palette = {
+        provider = "default",
+      },
     },
     strategies = {
       chat = {
