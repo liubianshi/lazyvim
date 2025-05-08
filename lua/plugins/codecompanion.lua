@@ -88,9 +88,11 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
   dependencies = {
     "nvim-lua/plenary.nvim",
     "nvim-treesitter/nvim-treesitter",
+    "ravitemer/codecompanion-history.nvim",
   },
   init = function()
     vim.cmd([[cabbrev cc CodeCompanion]])
+    require("util.spinner"):init()
     local has_fidget, _ = pcall(require, "fidget")
     if has_fidget then
       require("util.fidget"):init()
@@ -120,6 +122,17 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
     strategies = {
       chat = {
         adapter = "gemini-search",
+        keymaps = {
+          send = {
+            callback = function(chat)
+              vim.cmd("stopinsert")
+              chat:add_buf_message({ role = "llm", content = "" })
+              chat:submit()
+            end,
+            index = 1,
+            description = "Send",
+          },
+        },
       },
       inline = {
         adapter = "gemini-thinking",
@@ -415,6 +428,25 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
       },
     },
     extensions = {
+      history = {
+        enabled = true,
+        opts = {
+          -- Keymap to open history from chat buffer (default: gh)
+          keymap = "gh",
+          -- Automatically generate titles for new chats
+          auto_generate_title = false,
+          -- On exiting and entering neovim, loads the last chat on opening chat
+          continue_last_chat = false,
+          -- When chat is cleared with `gx` delete the chat from history
+          delete_on_clearing_chat = false,
+          -- Picker interface ("telescope" or "default")
+          picker = "default",
+          -- Enable detailed logging for history extension
+          enable_logging = false,
+          -- Directory path to save the chats
+          dir_to_save = vim.fn.stdpath("data") .. "/codecompanion-history",
+        },
+      },
       mcphub = {
         callback = "mcphub.extensions.codecompanion",
         opts = {

@@ -16,15 +16,20 @@ return {
     version = false,
     lazy = false,
     priority = 1000, -- make sure to load this before all the other start plugins
-    config = function()
-      ---@diagnostic disable: missing-fields
-      require("everforest").setup({
-        background = "hard",
-        transparent_background_level = 0,
-        float_style = "dim",
-        italics = true,
-        disable_italic_comments = true,
-      })
+    opts = {
+      background = "hard",
+      transparent_background_level = 0,
+      float_style = "dim",
+      italics = true,
+      disable_italic_comments = true,
+      on_highlights = function(hl, palette)
+        hl.NormalFloat = { fg = palette.fg, bg = palette.none }
+        hl.FloatTitle = { bg = palette.none }
+        require("util.ui").adjust_hi_group(palette)
+      end,
+    },
+    config = function(_, opts)
+      require("everforest").setup(opts)
     end,
   },
   {

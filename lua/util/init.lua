@@ -314,7 +314,7 @@ function M.border(symbol, type, neovide, highlight)
   symbol = symbol or "═"
   type = type or "top"
   neovide = neovide or false
-  highlight = "MyBorder"
+  highlight = highlight or "MyBorder"
 
   if vim.fn.exists("g:neovide") == 1 and not neovide then
     return "none"

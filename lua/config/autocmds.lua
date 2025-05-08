@@ -336,41 +336,7 @@ vim.api.nvim_create_autocmd({ "ColorScheme" }, {
   pattern = "*",
   group = augroups.ColorScheme,
   callback = function()
-    -- 解决 vim 帮助文件的示例代码的不够突显的问题
-    vim.cmd("hi def link helpExample Special")
-
-    local bg_color = vim.api.nvim_get_hl(0, { name = "Pmenu" }).bg
-    if vim.fn.exists("g:neovide") == 1 then
-      vim.api.nvim_set_hl(0, "MyBorder", { fg = bg_color, bg = bg_color })
-    else
-      vim.api.nvim_set_hl(0, "MyBorder", { fg = vim.g.lbs_colors.orange, bg = bg_color })
-    end
-
-    vim.cmd("highlight DiagnosticSignInfo guibg=NONE")
-    -- Setting the color scheme of the Complement window
-    local pallete = {
-      background = vim.g.lbs_colors.yellow,
-      fg = vim.g.lbs_colors.darkblue,
-      strong = vim.g.lbs_colors.red,
-    }
-    if vim.o.background == "dark" then
-      pallete = {
-        background = vim.g.lbs_colors.darkblue,
-        fg = vim.g.lbs_colors.fg_float,
-        strong = vim.g.lbs_colors.red,
-      }
-    end
-
-    vim.cmd("highlight MyPmenu guibg=" .. pallete.background)
-    vim.cmd("highlight CmpItemAbbr guifg=" .. pallete.fg)
-    vim.cmd("highlight CmpItemAbbrMatch guifg=" .. pallete.strong)
-    vim.cmd("highlight MsgSeparator guibg=bg guifg=" .. pallete.strong)
-    vim.cmd("highlight ObsidianHighlightText guifg=" .. pallete.strong)
-    vim.cmd("highlight @markdown.strong gui=underline")
-    vim.cmd("highlight @markup.raw.markdown_inline guibg=NONE")
-
-    vim.cmd.highlight("link IndentLine LineNr")
-    vim.cmd.highlight("IndentLineCurrent guifg=" .. vim.g.lbs_colors.orange)
+    require("util.ui").adjust_hi_group()
   end,
   desc = "Define personal highlight group",
 })

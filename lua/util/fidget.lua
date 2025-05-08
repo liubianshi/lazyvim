@@ -4,24 +4,22 @@ local M = {}
 
 function M:init()
   local group = vim.api.nvim_create_augroup("CodeCompanionFidgetHooks", {})
-
   vim.api.nvim_create_autocmd({ "User" }, {
-    pattern = "CodeCompanionRequestStarted",
+    pattern = "CodeCompanionRequest*",
     group = group,
     callback = function(request)
-      local handle = M:create_progress_handle(request)
-      M:store_progress_handle(request.data.id, handle)
-    end,
-  })
-
-  vim.api.nvim_create_autocmd({ "User" }, {
-    pattern = "CodeCompanionRequestFinished",
-    group = group,
-    callback = function(request)
-      local handle = M:pop_progress_handle(request.data.id)
-      if handle then
-        M:report_exit_status(handle, request)
-        handle:finish()
+      if request.data.strategy == "chat" then
+        return
+      end
+      if request.match == "CodeCompanionRequestStarted" then
+        local handle = M:create_progress_handle(request)
+        M:store_progress_handle(request.data.id, handle)
+      elseif request.match == "CodeCompanionRequestFinished" then
+        local handle_data_id = M:pop_progress_handle(request.data.id)
+        if handle_data_id then
+          M:report_exit_status(handle_data_id, request)
+          handle_data_id:finish()
+        end
       end
     end,
   })

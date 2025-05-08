@@ -432,4 +432,51 @@ function M.fetch_color_pallete()
   return palette[vim.g.colors_name] and palette[vim.g.colors_name]() or palette.default()
 end
 
+function M.adjust_hi_group(palette)
+  palette = vim.tbl_deep_extend("keep", palette or {}, vim.g.lbs_colors)
+
+  -- 解决 vim 帮助文件的示例代码的不够突显的问题
+  vim.api.nvim_set_hl(0, "helpExample", { link = "Special", default = true })
+
+  local normal_float_hl = vim.api.nvim_get_hl(0, { name = "NormalFloat" })
+  local bg_color = normal_float_hl.bg -- If NormalFloat or its bg is not set, bg_color will be nil
+  local orange_color = palette.orange
+
+  -- Only try to set MyBorder if bg_color is available, to avoid issues if NormalFloat.bg is nil
+  if bg_color then
+    if vim.fn.exists("g:neovide") == 1 then
+      vim.api.nvim_set_hl(0, "MyBorder", { fg = bg_color, bg = bg_color })
+    else
+      vim.api.nvim_set_hl(0, "MyBorder", { fg = orange_color, bg = bg_color })
+    end
+  end
+
+  vim.api.nvim_set_hl(0, "DiagnosticSignInfo", { bg = "NONE" })
+  -- Setting the color scheme of the Complement window
+  local palette_update = vim.o.background == "dark"
+      and {
+        background = palette.darkblue,
+        fg = palette.fg_float,
+        strong = palette.red,
+      }
+    or {
+      background = palette.yellow,
+      fg = palette.darkblue,
+      strong = palette.red,
+    }
+  palette = vim.tbl_deep_extend("keep", palette_update, palette)
+
+  -- For "guibg=bg", use Normal group's background color
+  local normal_hl_info = vim.api.nvim_get_hl(0, { name = "Normal" })
+  local normal_bg_color = normal_hl_info.bg -- This will be nil if Normal.bg is not set
+  vim.api.nvim_set_hl(0, "MsgSeparator", { bg = normal_bg_color, fg = palette.strong })
+
+  vim.api.nvim_set_hl(0, "ObsidianHighlightText", { fg = palette.strong })
+  vim.api.nvim_set_hl(0, "@markdown.strong", { underline = true })
+  vim.api.nvim_set_hl(0, "@markup.raw.markdown_inline", { bg = "NONE" })
+
+  vim.api.nvim_set_hl(0, "IndentLine", { link = "LineNr" })
+  vim.api.nvim_set_hl(0, "IndentLineCurrent", { fg = palette.orange })
+end
+
 return M

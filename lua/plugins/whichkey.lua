@@ -6,14 +6,14 @@ return { -- folke/which-key.nvim: displays a popup with possible keybindings - {
       height = { min = 1, max = 15 },
     },
     win = {
-      border = require("util").border("═", "top", true),
+      border = require("util").border("═", "top", true, "Orange"),
     },
     triggers = {
       { "<auto>", mode = "nixsoc" },
-      { "s", mode = { "n", "v" } },
-      { ",", mode = { "n" } },
-      { "w", mode = { "n" } },
-      { "<localleader>", mode = { "n", "i" } },
+      { "s", mode = "nv" },
+      { ",", mode = "n" },
+      { "w", mode = "n" },
+      { "<localleader>", mode = "n" },
     },
     replace = {
       key = {
