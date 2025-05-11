@@ -255,7 +255,7 @@ return {
         lua = { "treesitter", "indent" },
         norg = { "treesitter" },
         org = { "treesitter" },
-        r = nil,
+        r = { "treesitter" },
         markdown = { "treesitter", "indent" },
         vim = nil,
         sagaoutline = "",
@@ -329,13 +329,18 @@ return {
     "chrisgrieser/nvim-origami",
     event = "BufReadPost",
     opts = {
-      keepFoldsAcrossSessions = true,
+      keepFoldsAcrossSessions = package.loaded["ufo"] ~= nil,
       pauseFoldsOnSearch = true,
       FoldKeymaps = {
-        setup = ture,
+        setup = true,
         hOnlyOpensOnFirstColumn = true,
       },
     },
+  },
+  { -- chrisgrieser/nvim-early-retirement ------------------------------- {{{2
+    "chrisgrieser/nvim-early-retirement",
+    config = true,
+    event = "VeryLazy",
   },
   { -- kylechui/nvim-surround: Surround selections, stylishly ----------- {{{3
     "kylechui/nvim-surround",

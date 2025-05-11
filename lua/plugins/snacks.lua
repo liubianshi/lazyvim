@@ -100,6 +100,58 @@ return {
             number = false,
           },
         },
+        input = {
+          keys = {
+            ["<c-x>d"] = { "delete_file", mode = { "n", "i" } },
+          },
+        },
+      },
+      actions = {
+        delete_file = function(picker)
+          -- Get the selected item from the picker
+          local items = picker:selected({ fallback = true })
+
+          for _, item in ipairs(items) do
+            if not item or not item._path or type(item._path) ~= "string" then
+              vim.notify(
+                "No valid item selected or item path is invalid.",
+                vim.log.levels.WARN,
+                { title = "File Deletion" }
+              )
+              return
+            end
+
+            local file_path = item._path
+            if not vim.uv.fs_stat(file_path) then
+              vim.notify(
+                "File or directory does not exist: " .. file_path,
+                vim.log.levels.WARN,
+                { title = "File Deletion" }
+              )
+              return
+            end
+
+            local filename = vim.fn.fnamemodify(file_path, ":t") -- Extracts filename from path
+            Snacks.input({ prompt = string.format("Delete %s? (y/N): ", filename) }, function(answer)
+              local normalized_answer = string.lower(answer or "")
+              if normalized_answer == "y" or normalized_answer == "yes" then
+                vim.uv.fs_unlink(file_path, function(unlink_err)
+                  if unlink_err then
+                    local error_message = string.format(
+                      "Error deleting file %s: %s (%s)",
+                      file_path,
+                      unlink_err[1] or "Unknown Error", -- Error code string
+                      unlink_err[2] or "No details" -- Error description string
+                    )
+                    vim.notify(error_message, vim.log.levels.ERROR, { title = "File Deletion" })
+                  end
+                end)
+              end
+
+              picker:close()
+            end)
+          end
+        end,
       },
     },
     quickfile = { enabled = true },

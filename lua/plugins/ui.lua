@@ -1,5 +1,5 @@
 return {
-  { -- folke/noice.nvim
+  { -- folke/noice.nvim ------------------------------------------------- {{{2
     "folke/noice.nvim",
     cmd = { "NoiceEnable" },
     keys = {
@@ -155,7 +155,7 @@ return {
       },
     },
   },
-  { -- vim-voom/VOoM: vim Outliner of Markups
+  { -- vim-voom/VOoM: vim Outliner of Markups --------------------------- {{{2
     "vim-voom/VOoM",
     cmd = "Voom",
     keys = {
@@ -175,7 +175,7 @@ return {
     end,
   },
   { "echasnovski/mini.pairs", enabled = false },
-  { -- windwp/nvim-autopairs: autopair tools
+  { -- windwp/nvim-autopairs: autopair tools ---------------------------- {{{2
     "windwp/nvim-autopairs",
     opts = {
       disable_filetype = { "TelescopePrompt" },
@@ -200,9 +200,8 @@ return {
       local npairs = require("nvim-autopairs")
       npairs.add_rules({
         Rule("`", "`", "-stata"),
-        --TODO:nvim 的补全似乎有点问题，即会将光标后面的字符也纳入考虑
-        Rule("[", "]", "markdown"):replace_endpair(function(opts)
-          if require("util").in_obsidian_vault(opts.bufnr) then
+        Rule("[", "]", "markdown"):replace_endpair(function(o)
+          if require("util").in_obsidian_vault(o.bufnr) then
             return ""
           else
             return "]"
@@ -214,7 +213,7 @@ return {
       })
     end,
   },
-  { -- Make your nvim window separators colorful ------------------------ {{{3
+  { -- Make your nvim window separators colorful ------------------------ {{{2
     "nvim-zh/colorful-winsep.nvim",
     event = { "WinNew" },
     config = function()
@@ -232,7 +231,7 @@ return {
       })
     end,
   },
-  { -- kevinhwang91/nvim-hlslens: Hlsearch Lens for Neovim -------------- {{{3
+  { -- kevinhwang91/nvim-hlslens: Hlsearch Lens for Neovim -------------- {{{2
     "kevinhwang91/nvim-hlslens",
     event = { "SearchWrapped", "CursorMoved" },
     keys = {
@@ -257,7 +256,7 @@ return {
       nearest_float_when = "auto",
     },
   },
-  { -- j-hui/fidget.nvim: ----------------------------------------------- {{{3
+  { -- j-hui/fidget.nvim: ----------------------------------------------- {{{2
     -- Extensible UI for Neovim notifications and LSP progress messages
     "j-hui/fidget.nvim",
     config = true,

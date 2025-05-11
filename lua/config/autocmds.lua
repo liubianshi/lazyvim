@@ -12,10 +12,12 @@ vim.api.nvim_del_augroup_by_name("lazyvim_resize_splits")
 vim.api.nvim_del_augroup_by_name("lazyvim_highlight_yank")
 
 local aucmd = vim.api.nvim_create_autocmd
+
 local function augroup(name)
   name = "LBS_" .. name
   return vim.api.nvim_create_augroup(name, { clear = true })
 end
+
 local augroups = vim.tbl_map(function(name)
   return augroup(name)
 end, {
@@ -42,6 +44,157 @@ aucmd({ "BufWritePre" }, {
   command = [[%s/\v\s+$//e]],
   desc = "Delete suffix space before writing",
 })
+
+
+-- Auto-save functionality for Neovim buffers.
+-- This module implements auto-saving of modified buffers after a specified timeout
+-- or upon certain events like losing focus or exiting Neovim.
+
+-- Configuration:
+local timeout = 10000 -- Auto-save delay in milliseconds (e.g., 10000ms = 10 seconds)
+
+-- State:
+-- Stores active timers, mapping buffer numbers (integers) to libuv timer objects.
+local timers = {}
+
+-- Note: The following functions `aucmd` and `augroups.Buffer` are assumed to be
+-- defined elsewhere in your Neovim configuration.
+-- Example setup:
+-- local my_augroup = vim.api.nvim_create_augroup("UserAutoSave", { clear = true })
+-- local augroups = { Buffer = my_augroup }
+-- local function aucmd(...) vim.api.nvim_create_autocmd(...) end
+
+
+-- Core save function
+-- @param buf integer: The buffer number to save.
+local function save(buf)
+  -- Use nvim_buf_call to ensure operations are performed in the context of the target buffer.
+  -- 'noautocmd update' writes the buffer if modified, without triggering autocommands
+  -- (like BufWritePre, BufWritePost), preventing potential save loops.
+  vim.api.nvim_buf_call(buf, function()
+    vim.cmd("noautocmd update")
+  end)
+end
+
+-- Autocommand: Schedule auto-save on buffer modification or leaving insert mode.
+aucmd({ "InsertLeave", "TextChanged" }, {
+  group = augroups.Buffer,
+  desc = "Schedule auto-saving for modified buffers",
+  callback = function(event)
+    local buf = event.buf
+    local bo = vim.bo[buf] -- Buffer-local options
+
+    -- Conditions to skip auto-saving:
+    -- 1. Buffer has no associated file (unnamed).
+    -- 2. Buffer is a special type (e.g., 'nofile', 'quickfix', 'terminal', 'prompt').
+    -- 3. Buffer is for a git commit message.
+    -- 4. Buffer is read-only.
+    -- 5. Buffer has not been modified.
+    if vim.api.nvim_buf_get_name(buf) == "" or
+        bo.buftype ~= "" or
+        bo.filetype == "gitcommit" or
+        bo.readonly or
+        not bo.modified then
+      return
+    end
+
+    local timer = timers[buf]
+    -- If an active timer already exists for this buffer, stop it to reset the countdown.
+    if timer and timer:is_active() then
+      timer:stop()
+    end
+
+    -- If no timer exists for this buffer, create a new one.
+    if not timer then
+      timer = vim.uv.new_timer()
+      if not timer then
+        vim.notify("AutoSave: Failed to create timer for buffer " .. buf, vim.log.levels.ERROR)
+        return
+      end
+      timers[buf] = timer
+    end
+
+    -- Start (or restart) the timer.
+    -- It will fire once after 'timeout' milliseconds.
+    timer:start(
+      timeout,
+      0, -- A repeat count of 0 means the timer fires only once.
+      vim.schedule_wrap(function() -- Wrap in vim.schedule_wrap for safety from async context.
+        -- Before saving, re-check conditions as buffer state might have changed.
+        if vim.api.nvim_buf_is_valid(buf) then
+          local current_bo = vim.bo[buf] -- Re-fetch buffer options
+          if current_bo and current_bo.modified and not current_bo.readonly then
+            save(buf)
+          end
+        end
+      end)
+    )
+  end,
+})
+
+-- Autocommand: Save all pending buffers immediately on specific global events.
+-- Events:
+--   FocusLost: Neovim window loses focus.
+--   ExitPre: Before Neovim exits (ensures data is saved).
+--   TermEnter: When entering a terminal buffer (often means user is switching tasks).
+aucmd({ "FocusLost", "ExitPre", "TermEnter" }, {
+  group = augroups.Buffer,
+  desc = "Save all modified buffers with pending auto-save timers immediately",
+  callback = function()
+    for buf, timer in pairs(timers) do
+      if vim.api.nvim_buf_is_valid(buf) then
+        if timer:is_active() then
+          timer:stop() -- Stop the scheduled save.
+          local bo = vim.bo[buf]
+          -- Save immediately if the buffer is still modified and not read-only.
+          if bo and bo.modified and not bo.readonly then
+            save(buf)
+          end
+        end
+      else
+        -- Buffer is no longer valid, clean up its timer.
+        if timer:is_active() then
+          timer:stop()
+        end
+        timer:close()
+        timers[buf] = nil
+      end
+    end
+  end,
+})
+
+-- Autocommand: Cancel scheduled auto-saving on manual save or entering insert mode.
+-- Events:
+--   BufWritePost: After a buffer has been successfully written (manual save by user).
+--   InsertEnter: When user starts typing (no need to auto-save immediately).
+aucmd({ "BufWritePost", "InsertEnter" }, {
+  group = augroups.Buffer,
+  desc = "Cancel scheduled auto-saving for the current buffer",
+  callback = function(event)
+    local timer = timers[event.buf]
+    if timer and timer:is_active() then
+      timer:stop()
+    end
+  end,
+})
+
+-- Autocommand: Clean up timer when a buffer is deleted.
+aucmd({ "BufDelete" }, {
+  group = augroups.Buffer,
+  desc = "Remove and close timer for a deleted buffer",
+  callback = function(event)
+    local timer = timers[event.buf]
+    if timer then
+      if timer:is_active() then
+        timer:stop()
+      end
+      timer:close() -- Release libuv resources associated with the timer.
+      timers[event.buf] = nil -- Remove the timer from our tracking table.
+    end
+  end,
+})
+
+------------------------------------------------------------------------ }}}
 
 -- Zen mode related ----------------------------------------------------- {{{1
 local function process_win(win)
