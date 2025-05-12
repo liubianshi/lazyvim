@@ -45,18 +45,22 @@ local preview = function()
 
   --- @diagnostic disable: undefined-global
   Snacks.notify.info("Quarto Start Render", { title = "Quarto", icon = "" })
-  vim.system({ "fexport", "--to", "html", "--from", "quarto", "--preview", file }, { text = true }, function(obj)
-    if obj and obj.code == 0 then
-      Snacks.notify.info("Render Success\n" .. obj.stdout, { title = "Quarto", icon = "" })
-    else
-      Snacks.notify.error("Failed to Render:\n" .. obj.stderr, { title = "Quarto", icon = "" })
+  local job = vim.system(
+    { "fexport", "--to", "html", "--from", "quarto", "--preview", file },
+    { text = true },
+    function(obj)
+      if obj and obj.code == 0 then
+        Snacks.notify.info("Render Success\n" .. obj.stdout, { title = "Quarto", icon = "" })
+      else
+        Snacks.notify.error("Failed to Render:\n" .. obj.stderr, { title = "Quarto", icon = "" })
+      end
     end
-  end)
+  )
   keymap({
     "<localleader>xP",
     function()
       if job then
-        job:kill(15)
+        job:kill(9)
       end
     end,
     desc = "Stop Quarto Prview",

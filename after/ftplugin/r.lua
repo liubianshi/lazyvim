@@ -1,4 +1,4 @@
-local Popup = require "nui.popup"
+local Popup = require("nui.popup")
 local event = require("nui.utils.autocmd").event
 local r_popup = function()
   local opts = {
@@ -29,10 +29,7 @@ local r_popup = function()
 
   local popup = Popup(opts)
   popup:on(event.BufWinEnter, function()
-    vim.api.nvim_set_var(
-      "popup#highest_zindex_window",
-      vim.api.nvim_get_current_win()
-    )
+    vim.api.nvim_set_var("popup#highest_zindex_window", vim.api.nvim_get_current_win())
     -- if not debug then
     --     vim.cmd("RSend local(browser())")
     -- end
@@ -51,7 +48,7 @@ local r_popup = function()
   return popup
 end
 
-local wk = require "which-key"
+local wk = require("which-key")
 local vimkey = function(key, desc, cmd, opts)
   opts = vim.tbl_extend("keep", opts or {}, {
     mode = "n",
@@ -65,117 +62,33 @@ local vimkey = function(key, desc, cmd, opts)
   opts.mode = nil
   vim.keymap.set(mode, key, cmd, opts)
 end
-vimkey("<localleader><leader>", "Open a Scratch", function()
-  r_popup()
-end)
-vimkey("<localleader>de", "Edit test file", "<cmd>call r#EditTestFile()<cr>")
-vimkey(
-  "<localleader>df",
-  "Test current file",
-  "<cmd>call r#TestCurrentFile()<cr>"
-)
-vimkey(
-  "<localleader>dt",
-  "Test whole parogram",
-  "<cmd>call r#TestWholeProgram()<cr>"
-)
-vimkey(
-  "<localleader>di",
-  "devtools: load package",
-  "<cmd>RSend devtools::load_all()<cr>"
-)
-vimkey(
-  "<localleader>dd",
-  "devtools: update document",
-  "<cmd>RSend devtools::document()<cr>"
-)
-vimkey(
-  "<localleader>dB",
-  "devtools: trace back",
-  "<cmd>RSend rlang::trace_back()<cr>"
-)
-vimkey(
-  "<localleader>db",
-  "Debug",
-  string.format("<cmd>RSend debug(%s)<cr>", vim.fn.expand "<cword>")
-)
-vimkey(
-  "<localleader>du",
-  "Debug",
-  string.format("<cmd>RSend undebug(%s)<cr>", vim.fn.expand "<cword>")
-)
-vimkey("<localleader>dl", "Test Start", "<cmd>RSend local(browser())<cr>")
-vimkey("<localleader>de", "Test End", "<cmd>RSend f<cr>")
+-- stylua: ignore start
+vimkey("<localleader><leader>", "Open a Scratch",            function() r_popup() end)
+vimkey("<localleader>de",       "Edit test file",            "<cmd>call r#EditTestFile()<cr>")
+vimkey("<localleader>df",       "Test current file",         "<cmd>call r#TestCurrentFile()<cr>")
+vimkey("<localleader>dt",       "Test whole parogram",       "<cmd>call r#TestWholeProgram()<cr>")
+vimkey("<localleader>di",       "devtools: load package",    "<cmd>RSend devtools::load_all()<cr>")
+vimkey("<localleader>dd",       "devtools: update document", "<cmd>RSend devtools::document()<cr>")
+vimkey("<localleader>dB",       "devtools: trace back",      "<cmd>RSend rlang::trace_back()<cr>")
+vimkey("<localleader>db",       "Debug",                     string.format("<cmd>RSend debug(%s)<cr>", vim.fn.expand("<cword>")))
+vimkey("<localleader>du",       "Debug",                     string.format("<cmd>RSend undebug(%s)<cr>", vim.fn.expand("<cword>")))
+vimkey("<localleader>dl",       "Test Start",                "<cmd>RSend local(browser())<cr>")
+vimkey("<localleader>de",       "Test End",                  "<cmd>RSend f<cr>")
+vimkey("<localleader>tv",       "view data: head+tail",      "yiw<cmd>call utils#R_view_df_sample('ht')<cr>")
+vimkey("<localleader>tr",       "view data: random",         "yiw<cmd>call utils#R_view_df_sample('r')<cr>")
+vimkey("<localleader>th",       "view data: head",           "yiw<cmd>call utils#R_view_df_sample('h')<cr>")
+vimkey("<localleader>tt",       "view data: tail",           "yiw<cmd>call utils#R_view_df_sample('t')<cr>")
+vimkey("<localleader>tV",       "view data: all",            "yiw<cmd>call utils#R_view_df_full(30)<cr>")
+vimkey("<localleader>tv",       "view data: head+tail",      "y<cmd>call   utils#R_view_df_sample('ht')<cr>", { mode = "v" })
+vimkey("<localleader>tr",       "view data: random",         "y<cmd>call   utils#R_view_df_sample('r')<cr>",  { mode = "v" })
+vimkey("<localleader>th",       "view data: head",           "y<cmd>call   utils#R_view_df_sample('h')<cr>",  { mode = "v" })
+vimkey("<localleader>tt",       "view data: tail",           "y<cmd>call   utils#R_view_df_sample('t')<cr>",  { mode = "v" })
+vimkey("<localleader>tV",       "view data: all",            "y<cmd>call   utils#R_view_df_full(30)<cr>",     { mode = "v" })
+vimkey("<localleader>t1",       "DataLib: table list",       "<cmd>call    utils#R_view_srdm_table()<cr>")
+vimkey("<localleader>t2",       "DataLib: variable list",    "<cmd>call    utils#R_view_srdm_var()<cr>")
+-- stylua: ignore end
 
-vimkey(
-  "<localleader>tv",
-  "view data: head+tail",
-  "yiw<cmd>call utils#R_view_df_sample('ht')<cr>"
-)
-vimkey(
-  "<localleader>tr",
-  "view data: random",
-  "yiw<cmd>call utils#R_view_df_sample('r')<cr>"
-)
-vimkey(
-  "<localleader>th",
-  "view data: head",
-  "yiw<cmd>call utils#R_view_df_sample('h')<cr>"
-)
-vimkey(
-  "<localleader>tt",
-  "view data: tail",
-  "yiw<cmd>call utils#R_view_df_sample('t')<cr>"
-)
-vimkey(
-  "<localleader>tV",
-  "view data: all",
-  "yiw<cmd>call utils#R_view_df_full(30)<cr>"
-)
-
-vimkey(
-  "<localleader>tv",
-  "view data: head+tail",
-  "y<cmd>call   utils#R_view_df_sample('ht')<cr>",
-  { mode = "v" }
-)
-vimkey(
-  "<localleader>tr",
-  "view data: random",
-  "y<cmd>call   utils#R_view_df_sample('r')<cr>",
-  { mode = "v" }
-)
-vimkey(
-  "<localleader>th",
-  "view data: head",
-  "y<cmd>call   utils#R_view_df_sample('h')<cr>",
-  { mode = "v" }
-)
-vimkey(
-  "<localleader>tt",
-  "view data: tail",
-  "y<cmd>call   utils#R_view_df_sample('t')<cr>",
-  { mode = "v" }
-)
-vimkey(
-  "<localleader>tV",
-  "view data: all",
-  "y<cmd>call   utils#R_view_df_full(30)<cr>",
-  { mode = "v" }
-)
-
-vimkey(
-  "<localleader>t1",
-  "DataLib: table list",
-  "<cmd>call    utils#R_view_srdm_table()<cr>"
-)
-vimkey(
-  "<localleader>t2",
-  "DataLib: variable list",
-  "<cmd>call    utils#R_view_srdm_var()<cr>"
-)
-
-wk.add {
+wk.add({
   { "<localleader>a", buffer = 0, group = "Send file / ALE" },
   { "<localleader>b", buffer = 0, group = "Send block / debug" },
   { "<localleader>d", buffer = 0, group = "devtools/testthat" },
@@ -188,4 +101,4 @@ wk.add {
   { "<localleader>u", buffer = 0, group = "Undebug" },
   { "<localleader>v", buffer = 0, group = "View Object" },
   { "<localleader>x", buffer = 0, group = "R comment" },
-}
+})
