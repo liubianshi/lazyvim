@@ -1,4 +1,4 @@
-vim.keymap.set("n", "<c-x>m", function()
+vim.keymap.set("n", "<localleader>m", function()
   vim.cmd.normal("EvT@")
   local text = require("util").get_visual_selection()
   require("util").bibkey_action(text)

@@ -48,6 +48,11 @@ return {
     keys = {
       { "<localleader>o", "<cmd>FeMaco<cr>", desc = "FeMaco: Edit Code Block" },
     },
+    opts = {
+      ensure_newline = function(base_filetype)
+        return true
+      end,
+    },
     config = true,
   },
 }

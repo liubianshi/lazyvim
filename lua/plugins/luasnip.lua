@@ -6,7 +6,7 @@ return {
     {
       "<c-l>",
       function()
-        require("luasnip").expand()
+        require("luasnip").expand({})
       end,
       mode = { "i", "s" },
       silent = true,
@@ -26,4 +26,5 @@ return {
     history = true,
     delete_check_events = "TextChanged",
   },
+  config = true,
 }

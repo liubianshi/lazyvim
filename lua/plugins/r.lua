@@ -79,6 +79,11 @@ return {
         listmethods = true,
         start_libs = vim.g.R_start_libs,
         quarto_preview_args = ', render = "html"',
+        quarto_chunk_hl = {
+          highlight = false,
+          yaml_hl = true,
+          virtual_title = true,
+        },
         disable_cmds = {},
       }
       -- Check if the environment variable "R_AUTO_START" exists.
@@ -95,6 +100,5 @@ return {
   {
     "liubianshi/cmp-r",
     dev = true,
-    lazy = false,
   },
 }

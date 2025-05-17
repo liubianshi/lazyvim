@@ -136,8 +136,8 @@ function M.translate_phrase(content, callback)
 end
 
 ---@param content string[] Content to be translated
----@param opts {textwidth: integer, indent: integer, callback: fun(lines: string[])}
----@return string[]|nil
+---@param opts {textwidth?: integer, indent?: integer, wrap?: boolean, callback: fun(lines: string[])}
+---@return nil
 function M.translate_paragraph(content, opts)
   if not content or #content == 0 then
     return
@@ -177,6 +177,8 @@ function M.translate_paragraph(content, opts)
     })
   end
 
+  opts = vim.tbl_extend("keep", opts, { wrap = true, textwidth = 80, indent = 0 })
+
   vim.system(cmd, { stdin = content }, function(obj_trans)
     if progress_handle then
       if obj_trans.code ~= 0 then
@@ -184,24 +186,36 @@ function M.translate_paragraph(content, opts)
         progress_handle:finish()
       else
         progress_handle.message = "Translate Complete"
-        progress_handle.message = "Starting formatting..."
       end
     end
 
-    vim.system(
-      { "mdwrap", "--line-width=" .. (opts.textwidth - opts.indent) },
-      { stdin = vim.split(obj_trans.stdout, "\n") },
-      function(obj_format)
-        if progress_handle then
-          progress_handle.message = obj_format.code == 0 and "Completed" or " Failed to formatting"
-          progress_handle:finish()
-        end
-        local translated_lines = vim.split(vim.trim(obj_format.stdout), "\n")
-        vim.schedule(function()
-          opts.callback(translated_lines)
-        end)
+    if opts.wrap then
+      if progress_handle then
+        progress_handle.message = "Starting formatting..."
       end
-    )
+      vim.system(
+        { "mdwrap", "--line-width=" .. (opts.textwidth - opts.indent) },
+        { stdin = vim.split(obj_trans.stdout, "\n") },
+        function(obj_format)
+          if progress_handle then
+            progress_handle.message = obj_format.code == 0 and "Completed" or " Failed to formatting"
+            progress_handle:finish()
+          end
+          local translated_lines = vim.split(vim.trim(obj_format.stdout), "\n")
+          vim.schedule(function()
+            opts.callback(translated_lines)
+          end)
+        end
+      )
+    else
+      if progress_handle then
+        progress_handle:finish()
+      end
+      local translated_lines = vim.split(vim.trim(obj_trans.stdout), "\n")
+      vim.schedule(function()
+        opts.callback(translated_lines)
+      end)
+    end
   end)
 end
 
@@ -325,6 +339,30 @@ function M.translate_selection()
   end
 end
 
+function M.translate_content(content, callback)
+  content = content or require("util").get_visual_selection()
+  if type(content) == "string" then
+    if content:find("%S") then
+      content = { content }
+    end
+  end
+  if not content or #content == 0 then
+    return
+  end
+
+  if callback then
+    M.translate_paragraph(content, { wrap = false, callback = callback })
+    return
+  end
+
+  local save_path = require("util").get_daily_filepath("md", "ReciteWords")
+  if #content == 1 and #vim.split(content[1], "%s+") <= 3 then
+    require("kd").translate_word(content[1], save_path)
+  else
+    M.translate_sentence(content, save_path)
+  end
+end
+
 function M.trans_op(type)
   local commands = {
     line = "'[V']",
@@ -336,17 +374,7 @@ function M.trans_op(type)
     vim.api.nvim_feedkeys("g@", "m", false)
   else
     vim.cmd.normal(commands[type])
-    local content = require("util").get_visual_selection()
-    if not content or #content == 0 then
-      return
-    end
-
-    local daily_trans_file = require("util").get_daily_filepath("md", "ReciteWords")
-    if #content == 1 and #vim.split(content[1], "%s+") <= 3 then
-      require("kd").translate_word(content[1], daily_trans_file)
-    else
-      M.translate_sentence(content, daily_trans_file)
-    end
+    M.translate_content()
   end
 end
 
@@ -533,6 +561,38 @@ function M.translate_sentence(content, output_file_path)
       if output_file_path then
         save_translate_output(output_file_path, output_lines, true)
       end
+    end,
+  })
+end
+
+function M.replace_line()
+  vim.cmd.stopinsert()
+  local winnr = vim.api.nvim_get_current_win()
+  local row = vim.api.nvim_win_get_cursor(winnr)[1]
+  local bufnr = vim.api.nvim_win_get_buf(winnr)
+  local current_line = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)
+
+  if not current_line or #current_line == 0 or not current_line[1]:find("%S") then
+    return
+  end
+
+  local match_s, _, match = current_line[1]:find("%=([^=]+)$")
+  local pre_content = match_s and current_line[1]:sub(1, match_s - 1) or ""
+  local content = match_s and match:gsub("^%s+", "") or current_line[1]
+  if not content:find("%S") then
+    return
+  end
+  content = content:gsub("%s+$", "")
+
+  M.translate_paragraph({ content }, {
+    wrap = false,
+    callback = function(results)
+      if not results or #results == 0 then
+        return
+      end
+
+      local translated_content = table.concat(results, " ")
+      vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, { pre_content .. translated_content })
     end,
   })
 end

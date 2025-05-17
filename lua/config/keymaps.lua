@@ -268,7 +268,7 @@ keymap({
   mode = { "n", "v" },
   desc = "Translate",
 })
-vimkey("T", "Translate", function()
+vimkey("L", "Translate", function()
   local trans_ok, trans = pcall(require, "translate")
   if not trans_ok or not trans then
     vim.notify("Failed to load module translate", vim.log.levels.ERROR)
@@ -276,17 +276,24 @@ vimkey("T", "Translate", function()
   end
   trans.trans_op()
 end, { mode = { "v", "n" } })
-vimkey("L", "Translate", "utils#Trans2clip()", { mode = { "v", "n" }, expr = true })
 imap("<localleader>l", "Translate", "<esc>:call utils#Trans_Subs()<cr>")
-nmap("<c-x>l", "Translate", function()
-  local input = require("util.ui").prompt("Translate", function(value)
-    local re = vim.fn["utils#Trans_string"](value)
-    if not re or re == "" then
-      vim.notify("Failed to translate")
+imap("<localleader>l", "Translate", function()
+  local trans_ok, trans = pcall(require, "translate")
+  if trans_ok and trans then
+    trans.replace_line()
+  end
+end)
+
+nmap("LL", "Translate", function()
+  Snacks.input({ prompt = "Translate" }, function(value)
+    if not value or value == "" then
+      return
     end
-    vim.fn.setreg("+", re)
+    local trans_ok, trans = pcall(require, "translate")
+    if trans_ok and trans then
+      trans.translate_content(value)
+    end
   end)
-  input:mount()
 end)
 
 -- File manager --------------------------------------------------------- {{{1

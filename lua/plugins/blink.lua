@@ -34,6 +34,9 @@ return {
   },
   { -- "saghen/blink.cmp"
     "saghen/blink.cmp",
+    dependencies = {
+      "mikavilpas/blink-ripgrep.nvim",
+    },
     build = "cargo build --release",
     opts = function(_, opts)
       local border = require("util").border("▔", "bottom")
@@ -186,12 +189,14 @@ return {
         sources = {
           compat = { "cmp_r" },
           per_filetype = {
-            codecompanion = { "codecompanion", "lsp", "path", "snippets", "buffer" },
-            org = { "orgmode", "lsp", "path", "snippets", "buffer" },
-            ["r"] = { "cmp_r", "lsp", "path", "snippets", "buffer" },
-            ["snacks_picker_input"] = { "lsp" },
+            codecompanion = { inherit_defaults = true, "codecompanion" },
+            org = { inherit_defaults = true, "orgmode" },
+            r = { inherit_defaults = true, "cmp_r" },
+            snacks_picker_input = { "lsp" },
+            lua = { "lazydev", inherit_defaults = true },
+            markdown = { "markdown", inherit_defaults = true },
           },
-          default = { "lazydev", "lsp", "path", "snippets", "buffer", "markdown" },
+          default = { "lsp", "path", "snippets", "ripgrep", "buffer" },
           providers = {
             buffer = {
               enabled = function()
@@ -228,16 +233,25 @@ return {
                 trigger_characters = { " ", ":", "(", '"', "@", "$" },
                 keyword_pattern = "[-`\\._@\\$:_[:digit:][:lower:][:upper:]]*",
               },
+              override = {
+                get_trigger_characters = function()
+                  return { "." }
+                end,
+              },
+              async = true,
             },
             lsp = {
               enabled = true,
               transform_items = function(_, items)
+                local transformed_items = vim.tbl_filter(function(item)
+                  return item.kind ~= require("blink.cmp.types").CompletionItemKind.Text
+                    or (item.source_id == "lsp" and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls")
+                end, items)
                 -- the default transformer will do this
-                for _, item in ipairs(items) do
+                for _, item in ipairs(transformed_items) do
                   if item.kind == require("blink.cmp.types").CompletionItemKind.Snippet then
                     item.score_offset = item.score_offset - 3
-                  end
-                  if
+                  elseif
                     item.kind == require("blink.cmp.types").CompletionItemKind.Text
                     and item.source_id == "lsp"
                     and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls"
@@ -246,13 +260,21 @@ return {
                   end
                 end
                 -- you can define your own filter for rime item
-                return items
+                return transformed_items
               end,
             },
             markdown = {
               name = "RenderMarkdown",
               module = "render-markdown.integ.blink",
               fallbacks = { "lsp" },
+            },
+            ripgrep = {
+              module = "blink-ripgrep",
+              name = "Ripgrep",
+              opts = {
+                max_filesize = "200K",
+                project_root_marker = { ".git", "NAMESPACE", ".root", "_metadata.yml" },
+              },
             },
           },
         },

@@ -53,9 +53,9 @@ local PROMPTS = require("llm_prompts")
 return { -- olimorris/codecompanion.nvim ------------------------------------- {{{2
   "olimorris/codecompanion.nvim",
   keys = {
-    { "<c-a>l", "<cmd>CodeCompanionActions<cr>", desc = "CodeCompanion Actions", mode = { "n", "v" } },
+    { "<leader>al", "<cmd>CodeCompanionActions<cr>", desc = "CodeCompanion Actions", mode = { "n", "v" } },
     { "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", desc = "CodeCompanion Toggle", mode = { "n", "v" } },
-    { "<c-a>a", "<cmd>CodeCompanionChat Add<cr>", desc = "CodeCompanion Toggle", mode = { "v" } },
+    { "<leader>ap", "<cmd>CodeCompanionChat Add<cr>", desc = "CodeCompanion Toggle", mode = { "v" } },
     {
       "<A-o>",
       function()
@@ -157,7 +157,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "gemini-2.5-pro-preview-03-25-search",
+              default = "gemini-2.5-pro-preview-05-06-search",
             },
             temperature = {
               default = 1,
@@ -201,7 +201,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "gemini-2.5-pro-preview-03-25",
+              default = "gemini-2.5-pro-preview-05-06",
             },
             temperature = {
               default = 0.4,
@@ -220,6 +220,11 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         return require("codecompanion.adapters").extend("xai", {
           env = {
             api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh xai",
+          },
+          schema = {
+            model = {
+              default = "grok-3",
+            },
           },
         })
       end,

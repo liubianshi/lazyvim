@@ -675,4 +675,21 @@ return {
     },
     config = true,
   },
+  { -- monaqa/dial.nvim ------------------------------------------------- {{{3
+    "monaqa/dial.nvim",
+    opts = function(_, opts)
+      local augend = require("dial.augend")
+      opts.dials_by_ft.r = "r"
+      opts.groups.r = {
+        augend.constant.new({
+          elements = {
+            "TRUE",
+            "FALSE",
+          },
+          word = true,
+          cyclic = true,
+        }),
+      }
+    end,
+  },
 }

@@ -259,6 +259,14 @@ return {
   { -- j-hui/fidget.nvim: ----------------------------------------------- {{{2
     -- Extensible UI for Neovim notifications and LSP progress messages
     "j-hui/fidget.nvim",
+    opts = {
+      notification = {
+        window = {
+          align = "top",
+          x_padding = 2,
+        },
+      },
+    },
     config = true,
   },
 }
