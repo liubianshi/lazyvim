@@ -153,8 +153,8 @@ vim.schedule(function()
   vim.api.nvim_set_hl(ns, "@markup.strong.markdown_inline", { underline = true })
   vim.api.nvim_win_set_hl_ns(0, ns)
 
-  vim.cmd([[
-  syntax match QuartoCrossRef /\v[^-_0-9A-Za-z]\zs\@[^ ]+[-_0-9A-Za-z]/
-  exec "highlight link QuartoCrossRef @markup.link.label"
-  ]])
+  -- vim.cmd([[
+  -- syntax match QuartoCrossRef /\v[^-_0-9A-Za-z]\zs\@[^ ]+[-_0-9A-Za-z]/
+  -- exec "highlight link QuartoCrossRef @markup.link.label"
+  -- ]])
 end)

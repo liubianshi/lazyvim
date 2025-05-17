@@ -269,4 +269,18 @@ return {
     },
     config = true,
   },
+  { -- echasnovski/mini.hipatterns: Highlight patterns in text. --------- {{{3
+    "echasnovski/mini.hipatterns",
+    opts = function(_, opts)
+      opts.highlighters.citation = {
+        pattern = function(buf_id)
+          if vim.tbl_contains({ "quarto", "rmarkdown", "markdown" }, vim.bo[buf_id].filetype) then
+            return "%f[-@_%w]()%@%S+()%f[^-@_%w]"
+          end
+        end,
+        group = "@markup.link.label",
+      }
+      return opts
+    end,
+  },
 }
