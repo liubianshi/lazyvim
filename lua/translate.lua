@@ -577,12 +577,13 @@ function M.replace_line()
   end
 
   local match_s, _, match = current_line[1]:find("%=([^=]+)$")
-  local pre_content = match_s and current_line[1]:sub(1, match_s - 1) or ""
-  local content = match_s and match:gsub("^%s+", "") or current_line[1]
+  local pre_content = match_s and current_line[1]:sub(1, match_s - 1) or current_line[1]:match("^%s+")
+  local content = match_s and match or current_line[1]
+
   if not content:find("%S") then
     return
   end
-  content = content:gsub("%s+$", "")
+  content = content:gsub("%s+$", ""):gsub("^%s+", "")
 
   M.translate_paragraph({ content }, {
     wrap = false,

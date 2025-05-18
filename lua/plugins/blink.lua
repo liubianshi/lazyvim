@@ -196,7 +196,7 @@ return {
             lua = { "lazydev", inherit_defaults = true },
             markdown = { "markdown", inherit_defaults = true },
           },
-          default = { "lsp", "path", "snippets", "ripgrep", "buffer" },
+          default = { "lsp", "path", "snippets", "buffer", "ripgrep" },
           providers = {
             buffer = {
               enabled = function()
@@ -215,8 +215,9 @@ return {
               end,
               opts = {
                 use_show_condition = true,
-                show_autosnippets = true,
+                show_autosnippets = false,
               },
+              min_keyword_length = 2,
             },
             orgmode = {
               name = "Orgmode",
@@ -235,7 +236,7 @@ return {
               },
               override = {
                 get_trigger_characters = function()
-                  return { "." }
+                  return { ".", "$", ":" }
                 end,
               },
               async = true,
@@ -274,6 +275,7 @@ return {
               opts = {
                 max_filesize = "200K",
                 project_root_marker = { ".git", "NAMESPACE", ".root", "_metadata.yml" },
+                project_root_fallback = false,
               },
             },
           },

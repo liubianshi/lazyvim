@@ -99,14 +99,6 @@ nmap("<leader>bQ", "Quit Buffer (force)", "<cmd>q!<cr>")
 nmap("<leader>bl", "Pick Buffer on BufferLine", "<cmd>BufferLinePick<cr>")
 nmap("<leader>bF", "Close Float buffer", "<cmd>fclose<cr>")
 
---- tab ----------------------------------------------------------------- {{{1
-nmap("<leader>tt", "Tab: New", "<cmd>tabnew<cr>")
-nmap("<leader>tx", "Tab: Close", "<cmd>tabclose<cr>")
-nmap("<leader>tn", "Tab: Next", "<cmd>tabnext<cr>")
-nmap("<leader>tp", "Tab: Previous", "<cmd>tabprevious<cr>")
-nmap("<leader>tP", "Tab: First", "<cmd>tabfirst<cr>")
-nmap("<leader>tN", "Tab: Last", "<cmd>tablast<cr>")
-
 --- search -------------------------------------------------------------- {{{1
 nmap("<leader>og", "Display Highlight Group", function()
   vim.fn["utils#Extract_hl_group_link"]()
@@ -276,14 +268,12 @@ vimkey("L", "Translate", function()
   end
   trans.trans_op()
 end, { mode = { "v", "n" } })
-imap("<localleader>l", "Translate", "<esc>:call utils#Trans_Subs()<cr>")
 imap("<localleader>l", "Translate", function()
   local trans_ok, trans = pcall(require, "translate")
   if trans_ok and trans then
     trans.replace_line()
   end
 end)
-
 nmap("LL", "Translate", function()
   Snacks.input({ prompt = "Translate" }, function(value)
     if not value or value == "" then

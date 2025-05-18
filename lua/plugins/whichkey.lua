@@ -55,7 +55,6 @@ return { -- folke/which-key.nvim: displays a popup with possible keybindings - {
       { "<leader>p", group = "Project ...", icon = { icon = "󰳐", hl = "WhichKeyIconBlue" } },
       { "<leader>q", group = "Quickfix ..." },
       { "<leader>s", group = "Search ..." },
-      { "<leader>t", group = "Tab/Translate ..." },
       { "<leader>w", group = "Window ..." },
       { "<leader>x", group = "Trouble ...", icon = { icon = "", hl = "WhichKeyIconBlue" } },
       { "<leader>z", group = "Fold ...", icon = { icon = "", hl = "WhichKeyIconBlue" } },

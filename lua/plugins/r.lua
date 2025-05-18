@@ -1,5 +1,5 @@
 return {
-  {
+  { -- R.nvim ----------------------------------------------------------- {{{2
     "liubianshi/R.nvim",
     dev = true,
     lazy = false,
@@ -13,6 +13,16 @@ return {
 
           -- Setting box-related shortcuts
           require("r_box").set_keymap()
+
+          -- Send command to R terminal
+          vim.keymap.set("n", "<c-i>", function()
+            vim.api.nvim_feedkeys(":RSend ", "n", false)
+          end, {
+            noremap = true,
+            buffer = true,
+            silent = true,
+            desc = "Send script to R console",
+          })
 
           -- vim.keymap.set("n", "<Enter>", "<Plug>RDSendLine", { buffer = true })
           vim.keymap.set("v", "<Enter>", "<Plug>RSendSelection", { buffer = true })
@@ -95,6 +105,11 @@ return {
       end
 
       return opts
+    end,
+    config = function(_, opts)
+      vim.g.rout_follow_colorscheme = true
+      require("r").setup(opts)
+      require("r.pdf.generic").open = vim.ui.open
     end,
   },
   {

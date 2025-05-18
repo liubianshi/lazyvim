@@ -2,16 +2,6 @@ return {
   "L3MON4D3/LuaSnip",
   lazy = true,
   build = "make install_jsregexp",
-  keys = {
-    {
-      "<c-l>",
-      function()
-        require("luasnip").expand({})
-      end,
-      mode = { "i", "s" },
-      silent = true,
-    },
-  },
   dependencies = {
     {
       "rafamadriz/friendly-snippets",
@@ -22,9 +12,25 @@ return {
       end,
     },
   },
-  opts = {
-    history = true,
-    delete_check_events = "TextChanged",
-  },
-  config = true,
+  opts = function(_, opts)
+    return vim.tbl_deep_extend("force", opts or {}, {
+      history = true,
+      delete_check_events = "TextChanged",
+      ft_func = function(bufnr)
+        local func = require("luasnip/extras/filetype_functions").extend_load_ft({
+          markdown = { "yaml", "r" },
+          quarto = { "r", "yaml" },
+        })
+        bufnr = bufnr or 0
+        return func(bufnr)
+      end,
+    })
+  end,
+  config = function(_, opts)
+    local ls = require("luasnip")
+    ls.setup(opts)
+    ls.filetype_extend("markdown_inline", { "markdown" })
+    ls.filetype_extend("codecompanion", { "codecompanion", "markdown" })
+    ls.filetype_extend("quarto", { "quarto", "markdown" })
+  end,
 }
