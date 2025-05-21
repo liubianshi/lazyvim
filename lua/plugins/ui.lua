@@ -51,7 +51,14 @@ return {
       },
       popupmenu = {
         enabled = true,
-        -- backend = "nui",
+      },
+      views = {
+        popup = {
+          win_options = {
+            wrap = true,
+            linebreak = true,
+          },
+        },
       },
       cmdline = {
         opts = {

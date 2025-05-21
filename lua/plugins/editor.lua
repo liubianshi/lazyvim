@@ -88,7 +88,7 @@ return {
       },
     },
     opts = {
-      style = "right_align",
+      style = "overlay",
       modes = {
         char = {
           enabled = true,

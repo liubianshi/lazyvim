@@ -277,7 +277,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         opts = {
           index = 13,
           adapter = {
-            name = "gemini-flash",
+            name = "xai",
           },
           is_slash_cmd = true,
           modes = { "v" },
