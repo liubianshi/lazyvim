@@ -35,7 +35,7 @@ return {
       },
       -- you can enable a preset for easier configuration
       presets = {
-        bottom_search = false, -- use a classic bottom cmdline for search
+        bottom_search = true, -- use a classic bottom cmdline for search
         command_palette = true, -- position the cmdline and popupmenu together
         long_message_to_split = false, -- long messages will be sent to a split
         inc_rename = true, -- enables an input dialog for inc-rename.nvim
@@ -79,18 +79,18 @@ return {
             icon = " ",
             lang = "regex",
             opts = {
-              -- position = {
-              --   row = "100%", -- 将行位置设置为 100%，即底部
-              --   col = "50%", -- 将列位置设置为 50%，即居中
-              -- },
+              position = {
+                row = "100%", -- 将行位置设置为 100%，即底部
+                col = "50%", -- 将列位置设置为 50%，即居中
+              },
             },
           },
           search_up = {
             opts = {
-              -- position = {
-              --   row = "100%", -- 将行位置设置为 100%，即底部
-              --   col = "50%", -- 将列位置设置为 50%，即居中
-              -- },
+              position = {
+                row = "100%", -- 将行位置设置为 100%，即底部
+                col = "50%", -- 将列位置设置为 50%，即居中
+              },
             },
             kind = "search",
             pattern = "^%?",

@@ -11,7 +11,7 @@ return {
         dark = vim.env.NVIM_COLOR_SCHEME_DARK or (night and "vague" or "rose-pine"),
         light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "rose-pine",
       }
- 
+
       return {
         colorscheme = colorscheme[background],
       }

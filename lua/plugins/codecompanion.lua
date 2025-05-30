@@ -157,7 +157,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "gemini-2.5-pro-preview-05-06-search",
+              default = "gemini-2.5-flash-preview-05-20-search",
             },
             temperature = {
               default = 1,
@@ -179,7 +179,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "gemini-2.5-flash-preview-04-17",
+              default = "gemini-2.5-flash-preview-05-20",
             },
             temperature = {
               default = 0.4,
