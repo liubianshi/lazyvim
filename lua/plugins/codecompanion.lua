@@ -52,6 +52,7 @@ local PROMPTS = require("llm_prompts")
 
 return { -- olimorris/codecompanion.nvim ------------------------------------- {{{2
   "olimorris/codecompanion.nvim",
+  version = "v15.8.0",
   keys = {
     { "<leader>al", "<cmd>CodeCompanionActions<cr>", desc = "CodeCompanion Actions", mode = { "n", "v" } },
     { "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", desc = "CodeCompanion Toggle", mode = { "n", "v" } },
@@ -439,13 +440,13 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           -- Keymap to open history from chat buffer (default: gh)
           keymap = "gh",
           -- Automatically generate titles for new chats
-          auto_generate_title = false,
+          auto_generate_title = true,
           -- On exiting and entering neovim, loads the last chat on opening chat
           continue_last_chat = false,
           -- When chat is cleared with `gx` delete the chat from history
           delete_on_clearing_chat = false,
           -- Picker interface ("telescope" or "default")
-          picker = "default",
+          picker = "snacks",
           -- Enable detailed logging for history extension
           enable_logging = false,
           -- Directory path to save the chats

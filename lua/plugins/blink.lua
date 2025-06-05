@@ -257,7 +257,7 @@ return {
                     and item.source_id == "lsp"
                     and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls"
                   then
-                    item.score_offset = item.score_offset - 3
+                    item.score_offset = item.score_offset
                   end
                 end
                 -- you can define your own filter for rime item
@@ -268,6 +268,14 @@ return {
               name = "RenderMarkdown",
               module = "render-markdown.integ.blink",
               fallbacks = { "lsp" },
+            },
+            path = {
+              opts = {
+                trailing_slash = false,
+                get_cwd = function(_)
+                  return vim.uv.cwd()
+                end,
+              },
             },
             ripgrep = {
               module = "blink-ripgrep",

@@ -400,20 +400,22 @@ return {
     version = "*", -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
     opts = {
       provider = "openai",
-      vendors = {
-        ["deepseek"] = {
+      providers = {
+        openai = {
+          endpoint = "https://aihubmix.com/v1",
+          api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+          -- model = "claude-3-7-sonnet-20250219",
+          model = "gemini-2.5-pro-preview-03-25",
+          extra_request_body = {
+            temperature = 0,
+          },
+        },
+        deepseek = {
           __inherited_from = "openai",
           model = "DeepSeek-R1",
           endpoint = "https://aihubmix.com/v1",
           api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
         },
-      },
-      ["openai"] = {
-        endpoint = "https://aihubmix.com/v1",
-        api_key_name = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-        -- model = "claude-3-7-sonnet-20250219",
-        model = "gemini-2.5-pro-preview-03-25",
-        temperature = 0,
       },
       hints = {
         enabled = false,
