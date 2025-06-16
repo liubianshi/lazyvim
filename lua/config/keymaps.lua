@@ -296,6 +296,7 @@ nmap("<leader>sP", "System Clipboad", picker.clipcat)
 nmap("<leader>hc", "CheatSheet: TL;DR", picker.cheat)
 nmap("<leader>fz", "Jump with fasd", picker.fasd)
 nmap("<leader>fq", "Open my library file", picker.mylib)
+nmap("<leader>hs", "Stata help pages", picker.stata_doc)
 keymap({
   "<leader>a/",
   picker.fabric,

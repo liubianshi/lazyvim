@@ -45,7 +45,12 @@ return {
           return vim.b.completion ~= false
         end,
         fuzzy = {
-          implementation = "prefer_rust",
+          implementation = "prefer_rust_with_warning",
+          sorts = {
+            'exact',
+            'score',
+            'sort_text'
+          }
         },
         snippets = {
           preset = "luasnip",

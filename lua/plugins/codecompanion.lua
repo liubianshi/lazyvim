@@ -52,7 +52,7 @@ local PROMPTS = require("llm_prompts")
 
 return { -- olimorris/codecompanion.nvim ------------------------------------- {{{2
   "olimorris/codecompanion.nvim",
-  version = "v15.8.0",
+  -- version = "v15.8.0",
   keys = {
     { "<leader>al", "<cmd>CodeCompanionActions<cr>", desc = "CodeCompanion Actions", mode = { "n", "v" } },
     { "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", desc = "CodeCompanion Toggle", mode = { "n", "v" } },
@@ -122,7 +122,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
     },
     strategies = {
       chat = {
-        adapter = "gemini-search",
+        adapter = "gemini-thinking",
         keymaps = {
           send = {
             callback = function(chat)
@@ -143,29 +143,6 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
       },
     },
     adapters = {
-      ["gemini-search"] = function()
-        return require("codecompanion.adapters").extend("openai_compatible", {
-          roles = {
-            llm = "model",
-          },
-          env = {
-            url = "https://aihubmix.com",
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-          },
-          handlers = {
-            chat_output = codecampanion_utils.handlers.gemini.chat_output,
-            inline_output = codecampanion_utils.handlers.gemini.inline_output,
-          },
-          schema = {
-            model = {
-              default = "gemini-2.5-flash-preview-05-20-search",
-            },
-            temperature = {
-              default = 1,
-            },
-          },
-        })
-      end,
       ["gemini-flash"] = function()
         return require("codecompanion.adapters").extend("openai_compatible", {
           roles = {
@@ -180,7 +157,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "gemini-2.5-flash-preview-05-20",
+              default = "gemini-2.5-flash-preview-05-20-nothink",
             },
             temperature = {
               default = 0.4,
@@ -202,7 +179,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "gemini-2.5-pro-preview-05-06",
+              default = "gemini-2.5-pro-preview-06-05-search",
             },
             temperature = {
               default = 0.4,
@@ -266,6 +243,18 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           schema = {
             model = {
               default = "deepseek-reasoner",
+            },
+          },
+        })
+      end,
+      ["claude"] = function()
+        return require("codecompanion.adapters").extend("anthropic", {
+          env = {
+            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh anthropic",
+          },
+          schema = {
+            model = {
+              default = "claude-sonnet-4-20250514",
             },
           },
         })

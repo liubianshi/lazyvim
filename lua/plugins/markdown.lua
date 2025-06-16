@@ -204,13 +204,6 @@ return {
         -- vim.fn.jobstart({"xdg-open", url})  -- linux
       end,
 
-      -- Optional, set to true if you use the Obsidian Advanced URI plugin.
-      -- https://github.com/Vinzent03/obsidian-advanced-uri
-      use_advanced_uri = false,
-
-      -- Optional, set to true to force ':ObsidianOpen' to bring the app to the foreground.
-      open_app_foreground = false,
-
       ---@diagnostic disable: missing-fields, unused-local
       picker = {
         name = "snacks.pick",
