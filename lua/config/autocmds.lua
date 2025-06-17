@@ -10,6 +10,7 @@ vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 vim.api.nvim_del_augroup_by_name("lazyvim_resize_splits")
 -- yanky.nvim 提供类似高亮复制区域的功能
 vim.api.nvim_del_augroup_by_name("lazyvim_highlight_yank")
+-- vim.api.nvim_del_augroup_by_name("lazyvim_last_loc")
 
 local aucmd = vim.api.nvim_create_autocmd
 
@@ -45,7 +46,6 @@ aucmd({ "BufWritePre" }, {
   desc = "Delete suffix space before writing",
 })
 
-
 -- Auto-save functionality for Neovim buffers.
 -- This module implements auto-saving of modified buffers after a specified timeout
 -- or upon certain events like losing focus or exiting Neovim.
@@ -63,7 +63,6 @@ local timers = {}
 -- local my_augroup = vim.api.nvim_create_augroup("UserAutoSave", { clear = true })
 -- local augroups = { Buffer = my_augroup }
 -- local function aucmd(...) vim.api.nvim_create_autocmd(...) end
-
 
 -- Core save function
 -- @param buf integer: The buffer number to save.
@@ -90,11 +89,13 @@ aucmd({ "InsertLeave", "TextChanged" }, {
     -- 3. Buffer is for a git commit message.
     -- 4. Buffer is read-only.
     -- 5. Buffer has not been modified.
-    if vim.api.nvim_buf_get_name(buf) == "" or
-        bo.buftype ~= "" or
-        bo.filetype == "gitcommit" or
-        bo.readonly or
-        not bo.modified then
+    if
+      vim.api.nvim_buf_get_name(buf) == ""
+      or bo.buftype ~= ""
+      or bo.filetype == "gitcommit"
+      or bo.readonly
+      or not bo.modified
+    then
       return
     end
 

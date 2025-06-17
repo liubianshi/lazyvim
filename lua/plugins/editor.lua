@@ -238,6 +238,7 @@ return {
   },
   { -- kevinhwang91/nvim-ufo: ultra fold in Neovim ---------------------- {{{3
     "kevinhwang91/nvim-ufo",
+    enabled = true,
     event = "BufReadPost", -- later or on keypress would prevent saving folds
     init = function()
       vim.o.foldcolumn = "0" -- '0' is not bad
@@ -328,14 +329,29 @@ return {
   { -- chrisgrieser/nvim-origami: Fold with relentless elegance --------- {{{2
     "chrisgrieser/nvim-origami",
     event = "BufReadPost",
-    opts = {
-      keepFoldsAcrossSessions = package.loaded["ufo"] ~= nil,
-      pauseFoldsOnSearch = true,
-      FoldKeymaps = {
-        setup = true,
-        hOnlyOpensOnFirstColumn = true,
-      },
-    },
+    opts = function()
+      local ufo_loaded = package.loaded["ufo"]
+      local opts = {
+        -- features incompatible with `nvim-ufo`
+        useLspFoldsWithTreesitterFallback = not ufo_loaded,
+        autoFold = {
+          enabled = false,
+          kinds = { "comment", "imports" },
+        },
+        foldtextWithLineCount = {
+          enabled = not ufo_loaded,
+          template = " ────────  %s lines", -- `%s` gets the number of folded lines
+          hlgroupForCount = "Comment",
+        },
+        keepFoldsAcrossSessions = ufo_loaded,
+        pauseFoldsOnSearch = true,
+        FoldKeymaps = {
+          setup = true,
+          hOnlyOpensOnFirstColumn = true,
+        },
+      }
+      return opts
+    end,
   },
   { -- chrisgrieser/nvim-early-retirement ------------------------------- {{{2
     "chrisgrieser/nvim-early-retirement",
@@ -563,17 +579,7 @@ return {
       )
     end,
   },
-  { -- Wraps long lines virtually at a specific column ------------------ {{{3
-    "rickhowe/wrapwidth",
-    init = function()
-      vim.g.wrapwidth_sign = "↵"
-      vim.g.wrapwidth_number = 0
-    end,
-    config = function()
-      vim.cmd("Wrapwidth 80")
-    end,
-  },
-  { -- Efficient targetted menu built for fast buffer navigation {{{3 --- {{{2
+  { -- Efficient targetted menu built for fast buffer navigation -------- {{{3
     "leath-dub/snipe.nvim",
     keys = {
       {

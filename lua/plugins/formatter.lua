@@ -7,8 +7,9 @@ return {
       json = { "jq" },
       xml = { "xmllint" },
       yaml = { "yq" },
-      r = { "r-format" },
-      markdown = { "mdwrap" },
+      r = { "air" },
+      markdown = { "injected", "mdwrap" },
+      quarto = { "injected", "mdwrap" },
       codecompanion = { "mdwrap" },
       perl = { "perltidy" },
     },
@@ -32,6 +33,15 @@ return {
       end,
       ["mdwrap"] = {
         command = "mdwrap",
+      },
+      ["injected"] = {
+        lang_to_ft = {
+          r = { "air" },
+        },
+        lang_to_formatters = {
+          r = { "air" },
+          lua = { "stylua" },
+        },
       },
     },
   },
