@@ -22,7 +22,8 @@ return {
       -- your configuration comes here
       -- or leave it empty to use the default settings
       -- refer to the configuration section below
-      silent_chdir = true,
+      silent_chdir = false,
+      exclude_dirs = { "~", "/tmp", "~/Downloads" },
     },
     config = function(_, opts)
       require("project_nvim").setup(opts)

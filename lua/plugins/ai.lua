@@ -15,13 +15,13 @@ return {
       "GpTranslator",
     },
     keys = {
-      -- {
-      --   "<M-o>",
-      --   ":<C-u>'<,'>GpTextOptimize<cr>",
-      --   desc = "Optimize Text",
-      --   nowait = true,
-      --   mode = { "v" },
-      -- },
+      {
+        "<c-g>o",
+        ":<C-u>'<,'>GpTextOptimize<cr>",
+        desc = "Optimize Text",
+        nowait = true,
+        mode = { "v" },
+      },
       {
         "<C-g>c",
         "<cmd>GpChatNew vsplit<cr>",
@@ -273,7 +273,7 @@ return {
           local template = "Please polish the text from {{filename}}:\n\n" .. "```{{filetype}}\n{{selection}}\n```\n\n"
           local agent = gp.agents["Writing_Optimizer"]
           if vim.bo.filetype == "quarto" then
-            agent.model.model = "gpt-4.1"
+            agent.model.model = "o3"
             agent.system_prompt = PROMPTS.improve_academic_writing
           end
           gp.logger.info("Implementing selection with agent: " .. agent.name)
