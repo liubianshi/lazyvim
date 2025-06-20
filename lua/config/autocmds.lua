@@ -37,6 +37,7 @@ end, {
   "Snacks",
   "Untitled",
   "ColorScheme",
+  "Lsp",
 })
 
 -- Buffer --------------------------------------------------------------- {{{1
@@ -517,4 +518,56 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     vim.bo[ev.buf].formatexpr = nil
     vim.bo[ev.buf].formatprg = vim.b[ev.buf].filetype == "newsboat" and "mdwrap --tonewsboat" or "mdwrap"
   end,
+})
+
+-- Lsp ------------------------------------------------------------------ {{{1
+--- Restarts LSP clients for a buffer after it has been renamed.
+-- This is useful after commands like `:saveas` or `:file new_name`, which
+-- can confuse LSP servers that track files by their path.
+local function restart_lsp_on_rename(args)
+  local bufnr = args.buf
+
+  -- Ensure the buffer is still valid before proceeding.
+  if not vim.api.nvim_buf_is_valid(bufnr) then
+    return
+  end
+
+  -- Get all active LSP clients attached to the buffer.
+  -- `get_active_clients` is the modern and recommended function.
+  local clients = vim.lsp.get_clients({ bufnr = bufnr })
+
+  -- If there are no clients to restart, do nothing.
+  if #clients == 0 then
+    return
+  end
+
+  vim.notify("Buffer renamed, restarting LSP clients...", vim.log.levels.INFO, {
+    title = "LSP",
+  })
+
+  -- Detach and then schedule a re-attachment for each client.
+  -- `vim.schedule` ensures re-attachment happens in the next event loop tick,
+  -- preventing potential race conditions.
+  for _, client in ipairs(clients) do
+    -- codecompanion-history 的自动设置标题功能因调用 `vim.api.nvim_buf_set_name()`
+    -- 会导致 `rime_ls` 失效，需要先 detach 再 attach rime_ls
+    -- 其实也会导致其他 lsp 失效，但由于 codecompanion 下启用的 lsp 通常只有 rime_ls
+    -- 为了避免影响扩散，现在只处理 rime_ls
+    if client.name ~= "rime_ls" then
+      return
+    end
+    vim.lsp.buf_detach_client(bufnr, client.id)
+    vim.schedule(function()
+      vim.lsp.buf_attach_client(bufnr, client.id)
+    end)
+  end
+end
+
+-- Create an autocommand that triggers on buffer rename events.
+-- This assumes `augroups.Lsp` is an augroup created elsewhere in your config.
+vim.api.nvim_create_autocmd("BufFilePost", {
+  group = augroups.Lsp,
+  pattern = "*",
+  callback = restart_lsp_on_rename,
+  desc = "Restart LSP clients on buffer rename.",
 })
