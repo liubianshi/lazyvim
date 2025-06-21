@@ -251,13 +251,7 @@ return {
     },
     config = function()
       local ftMap = {
-        python = { "indent" },
         stata = "",
-        lua = { "treesitter", "indent" },
-        norg = { "treesitter" },
-        org = { "treesitter" },
-        r = { "treesitter", "indent" },
-        markdown = { "treesitter", "indent" },
         vim = nil,
         sagaoutline = "",
         git = nil,
@@ -289,6 +283,21 @@ return {
         end
         table.insert(newVirtText, { suffix, "MoreMsg" })
         return newVirtText
+      end
+
+      -- Tell the server the capability of foldingRange,
+      -- Neovim hasn't added foldingRange to default capabilities, users must add it manually
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      capabilities.textDocument.foldingRange = {
+        dynamicRegistration = false,
+        lineFoldingOnly = true,
+      }
+      local language_servers = vim.lsp.get_clients() -- or list servers manually like {'gopls', 'clangd'}
+      for _, ls in ipairs(language_servers) do
+        require("lspconfig")[ls].setup({
+          capabilities = capabilities,
+          -- you can add other fields for setting up lsp server in this table
+        })
       end
 
       ---@diagnostic disable: missing-fields, unused-local
@@ -324,11 +333,22 @@ return {
       vim.keymap.set("n", "zM", require("ufo").closeAllFolds)
       vim.keymap.set("n", "zr", require("ufo").openFoldsExceptKinds)
       vim.keymap.set("n", "zm", require("ufo").closeFoldsWith) -- closeAllFolds == closeFoldsWith(0)
+      vim.keymap.set("n", "K", function()
+        local ufo_ok, ufo = pcall(require, "ufo")
+        local winid
+        if ufo_ok then
+          winid = ufo.peekFoldedLinesUnderCursor()
+        end
+        if not winid then
+          vim.lsp.buf.hover()
+        end
+      end)
     end,
   },
   { -- chrisgrieser/nvim-origami: Fold with relentless elegance --------- {{{2
     "chrisgrieser/nvim-origami",
     event = "BufReadPost",
+    version = "v1.9",
     opts = function()
       local ufo_loaded = package.loaded["ufo"]
       local opts = {
@@ -338,7 +358,7 @@ return {
           enabled = false,
           kinds = { "comment", "imports" },
         },
-        foldtextWithLineCount = {
+        foldtext = {
           enabled = not ufo_loaded,
           template = " ────────  %s lines", -- `%s` gets the number of folded lines
           hlgroupForCount = "Comment",

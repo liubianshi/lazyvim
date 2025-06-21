@@ -223,8 +223,6 @@ nmap("<leader>hM", "Redir messages", "<cmd>Redir messages<cr>")
 -- format --------------------------------------------------------------- {{{1
 imap("<localleader>w", "Format Line", "<esc>gqq}kA")
 imap("<A-;>", "Format Line", "<esc>gqq}kA")
-nmap("gQ", "gq after Pangu", "vip:Pangu<cr>gqip")
-vmap("gQ", "gq after Pangu", ":Pangu<cr>vgvgq")
 
 -- object --------------------------------------------------------------- {{{1
 keymap({ "i", mode = { "x", "o" }, group = "Object: inner", icon = { icon = "", hl = "WhichKeyIconOrange" } })

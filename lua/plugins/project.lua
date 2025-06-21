@@ -48,76 +48,81 @@ return {
   { -- neovim/nvim-lspconfig -------------------------------------------- {{{2
     "neovim/nvim-lspconfig",
     ft = { "lua", "perl", "markdown", "bash", "r", "python", "vim", "rmd" },
-    opts = {
-      servers = {
-        bashls = {
-          cmd = { "bash-language-server", "start" },
-          filetpyes = { "sh" },
-          root_dir = require("lspconfig.util").root_pattern(".git", ".root", ".project"),
-          single_file_support = true,
-        },
-        r_language_server = {
-          cmd = {
-            "R",
-            "--slave",
-            -- "--default-packages=" .. vim.g.R_start_libs,
-            "-e",
-            "languageserver::run()",
+    opts = function()
+      local keys = require("lazyvim.plugins.lsp.keymaps").get()
+      keys[#keys + 1] = { "K", false }
+      local ret = {
+        keys = keys,
+        servers = {
+          bashls = {
+            cmd = { "bash-language-server", "start" },
+            filetpyes = { "sh" },
+            root_dir = require("lspconfig.util").root_pattern(".git", ".root", ".project"),
+            single_file_support = true,
           },
-          root_dir = require("lspconfig.util").root_pattern(".git", "NAMESPACE", "R", ".root", ".project"),
-          single_file_support = true,
-        },
-        vimls = {},
-        perlnavigator = {
-          cmd = { "perlnavigator" },
-          single_file_support = true,
-          settings = {
-            perlnavigator = {
-              perlPath = "perl",
-              enableWarnings = true,
-              perltidyProfile = "",
-              perlcriticProfile = "",
-              perlcriticEnabled = true,
+          r_language_server = {
+            cmd = {
+              "R",
+              "--slave",
+              -- "--default-packages=" .. vim.g.R_start_libs,
+              "-e",
+              "languageserver::run()",
+            },
+            root_dir = require("lspconfig.util").root_pattern(".git", "NAMESPACE", "R", ".root", ".project"),
+            single_file_support = true,
+          },
+          vimls = {},
+          perlnavigator = {
+            cmd = { "perlnavigator" },
+            single_file_support = true,
+            settings = {
+              perlnavigator = {
+                perlPath = "perl",
+                enableWarnings = true,
+                perltidyProfile = "",
+                perlcriticProfile = "",
+                perlcriticEnabled = true,
+              },
             },
           },
-        },
-        lua_ls = {
-          single_file_support = true,
-          settings = {
-            Lua = {
+          lua_ls = {
+            single_file_support = true,
+            settings = {
+              Lua = {
+                workspace = {
+                  checkThirdParty = false,
+                },
+                codeLens = {
+                  enable = true,
+                },
+                completion = {
+                  callSnippet = "Replace",
+                },
+              },
+            },
+          },
+          markdown_oxide = {
+            cmd = {
+              vim.fn.executable("markdown-oxide") == 1 and "markdown-oxide"
+                or vim.env.HOME .. "/.cargo/bin/markdown-oxide",
+            },
+            filetype = { "markdown", "rmd", "rmarkdown", "quarto" },
+            root_dir = require("lspconfig.util").root_pattern(".obsidian", ".git"),
+            capabilities = {
               workspace = {
-                checkThirdParty = false,
-              },
-              codeLens = {
-                enable = true,
-              },
-              completion = {
-                callSnippet = "Replace",
+                didChangeWatchedFiles = {
+                  dynamicRegistration = true,
+                },
               },
             },
+            single_file_support = false,
+            on_attach = function(client, _) -- _ bufnr
+              client.handlers["textDocument/publishDiagnostics"] = function() end
+            end,
           },
         },
-        markdown_oxide = {
-          cmd = {
-            vim.fn.executable("markdown-oxide") == 1 and "markdown-oxide"
-              or vim.env.HOME .. "/.cargo/bin/markdown-oxide",
-          },
-          filetype = { "markdown", "rmd", "rmarkdown", "quarto" },
-          root_dir = require("lspconfig.util").root_pattern(".obsidian", ".git"),
-          capabilities = {
-            workspace = {
-              didChangeWatchedFiles = {
-                dynamicRegistration = true,
-              },
-            },
-          },
-          single_file_support = false,
-          on_attach = function(client, _) -- _ bufnr
-            client.handlers["textDocument/publishDiagnostics"] = function() end
-          end,
-        },
-      },
-    },
+      }
+    end,
   },
   { -- stevearc/overseer.nvim: task runner and joib management ---------- {{{2
     "stevearc/overseer.nvim",
