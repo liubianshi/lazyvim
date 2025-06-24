@@ -42,7 +42,8 @@ return {
       local border = require("util").border("▔", "bottom")
       local config = {
         enabled = function()
-          return vim.b.completion ~= false
+          -- return vim.b.completion ~= false
+          return "force"
         end,
         fuzzy = {
           implementation = "prefer_rust_with_warning",
@@ -198,6 +199,7 @@ return {
             org = { inherit_defaults = true, "orgmode" },
             r = { inherit_defaults = true, "cmp_r" },
             snacks_picker_input = { "lsp" },
+            snacks_input = { "lsp" },
             lua = { "lazydev", inherit_defaults = true },
             markdown = { "markdown", inherit_defaults = true },
           },
