@@ -2,6 +2,7 @@ return {
   name = "test current file",
   builder = function()
     local test_file = require("rlib.test").source_to_test_filepath(vim.fn.expand("%"))
+    local cwd = vim.v.cwd or vim.fn.getcwd()
     return {
       cmd = { "Rscript" },
       args = {
@@ -9,10 +10,10 @@ return {
         "--no-save",
         "--no-restore",
         "-e",
-        string.format([[testthat::test_file("%s")]], test_file),
+        string.format([[setwd("%s"); testthat::test_file("%s")]], cwd, test_file),
       },
       name = "R: test current file",
-      cwd = vim.uv.cwd(),
+      cwd = cwd,
       components = {
         { "open_output", on_complete = "always", focus = true },
         "default",
@@ -22,11 +23,15 @@ return {
   end,
   condition = {
     callback = function()
-      if not vim.fn.isdirectory("R") then
+      local cwd = vim.v.cwd or vim.fn.getcwd()
+      if not vim.fn.isdirectory(cwd .. "/R") then
         return false
       end
+
       local fname = vim.fn.expand("%")
-      if fname:lower():match("^r/.+%.r$") and not vim.fn.fnamemodify(fname, ":t"):match("^test[-_]") then
+      local frelname = vim.fs.relpath(cwd, fname) or fname
+
+      if frelname:lower():match("^r/.+%.r$") and not vim.fn.fnamemodify(frelname, ":t"):match("^test[-_]") then
         return true
       end
       return false

@@ -147,7 +147,7 @@ function M.translate_paragraph(content, opts)
     "fabric-ai",
     "--pattern",
     "translate",
-    "-m=gemini-2.5-flash-preview-04-17-nothink",
+    "-m=gpt-4.1-mini",
     "--stream",
   }
 
@@ -593,7 +593,7 @@ function M.replace_line()
       end
 
       local translated_content = table.concat(results, " ")
-      vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, { pre_content .. translated_content })
+      vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, { (pre_content or "") .. translated_content })
     end,
   })
 end

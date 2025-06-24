@@ -20,13 +20,9 @@ end
 -- @param fname 测试文件名
 -- @return 源文件路径或 nil
 local function test_to_source_filepath(fname)
-  local source_name = fname:gsub("^test[-_]", "", 1)
-  -- 优先查找同级目录
-  if vim.fn.filereadable(source_name) == 1 then
-    return source_name
-  end
-  -- 查找 R/ 目录
+  local source_name = fname:gsub("^test[-_]", "", 1):gsub("-", "/")
   local r_file = "R/" .. source_name
+  dd(r_file)
   return vim.fn.filereadable(r_file) == 1 and r_file or nil
 end
 
@@ -35,9 +31,14 @@ end
 -- @return 测试文件路径
 function M.source_to_test_filepath(fname)
   fname = fname or vim.api.nvim_buf_get_name(0)
-  fname = vim.fn.fnamemodify(fname, ":t")
-  local test_name = "tests/testthat/test_" .. fname
-  return vim.fn.filewritable(test_name) == 1 and test_name or "tests/testthat/test-" .. fname
+  fname = vim.fs.relpath(vim.fn.getcwd() .. "/R", fname)
+  if not fname then
+    return
+  end
+
+  local modifed_fname = fname:gsub("/", "-")
+  local test_name = "tests/testthat/test_" .. modifed_fname
+  return vim.fn.filewritable(test_name) == 1 and test_name or "tests/testthat/test-" .. modifed_fname
 end
 
 -- 初始化测试目录结构
@@ -56,10 +57,15 @@ end
 -- 打开对应的测试/源文件
 -- @param cmd 窗口分割方式（默认 split）
 function M.edit_test_file(cmd)
-  cmd = cmd or "split"
-  local current_file = vim.fn.expand("%")
-  if is_test_file(current_file) then
+  cmd = cmd or "edit"
+  local cwd = vim.fn.getcwd()
+  local current_file = vim.fs.relpath(cwd, vim.fn.expand("%"))
+  if not current_file then
     return
+  end
+
+  if is_test_file(current_file) then
+    return M.edit_source_file(cmd, vim.fn.fnamemodify(current_file, ":t"))
   end
 
   local target_file = M.source_to_test_filepath(current_file)
@@ -75,8 +81,11 @@ function M.edit_test_file(cmd)
   if not vim.uv.fs_access(target_file, "R") then
     -- 创建对应测试文件模板
     local test_content = {
+      string.format('here::i_am("%s")', target_file),
+      'options(box.path = c(here::here(), Sys.getenv("R_BOX_LIBRARY")))',
+      string.format('source(here::here("%s"), local = TRUE)', current_file),
+      "",
       "library(testthat)",
-      string.format('source("%s", local = TRUE)', current_file),
     }
     vim.fn.writefile(test_content, target_file)
   end
@@ -93,7 +102,7 @@ end
 
 -- 测试当前文件
 function M.test_file(fname)
-  fname = fname or vim.fn.expand("%")
+  fname = fname or vim.fs.relpath(vim.fn.getcwd(), vim.fn.expand("%"))
 
   if not fname:lower():match("^r/.+%.r$") or is_test_file(fname) then
     return
@@ -113,9 +122,9 @@ end
 
 -- 当当前文件是测试文件时打开对应的源文件
 -- @param cmd 窗口分割方式（默认 "split"）
-function M.edit_source_file(cmd)
+function M.edit_source_file(cmd, current_file)
   cmd = cmd or "split"
-  local current_file = vim.api.nvim_buf_get_name(0)
+  current_file = vim.fs.relpath(vim.fn.getcwd(), current_file or vim.fn.expand("%"))
   if not is_test_file(current_file) then
     return
   end

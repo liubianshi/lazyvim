@@ -136,7 +136,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         },
       },
       inline = {
-        adapter = "gemini-thinking",
+        adapter = "aihubmix-openai",
       },
       cmd = {
         adapter = "gemini-flash",

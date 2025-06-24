@@ -2,6 +2,7 @@ return {
   { -- junegunn/vim-easy-align: text alignment tool --------------------- {{{3
     "junegunn/vim-easy-align",
     init = function()
+      vim.g.easy_align_ignore_groups = {}
       vim.keymap.set({ "n", "x" }, "ga", "<Plug>(EasyAlign)", { desc = "Easy Align" })
     end,
     keys = { "ga" },
@@ -252,9 +253,7 @@ return {
     config = function()
       local ftMap = {
         stata = "",
-        vim = nil,
         sagaoutline = "",
-        git = nil,
       }
       local ufo = require("ufo")
       local handler = function(virtText, lnum, endLnum, width, truncate)

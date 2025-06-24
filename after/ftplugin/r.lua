@@ -1,5 +1,6 @@
 local Popup = require("nui.popup")
 local event = require("nui.utils.autocmd").event
+local rtest = require("rlib.test")
 local r_popup = function()
   local opts = {
     enter = true,
@@ -64,9 +65,9 @@ local vimkey = function(key, desc, cmd, opts)
 end
 -- stylua: ignore start
 vimkey("<localleader><leader>", "Open a Scratch",            function() r_popup() end)
-vimkey("<localleader>de",       "Edit test file",            "<cmd>call r#EditTestFile()<cr>")
-vimkey("<localleader>df",       "Test current file",         "<cmd>call r#TestCurrentFile()<cr>")
-vimkey("<localleader>dt",       "Test whole parogram",       "<cmd>call r#TestWholeProgram()<cr>")
+vimkey("<localleader>de",       "Edit test file",            function() rtest.edit_test_file() end)
+vimkey("<localleader>df",       "Test current file",         function() rtest.test_file() end)
+vimkey("<localleader>dt",       "Test whole parogram",       function() rtest.test_whole_program() end)
 vimkey("<localleader>di",       "devtools: load package",    "<cmd>RSend devtools::load_all()<cr>")
 vimkey("<localleader>dd",       "devtools: update document", "<cmd>RSend devtools::document()<cr>")
 vimkey("<localleader>dB",       "devtools: trace back",      "<cmd>RSend rlang::trace_back()<cr>")

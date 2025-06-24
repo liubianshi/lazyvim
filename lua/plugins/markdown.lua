@@ -435,10 +435,12 @@ return {
         width = 76,
       },
       heading = {
+        width = "block",
         sign = false,
-        icons = { "󰍜 ", "󰍜󰍜 ", "󰍜󰉭󰍜 ", "󰍜󰉮󰍜 ", "󰍜󰉯󰍜 ", "󰍜󰉰󰍜 " },
+        icons = { "🌀  ", "🌕  ", "🌖  ", "🌗  ", "🌘  ", "🌑  " },
         position = "inline",
-        backgrounds = {},
+        right_pad = 0.02,
+        -- backgrounds = {},
       },
       latex = {
         enabled = false,

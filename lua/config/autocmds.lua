@@ -38,6 +38,7 @@ end, {
   "Untitled",
   "ColorScheme",
   "Lsp",
+  "HiGroup",
 })
 
 -- Buffer --------------------------------------------------------------- {{{1
@@ -570,4 +571,22 @@ vim.api.nvim_create_autocmd("BufFilePost", {
   pattern = "*",
   callback = restart_lsp_on_rename,
   desc = "Restart LSP clients on buffer rename.",
+})
+
+-- Roxygen2 hililight --------------------------------------------------- {{{2
+local r_higroup = require("rlib.higroup")
+vim.api.nvim_create_autocmd({ "BufEnter", "FileType" }, {
+  pattern = "r",
+  group = augroups.HiGroup,
+  callback = function()
+    -- 进入文件时，对整个文件进行一次完整扫描
+    r_higroup.highlight_roxygen_tags(vim.api.nvim_get_current_buf(), 0, -1)
+  end,
+})
+
+vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "CursorMoved" }, {
+  pattern = "r",
+  group = augroups.HiGroup,
+  -- 编辑和移动时，调用防抖的、只扫描可视区域的函数
+  callback = r_higroup.schedule_viewport_highlight,
 })
