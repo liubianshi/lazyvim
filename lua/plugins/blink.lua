@@ -42,8 +42,13 @@ return {
       local border = require("util").border("▔", "bottom")
       local config = {
         enabled = function()
-          -- return vim.b.completion ~= false
-          return "force"
+          local ft = vim.bo.filetype
+          local filetypes = { "snacks_picker_input", "snacks_input" }
+          if vim.tbl_contains(filetypes, ft) then
+            return "force"
+          else
+            return true
+          end
         end,
         fuzzy = {
           implementation = "prefer_rust_with_warning",
