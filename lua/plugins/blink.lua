@@ -63,13 +63,33 @@ return {
         },
         keymap = {
           preset = "default",
-          ["<Enter>"] = {
+          ["<c-l>"] = {
             function(cmp)
               if cmp.snippet_active() then
                 return cmp.accept()
               end
               if cmp.get_selected_item() then
                 return cmp.accept_and_enter()
+              end
+              if cmp.is_visible() then
+                local items = cmp.get_items()
+                if not items or #items == 0 then
+                  return
+                end
+
+                local first_snippet_number
+                for i, item in ipairs(items) do
+                  if item.source_id == "snippets" then
+                    first_snippet_number = i
+                    break
+                  end
+                end
+
+                if first_snippet_number then
+                  return cmp.accept({ index = first_snippet_number })
+                end
+
+                return
               end
             end,
             "fallback_to_mappings",
