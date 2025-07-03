@@ -445,7 +445,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         opts = {
           index = 16,
           adapter = {
-            name = "aihubmix-openai-o3",
+            name = "aihubmix-openai",
           },
           is_slash_cmd = true,
           modes = { "v" },
