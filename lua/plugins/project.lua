@@ -47,13 +47,16 @@ return {
   { "williamboman/mason-lspconfig.nvim", enabled = false },
   { -- neovim/nvim-lspconfig -------------------------------------------- {{{2
     "neovim/nvim-lspconfig",
-    ft = { "lua", "perl", "markdown", "bash", "r", "python", "vim", "rmd" },
+    ft = { "lua", "perl", "markdown", "bash", "r", "python", "vim", "rmd", "hyprlang" },
     opts = function()
       local keys = require("lazyvim.plugins.lsp.keymaps").get()
       keys[#keys + 1] = { "K", false }
       local ret = {
         keys = keys,
         servers = {
+          hyprls = {
+            root_markers = { "hyprland.conf", "hyprland.d", ".git" },
+          },
           bashls = {
             cmd = { "bash-language-server", "start" },
             filetpyes = { "sh" },

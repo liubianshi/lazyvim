@@ -590,3 +590,12 @@ vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "CursorMoved" }, {
   -- 编辑和移动时，调用防抖的、只扫描可视区域的函数
   callback = r_higroup.schedule_viewport_highlight,
 })
+
+-- Hyprlang LSP
+vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
+  pattern = { "*.hl", "hypr*.conf" },
+  callback = function(event)
+    print(string.format("starting hyprls for %s", vim.inspect(event)))
+    vim.lsp.enable("hyprls")
+  end,
+})
