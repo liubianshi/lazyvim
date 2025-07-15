@@ -20,6 +20,19 @@ return {
     i(0),
   }),
 
+  s({
+    trig = "profile",
+    name = "Default R profile",
+  }, {
+    t({
+      'if (file.exists("~/.profile")) source("~/.profile", echo = FALSE)',
+      "",
+      'options(box.path = c(here::here(), getOption("box.path")))',
+      "",
+    }),
+    i(0),
+  }),
+
   -- local block (Word trigger - no change needed)
   s({ trig = "local", name = "Local Block", dscr = "R local({...}) block", wordTrig = true }, {
     t({ "local({", "\t" }),
