@@ -45,6 +45,7 @@ return {
       end
 
       local neorg_template = ".image $FILE_PATH\n$CURSOR"
+
       return {
         default = {
           dir_path = "img",

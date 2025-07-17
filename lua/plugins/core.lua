@@ -1,7 +1,7 @@
 return {
   {
     "LazyVim/LazyVim",
-    opts = function()
+    opts = function(_, opts)
       local background = string.lower(vim.env.NVIM_BACKGROUND or "dark")
       vim.opt.background = string.lower(background)
 
@@ -12,9 +12,7 @@ return {
         light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "rose-pine",
       }
 
-      return {
-        colorscheme = colorscheme[background],
-      }
+      opts.colorscheme = colorscheme[background]
     end,
   },
 }
