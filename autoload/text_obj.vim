@@ -159,8 +159,6 @@ function! text_obj#StataProgramDefine() abort
   execute 'normal! `<V`>'
 endfunction
 
-
-
 " Whole Buffer ========================================================== {{{1
 " From: https://github.com/jdhao/nvim-config/blob/master/autoload/text_obj.vim
 function! text_obj#Buffer() abort

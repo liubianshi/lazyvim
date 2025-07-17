@@ -486,15 +486,29 @@ end
 function M.keymap(mapping)
   local wk_ok, wk = pcall(require, "which-key")
   if wk_ok then
-    wk.add(mapping)
+    wk.add({ mapping })
     return
   end
-  local mode = mapping.mode or "n"
-  local lhs = mapping:remove(1)
-  local rhs = mapping:remove(1)
-  mapping.mode = nil
-  mapping.icon = nil
-  vim.keymap.set(mode, lhs, rhs, mapping)
+
+  -- Fallback to native vim.keymap.set if which-key is not found.
+  local lhs = mapping[1]
+  local rhs = mapping[2]
+  if not lhs or not rhs then
+    return
+  end
+
+  -- Prepare options for vim.keymap.set
+  local opts = {}
+  for k, v in pairs(mapping) do
+    if type(k) == "string" then
+      opts[k] = v
+    end
+  end
+
+  local mode = opts.mode or "n"
+  opts.mode = nil -- Mode is a separate argument for vim.keymap.set
+  opts = vim.tbl_deep_extend("keep", opts, { silent = true, remap = false })
+  vim.keymap.set(mode, lhs, rhs, opts)
 end
 
 ---@class Paragraphs.Position
