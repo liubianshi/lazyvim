@@ -28,21 +28,17 @@ return {
         },
       },
     },
-    cmd = { "ObsidianQuickSwitch", "ObsidianNew", "ObsidianSearch" },
+    cmd = { "Obsidian", "ObsidianQuickSwitch", "ObsidianNew", "ObsidianSearch" },
     keys = {
-      { "<leader>nl", "<cmd>ObsidianQuickSwitch<cr>", desc = "Obsidian: Switch Note" },
-      { "<leader>nn", "<cmd>ObsidianNew<cr>", desc = "Obsidian: Create new note" },
-      { "<leader>no", "<cmd>ObsidianOpen<cr>", desc = "Obsidian: open a note in the Obsidian app" },
-      { "<leader>nj", "<cmd>ObsidianToday<cr>", desc = "Obsidian: open/create a new daily note" },
-      { "<leader>nf", "<cmd>ObsidianSearch<cr>", desc = "Obsidian: search for (or create) notes" },
+      { "<leader>nl", "<cmd>Obsidian quick_switch<cr>", desc = "Obsidian: Switch Note" },
+      { "<leader>nn", "<cmd>Obsidian new<cr>", desc = "Obsidian: Create new note" },
+      { "<leader>no", "<cmd>Obsidian open<cr>", desc = "Obsidian: open a note in the Obsidian app" },
+      { "<leader>nj", "<cmd>Obsidian today<cr>", desc = "Obsidian: open/create a new daily note" },
+      { "<leader>nf", "<cmd>Obsidian search<cr>", desc = "Obsidian: search for (or create) notes" },
     },
     opts = {
-      -- A list of workspace names, paths, and configuration overrides.
-      -- If you use the Obsidian app, the 'path' of a workspace should generally be
-      -- your vault root (where the `.obsidian` folder is located).
-      -- When obsidian.nvim is loaded by your plugin manager, it will automatically set
-      -- the workspace to the first workspace in the list whose `path` is a parent of the
-      -- current markdown file being edited.
+      legacy_commands = false,
+
       workspaces = {
         {
           name = "research",
@@ -58,11 +54,6 @@ return {
         },
       },
 
-      -- Optional, if you keep notes in a specific subdirectory of your vault.
-      -- notes_subdir = "notes",
-
-      -- Optional, set the log level for obsidian.nvim. This is an integer corresponding to one of the log
-      -- levels defined by "vim.log.levels.*".
       log_level = vim.log.levels.INFO,
 
       daily_notes = {
@@ -80,6 +71,7 @@ return {
       completion = {
         -- Set to false to disable completion.
         nvim_cmp = false,
+        blink = true,
         -- Trigger completion at 2 chars.
         min_chars = 2,
       },
@@ -209,6 +201,7 @@ return {
         name = "snacks.pick",
         note_mappings = {
           new = "<C-x>n",
+          insert_link = "<C-x>l",
         },
       },
 
@@ -273,7 +266,7 @@ return {
         -- It takes two arguments, the `obsidian.Client` and an `obsidian.Path` to the image file.
         -- This is the default implementation.
         ---@return string
-        img_text_func = function(_, path)
+        img_text_func = function(path)
           local link_path
           local buffer_dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
           local abs_path = vim.fn.fnamemodify(path.filename, ":p")

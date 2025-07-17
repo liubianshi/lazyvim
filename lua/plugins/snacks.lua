@@ -9,6 +9,11 @@ return {
         inline = true,
         float = true,
       },
+      resolve = function(path, src)
+        if require("obsidian.api").path_is_note(path) then
+          return require("obsidian.api").resolve_image_path(src)
+        end
+      end,
       math = {
         enabled = false,
         latex = {
@@ -40,7 +45,7 @@ return {
           { icon = "󱙺", key = "a", desc = "Chat New", action = ":CodeCompanionChat" },
           { icon = " ", key = "e", desc = "New File", action = ":silent ene | startinsert" },
           { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
-          { icon = " ", key = "n", desc = "Obsidian Note", action = ":ObsidianQuickSwitch" },
+          { icon = " ", key = "n", desc = "Obsidian Note", action = ":Obsidian quick_switch" },
           {
             icon = " ",
             key = "c",
