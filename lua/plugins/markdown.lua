@@ -1,7 +1,6 @@
 return {
   { -- obsidian-nvim/obsidian.nvim -------------------------------------------- {{{2
     "obsidian-nvim/obsidian.nvim",
-    version = "*",
     ft = { "markdown" },
     specs = {
       {
@@ -76,6 +75,14 @@ return {
         min_chars = 2,
       },
 
+      callbacks = {
+        enter_note = function(client, note)
+          require('util').keymap({
+            "gf", function() require("obsidian.api").follow_link(nil) end,
+          })
+        end,
+      },
+
       -- Optional, configure key mappings. These are the defaults. If you don't want to set any keymappings this
       -- way then set 'mappings = {}'.
       mappings = {
@@ -97,6 +104,8 @@ return {
           end,
           opts = { buffer = true },
         },
+      },
+      callbacks = {
       },
 
       -- Where to put new notes. Valid options are

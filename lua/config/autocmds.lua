@@ -248,13 +248,17 @@ end
 aucmd({ "WinResized" }, {
   group = augroups.Zen,
   callback = function(_)
+    local event_related_windows = vim.v.event.windows
+    if not event_related_windows or #event_related_windows == 0 then
+      return
+    end
     local windows = vim.tbl_filter(function(win)
       return vim.api.nvim_win_get_config(win).relative == ""
         or (
           vim.g.lbs_zen_mode
           and vim.api.nvim_get_option_value("buftype", { buf = vim.api.nvim_win_get_buf(win) }) == ""
         )
-    end, vim.v.event.windows)
+    end, event_related_windows)
     for _, win in ipairs(windows) do
       local rc = process_win(win)
       if rc == "break" then
