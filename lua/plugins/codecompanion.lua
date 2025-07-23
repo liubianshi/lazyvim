@@ -122,7 +122,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
     },
     strategies = {
       chat = {
-        adapter = "gemini-thinking",
+        adapter = "aihubmix-openai-o3",
         keymaps = {
           send = {
             callback = function(chat)

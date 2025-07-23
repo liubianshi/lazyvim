@@ -20,14 +20,16 @@ return {
                 local lines = vim.api.nvim_buf_get_lines(current_buf, 0, 1, false)
                 local input_text = lines[1]
                 picker:close()
-                vim.cmd.ObsidianNew(input_text)
+                local note = require("obsidian.note").create({ title = input_text })
+                note:open({ sync = true })
+                note:write_to_buffer()
               end,
             },
           },
         },
       },
     },
-    cmd = { "Obsidian", "ObsidianQuickSwitch", "ObsidianNew", "ObsidianSearch" },
+    cmd = { "Obsidian" },
     keys = {
       { "<leader>nl", "<cmd>Obsidian quick_switch<cr>", desc = "Obsidian: Switch Note" },
       { "<leader>nn", "<cmd>Obsidian new<cr>", desc = "Obsidian: Create new note" },
@@ -77,36 +79,38 @@ return {
 
       callbacks = {
         enter_note = function(client, note)
-          require('util').keymap({
-            "gf", function() require("obsidian.api").follow_link(nil) end,
+          require("util").keymap({
+            "gf",
+            function()
+              require("obsidian.api").follow_link(nil)
+            end,
           })
         end,
       },
 
-      -- Optional, configure key mappings. These are the defaults. If you don't want to set any keymappings this
-      -- way then set 'mappings = {}'.
-      mappings = {
-        -- Overrides the 'gf' mapping to work on markdown/wiki links within your vault.
-        ["gf"] = {
-          action = function()
-            return require("obsidian").util.gf_passthrough()
-          end,
-          opts = { noremap = false, expr = true, buffer = true },
-        },
-        ["gb"] = {
-          action = "<cmd>ObsidianBacklinks<cr>",
-          opts = { noremap = true, buffer = true },
-        },
-        -- Toggle check-boxes.
-        ["<leader>nh"] = {
-          action = function()
-            return require("obsidian").util.toggle_checkbox()
-          end,
-          opts = { buffer = true },
-        },
-      },
-      callbacks = {
-      },
+      -- -- Optional, configure key mappings. These are the defaults. If you don't want to set any keymappings this
+      -- -- way then set 'mappings = {}'.
+      -- mappings = {
+      --   -- Overrides the 'gf' mapping to work on markdown/wiki links within your vault.
+      --   ["gf"] = {
+      --     action = function()
+      --       return require("obsidian").util.gf_passthrough()
+      --     end,
+      --     opts = { noremap = false, expr = true, buffer = true },
+      --   },
+      --   ["gb"] = {
+      --     action = "<cmd>ObsidianBacklinks<cr>",
+      --     opts = { noremap = true, buffer = true },
+      --   },
+      --   -- Toggle check-boxes.
+      --   ["<leader>nh"] = {
+      --     action = function()
+      --       return require("obsidian").util.toggle_checkbox()
+      --     end,
+      --     opts = { buffer = true },
+      --   },
+      -- },
+      -- callbacks = {},
 
       -- Where to put new notes. Valid options are
       --  * "current_dir" - put new notes in same directory as the current buffer.
