@@ -17,6 +17,9 @@ return {
       jump_next_row = { "<Enter>", mode = { "n", "v" } },
       jump_prev_row = { "<S-Enter>", mode = { "n", "v" } },
     },
+    view = {
+      display_mode = "border",
+    },
   },
   cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
 }

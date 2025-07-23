@@ -346,11 +346,11 @@ if not picker_ok then
   return -- Exit if pickers are essential and not found.
 end
 
-keymap({ "<leader>sP", picker.clipcat,   desc = "System Clipboard History" })
-keymap({ "<leader>hc", picker.cheat,     desc = "CheatSheet: TL;DR" })
-keymap({ "<leader>fz", picker.fasd,      desc = "Jump with fasd" })
-keymap({ "<leader>fq", picker.mylib,     desc = "Open my library file" })
-keymap({ "<leader>hs", picker.stata_doc, desc = "Stata help pages" })
+keymap({ "<leader>sP", Snacks.picker.cliphist, desc = "System Clipboard History" })
+keymap({ "<leader>hc", picker.cheat,           desc = "CheatSheet: TL;DR" })
+keymap({ "<leader>fz", picker.fasd,            desc = "Jump with fasd" })
+keymap({ "<leader>fq", picker.mylib,           desc = "Open my library file" })
+keymap({ "<leader>hs", picker.stata_doc,       desc = "Stata help pages" })
 keymap({
   "<leader>a/",
   picker.fabric,
