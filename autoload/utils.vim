@@ -14,127 +14,133 @@ function! utils#IsPrintable_CharUnderCursor()
 endfunction
 
 " Get content between =================================================== {{{1
-function! s:GetLeftContentBetween(left, right, col = -1)
-    if a:left == "" || a:right == "" | return -1 | endif
-    let col = a:col == -1 ? col('.') : a:col
 
-    let line = getline('.')
-    let len_l = len(a:left)
-    let len_r = len(a:right)
+" Find the start position for content between delimiters.
+"
+" Searches backwards from the given position to find the opening delimiter `left`,
+" correctly handling nested pairs of `left` and `right`.
+"
+" @param left   The opening delimiter string.
+" @param right  The closing delimiter string.
+" @param col    The 1-based column on the current line to start the search from.
+" @return A [line, col] list for the position *after* the delimiter,
+"         or [0, 0] if not found.
+function! s:GetEnclosingLeftDelimiterPosition(left, right, col)
+    " Save current cursor position to restore later.
+    let save_cursor = getcurpos()
+    " `searchpairpos()` starts from the cursor, so we move it to the desired start point.
+    call cursor(line('.'), a:col)
 
-    let i = 0
-    while i < len_l
-        if (col-1-i + (len_l - 1)) >= col('$') - 1 | break | endif
-        if line[(col-1-i):(col-1-i + (len_l - 1))] == a:left
-            return {"row": line('.'), "col": col-1-i + (len_l - 1) + 1 + 1}
-        endif
-        let i += 1
-    endwhile
+    " Escape delimiters for use in regex. `\V` (very nomagic) ensures they are
+    " treated literally. We only need to escape the backslash itself.
+    let l_pat = '\V' . escape(a:left, '\')
+    let r_pat = '\V' . escape(a:right, '\')
 
-    let inpair = 0
-    let lnum = line('.')
-    while lnum >= 1 && getline(lnum) =~? '\v\S'
-        let line = getline(lnum)
-        let num = lnum == line('.') ? col : len(line)
-        while num >= len_l
-            if line[(num - len_l):(num-1)] == a:left
-                if inpair == 0
-                    return {"row": lnum, "col": num + 1}
-                endif
-                let inpair -= 1
-                let num -= len_l
-            elseif num != col && num >= len_r && a:left != a:right && line[(num-len_r):(num-1)] == a:right
-                let inpair += 1
-                let num -= len_r
-            else
-                let num -= 1
-            endif
-        endwhile
-        let lnum -= 1
-    endwhile
-    return -1
+    " Find the position of the enclosing opening delimiter.
+    " 'b' searches backwards. 'W' allows the search to cross line boundaries.
+    let pos = searchpairpos(l_pat, '', r_pat, 'bW')
+
+    " Restore original cursor position to prevent side effects.
+    call setpos('.', save_cursor)
+
+    if pos != [0, 0]
+        " If found, return the position *after* the delimiter by adding its
+        " byte-length to the column.
+        let pos[1] += len(a:left)
+    endif
+
+    return pos
 endfunction
 
-function! s:GetRightContentBetween(left, right, col = -1)
-    if a:left == "" || a:right == "" | return -1 | endif
-    let col = a:col == -1 ? col('.') : a:col
+" Find the end position for content between delimiters.
+"
+" Searches forwards from the given position to find the closing delimiter `right`,
+" correctly handling nested pairs of `left` and `right`.
+"
+" @param left   The opening delimiter string.
+" @param right  The closing delimiter string.
+" @param col    The 1-based column on the current line to start the search from.
+" @return A [line, col] list for the position *at the start of* the delimiter,
+"         or [0, 0] if not found.
+function! s:GetEnclosingRightDelimiterPosition(left, right, col)
+    let save_cursor = getcurpos()
+    call cursor(line('.'), a:col)
 
-    let line = getline('.')
-    let len_l = len(a:left)
-    let len_r = len(a:right)
+    let l_pat = '\V' . escape(a:left, '\')
+    let r_pat = '\V' . escape(a:right, '\')
 
-    let i = 0
-    while i < len_r
-        if ((col + i - 1) - (len_r - 1)) < 0 | break | endif
-        if line[((col + i - 1) - (len_r - 1)):(col + i - 1)] == a:right
-            return {"row": line('.'), "col":(col + i - 1) - (len_r - 1)}
-        endif
-        let i += 1
-    endwhile
+    " Find the position of the enclosing closing delimiter.
+    " 'W' allows the search to cross line boundaries. Forward search is the default.
+    let pos = searchpairpos(l_pat, '', r_pat, 'W')
 
-    let inpair = 0
-    let lnum = line('.')
-    while lnum <= line('$') && getline(lnum) =~? '\v\S'
-        let num = lnum == line('.') ? col : 1
-        let line = getline(lnum)
-        let max_col = len(line)
+    call setpos('.', save_cursor)
 
-        while num <= max_col - len_r + 1
-            if line[(num-1):(num - 1 + len_r - 1)] == a:right
-                if inpair == 0
-                    return {"row": lnum, "col": num - 1}
-                endif
-                let inpair -= 1
-                let num += len_r
-            elseif num != col &&
-                \ num <= max_col - len_l + 1 &&
-                \ a:left != a:right &&
-                \ line[(num-1):(num-1 + len_l - 1)] == a:left
-                let inpair += 1
-                let num += len_l
-            else
-                let num += 1
-            endif
-        endwhile
-
-        let lnum += 1
-    endwhile
-    return -1
+    " The returned position is the start of the delimiter, which is what we need.
+    return pos
 endfunction
 
+" Get the content between two delimiters, searching from the current cursor position.
+"
+" This function is the public API. It uses the helper functions to find the
+" boundaries and then extracts the text content between them.
+"
+" @param left   The opening delimiter string (e.g., '(', '{', '"').
+" @param right  The closing delimiter string (e.g., ')', '}', '"').
+" @param col    (Optional) The column to start the search from. Defaults to the
+"               current cursor column.
+" @return The string content between the delimiters, or an empty string if the
+"          pair is not found or invalid.
 function! utils#GetContentBetween(left, right, col = -1)
-    if a:left == "" || a:right == "" | return "" | endif
-
-    let l = s:GetLeftContentBetween(a:left, a:right, a:col)
-    if type(l) != v:t_dict | return "" | endif
-
-    let r = s:GetRightContentBetween(a:left, a:right, a:col)
-    if  type(r) != v:t_dict | return "" | endif
-
-
-    if l['row'] > r['row'] | return "" | endif
-
-    if l['row'] == r['row']
-        return getline('.')[(l['col']-1):(r['col']-1)]
+    if a:left == '' || a:right == ''
+        return ''
     endif
 
-    let content = []
+    " Use the current cursor column if no column is specified.
+    let search_col = a:col == -1 ? col('.') : a:col
 
-    let lline = getline(l['row'])
-    if l['col'] <= len(lline)
-        let content = add(content, lline[(l['col']-1):])
+    " Find the position *after* the opening delimiter.
+    let start_pos = s:GetEnclosingLeftDelimiterPosition(a:left, a:right, search_col)
+    if start_pos == [0, 0]
+        return ''
     endif
 
-    if r['row'] >= l['row'] + 2
-        let content = content + getline(l['row'] + 1, r['row'] - 1)
+    " Find the position *of* the closing delimiter.
+    let end_pos = s:GetEnclosingRightDelimiterPosition(a:left, a:right, search_col)
+    if end_pos == [0, 0]
+        return ''
     endif
 
-    let rline = getline(r['row'])
-    if r['col'] >= 1
-        let content = add(content, rline[0:(r['col']-1)])
+    let [start_line, start_col] = start_pos
+    let [end_line, end_col] = end_pos
+
+    " Sanity check: The start position must not be after the end position.
+    if start_line > end_line || (start_line == end_line && start_col >= end_col)
+        return ''
     endif
 
-    return join(content, "\n")
+    " Case 1: Content is on a single line.
+    if start_line == end_line
+        let line_content = getline(start_line)
+        " Use strpart() for safe substring extraction. It is 0-indexed.
+        return strpart(line_content, start_col - 1, end_col - start_col)
+    endif
+
+    " Case 2: Content spans multiple lines.
+    " Use `getbufline` to efficiently read all relevant lines from the buffer.
+    let lines = getbufline('%', start_line, end_line)
+
+    if empty(lines)
+        return ''
+    endif
+
+    " Trim the start of the first line.
+    let lines[0] = strpart(lines[0], start_col - 1)
+
+    " Trim the end of the last line.
+    let last_line_idx = len(lines) - 1
+    let lines[last_line_idx] = strpart(lines[last_line_idx], 0, end_col - 1)
+
+    return join(lines, "\n")
 endfunction
 
 " Extract all urls ====================================================== {{{1

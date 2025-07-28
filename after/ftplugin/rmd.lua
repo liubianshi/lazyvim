@@ -9,7 +9,7 @@ vim.api.nvim_buf_set_var(0, "rmd_plugin_on", true)
 --   UltiSnipsAddFiletype rmd.r.markdown.pandoc
 -- ]]
 
-vim.api.nvim_set_option_value("formatprg", "mdwrap --line-width=90", { scope = "local" })
+vim.api.nvim_set_option_value("formatprg", "mdwrap", { scope = "local" })
 
 local fexport = function(oformat, ofile)
   local bufnr = vim.api.nvim_get_current_buf()

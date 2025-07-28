@@ -6,6 +6,7 @@ return {
       bash = { "shfmt" },
       json = { "jq" },
       xml = { "xmllint" },
+      python = { "ruff" },
       yaml = { "yq" },
       r = { "air" },
       markdown = { "injected", "mdwrap" },

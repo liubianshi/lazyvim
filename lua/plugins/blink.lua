@@ -220,13 +220,13 @@ return {
         sources = {
           compat = { "cmp_r" },
           per_filetype = {
-            codecompanion = { inherit_defaults = true, "codecompanion" },
-            org = { inherit_defaults = true, "orgmode" },
-            r = { inherit_defaults = true, "cmp_r" },
+            codecompanion = { "lsp", "path", "snippets", "buffer", "ripgrep", "codecompanion" },
+            org = { "lsp", "path", "snippets", "buffer", "ripgrep", "orgmode" },
+            r = { "lsp", "path", "snippets", "buffer", "ripgrep", "cmp_r" },
             snacks_picker_input = { "lsp" },
             snacks_input = { "lsp" },
-            lua = { "lazydev", inherit_defaults = true },
-            markdown = { "markdown", inherit_defaults = true },
+            lua = { "lazydev", "lsp", "path", "snippets", "buffer", "ripgrep" },
+            markdown = { "markdown", "lsp", "path", "snippets", "buffer", "ripgrep" },
           },
           default = { "lsp", "path", "snippets", "buffer", "ripgrep" },
           providers = {

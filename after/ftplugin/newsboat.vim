@@ -45,11 +45,11 @@ function! s:get_link_citation_under_cursor(ft = "org")
 
         if ! filereadable(target_path)
             call mkdir(target_dir, "p")
-            call system("link '" . image_path . "' '" . target_path . "'") 
+            call system("link '" . image_path . "' '" . target_path . "'")
         endif
         let label = input("Please Input image title: ")
 
-        if note_file_ext ==? "org" 
+        if note_file_ext ==? "org"
             if label != ""
                 let label = "[" . label . "]"
             endif
@@ -69,7 +69,7 @@ function! s:get_link_citation_under_cursor(ft = "org")
             let content = system("url_cite markdown '" . link['url'] . "'")
         endif
     endif
-    
+
     return content
 endfunction
 
@@ -101,7 +101,7 @@ function! s:mylib_send_content_to_note(content, line = -1, method = "") abort
     Mylib note quiet
     let notebufnr = bufnr(b:mylib_note)
 
-    if a:method ==? "quiet" 
+    if a:method ==? "quiet"
         if notebufnr == 0 | return 0 | endif
         call appendbufline(b:mylib_note, "$", split(content, "\n", 1))
         exec notebufnr . "," . notebufnr . "bufdo write"
@@ -119,7 +119,7 @@ function! s:mylib_send_content_to_note(content, line = -1, method = "") abort
     endif
 
     let ori = @+
-    let @+ = "\n" . content 
+    let @+ = "\n" . content
     normal! $"+p
     if match(@+, '\v\s*#\+begin_') != -1
         call search('\v^\s*#\+begin_')
@@ -209,7 +209,7 @@ endfunction
 
 " set options ----------------------------------------------------------- {{{1
 set nocindent nosmartindent nowrap nonumber norelativenumber
-let &l:formatprg = "mdwrap --line-width=90 -tonewsboat"
+let &l:formatprg = "mdwrap -tonewsboat"
 set fo-=q
 setlocal scrolloff=10
 
