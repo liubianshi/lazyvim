@@ -309,9 +309,13 @@ return {
               module = "blink-ripgrep",
               name = "Ripgrep",
               opts = {
-                max_filesize = "200K",
                 project_root_marker = { ".git", "NAMESPACE", ".root", "_metadata.yml" },
-                project_root_fallback = false,
+                backend = {
+                  ripgrep = {
+                    max_filesize = "200K",
+                    project_root_fallback = false,
+                  },
+                },
               },
             },
           },
