@@ -22,11 +22,7 @@ return {
       },
     },
     init = function()
-      vim.system({
-        vim.fn.executable("rime_ls") and "rime_ls" or vim.env.HOME .. "/.local/bin/rime_ls",
-        "--listen",
-        "127.0.0.1:9257",
-      }, { detach = true })
+      vim.system({ "/usr/bin/rime_ls", "--listen", "127.0.0.1:9257" }, { detach = true })
     end,
     config = function(_, opts)
       require("rimels").setup(opts)
