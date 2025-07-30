@@ -2,17 +2,23 @@ return {
   {
     "LazyVim/LazyVim",
     opts = function(_, opts)
-      local background = string.lower(vim.env.NVIM_BACKGROUND or "dark")
-      vim.opt.background = string.lower(background)
+      local background
+      local env_bg = vim.env.NVIM_BACKGROUND and vim.env.NVIM_BACKGROUND:lower()
 
-      vim.opt.formatexpr = nil
-      local night = tonumber(os.date("%H")) > 17
-      local colorscheme = {
-        dark = vim.env.NVIM_COLOR_SCHEME_DARK or (night and "vague" or "rose-pine"),
+      if env_bg == "dark" or env_bg == "light" then
+        background = env_bg
+      else
+        background = tonumber(os.date("%H")) >= 18 and "dark" or "light"
+      end
+
+      vim.opt.background = background
+
+      local colorschemes = {
+        dark = vim.env.NVIM_COLOR_SCHEME_DARK or "rose-pine",
         light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "rose-pine",
       }
 
-      opts.colorscheme = colorscheme[background]
+      opts.colorscheme = colorschemes[background]
     end,
   },
 }
