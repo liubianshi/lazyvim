@@ -7,6 +7,10 @@ return {
         "folke/snacks.nvim",
         opts = {
           picker = {
+            matcher = {
+              sort_empty = true,
+            },
+            exclude = { "*.{docx,pdf,html}" },
             win = {
               input = {
                 keys = {
@@ -54,7 +58,7 @@ return {
         },
       },
 
-      log_level = vim.log.levels.INFO,
+      log_level = vim.log.levels.WARN,
 
       daily_notes = {
         -- Optional, if you keep daily notes in a separate directory.
@@ -79,12 +83,12 @@ return {
         enter_note = function(_, note) -- client, note
           local keymap = require("util").keymap
           -- stylua: ignore start
-          keymap({ "<localleader>b", "<cmd>Obsidian backlinks<cr>",          { buffer = note.bufnr, desc = "Obsidian: get back references" }, })
-          keymap({ "<localleader>o", "<cmd>Obsidian open<cr>",               { buffer = note.bufnr, desc = "Obsidian: open note in APP" },       })
-          keymap({ "<localleader>t", "<cmd>Obsidian tags<cr>",               { buffer = note.bufnr, desc = "Obsidian: get note with tag" },       })
-          keymap({ "<localleader>l", "<cmd>Obsidian link<cr>",               { buffer = note.bufnr, desc = "Obsidian: get reference" },       })
-          keymap({ "gf",             "<cmd>Obsidian follow_link vsplit<cr>", { buffer = note.bufnr, desc = "Obsidian: follow reference" },    })
-          keymap({ "gf",             "<cmd>Obsidian link_new",               { buffer = note.bufnr, desc = "Obsidian: create a new note",     mode = "v", }, })
+          keymap({ "<localleader>b", "<cmd>Obsidian backlinks<cr>",          buffer = note.bufnr, desc = "Obsidian: get back references",             })
+          keymap({ "<localleader>o", "<cmd>Obsidian open<cr>",               buffer = note.bufnr, desc = "Obsidian: open note in APP",                })
+          keymap({ "<localleader>t", "<cmd>Obsidian tags<cr>",               buffer = note.bufnr, desc = "Obsidian: get note with tag",               })
+          keymap({ "<localleader>l", "<cmd>Obsidian link<cr>",               buffer = note.bufnr, desc = "Obsidian: get reference",                   })
+          keymap({ "gf",             "<cmd>Obsidian follow_link vsplit<cr>", buffer = note.bufnr, desc = "Obsidian: follow reference",                })
+          keymap({ "gf",             "<cmd>Obsidian link_new",               buffer = note.bufnr, desc = "Obsidian: create a new note",   mode = "v", })
         end,
         -- stylua: ignore end
       },
@@ -198,7 +202,7 @@ return {
       -- Optional, sort search results by "path", "modified", "accessed", or "created".
       -- The recommend value is "modified" and `true` for `sort_reversed`, which means, for example,
       -- that `:ObsidianQuickSwitch` will show the notes sorted by latest modified time
-      sort_by = "modified",
+      sort_by = "accessed",
       sort_reversed = true,
 
       -- Optional, determines how certain commands open notes. The valid options are:
@@ -213,17 +217,6 @@ return {
         enable = false, -- set to false to disable all additional syntax features
         update_debounce = 200, -- update delay after a text change (in milliseconds)
         -- Define how various check-boxes are displayed
-        checkboxes = {
-          [" "] = { char = "󰄱", hl_group = "ObsidianTodo" },
-          ["x"] = { char = "", hl_group = "ObsidianDone" },
-          [">"] = { char = "", hl_group = "ObsidianRightArrow" },
-          ["~"] = { char = "󰰱", hl_group = "ObsidianTilde" },
-          -- Replace the above with this if you don't have a patched font:
-          -- [" "] = { char = "☐", hl_group = "ObsidianTodo" },
-          -- ["x"] = { char = "✔", hl_group = "ObsidianDone" },
-
-          -- You can also add more custom ones...
-        },
         -- Use bullet marks for non-checkbox lists.
         bullets = { char = "", hl_group = "ObsidianBullet" },
         external_link_icon = { char = "", hl_group = "ObsidianExtLinkIcon" },
@@ -423,7 +416,7 @@ return {
         icons = { "🌀  ", "🌕  ", "🌖  ", "🌗  ", "🌘  ", "🌑  " },
         position = "inline",
         right_pad = 0.02,
-        -- backgrounds = {},
+        backgrounds = {},
       },
       latex = {
         enabled = false,
