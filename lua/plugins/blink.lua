@@ -2,7 +2,7 @@ return {
   { -- "liubianshi/cmp-lsp-rimels"
     "liubianshi/cmp-lsp-rimels",
     keys = { { "<localleader>f", mode = "i" } },
-    branch = "blink.cmp",
+    branch = "drop_cmp",
     lazy = true,
     dev = true,
     priority = 100,

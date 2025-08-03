@@ -112,4 +112,14 @@ return {
     end,
     "m00qek/baleia.nvim",
   },
+  {
+    "willothy/flatten.nvim",
+    opts = {
+      integrations = {
+        kitty = false,
+      },
+    },
+    lazy = false,
+    priority = 1001,
+  },
 }

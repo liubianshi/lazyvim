@@ -276,6 +276,14 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
         })
       end,
+      ["aihubmix-claude"] = function()
+        return require("codecompanion.adapters").extend("anthropic", {
+          env = {
+            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+          },
+          url = "https://aihubmix.com/v1/messages",
+        })
+      end,
       ["deepseek-r1"] = function()
         return require("codecompanion.adapters").extend("openai_compatible", {
           env = {
@@ -358,7 +366,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           index = 14,
           short_name = "optimize",
           adapter = {
-            name = "gemini-thinking",
+            name = "aihubmix-claude",
           },
           is_slash_cmd = true,
           modes = { "v" },
