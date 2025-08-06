@@ -489,7 +489,6 @@ return {
     opts = {
       highlight = { timer = 1000 },
       ring = {
-        storage = jit.os:find("Windows") and "shada" or "sqlite",
         ignore_registers = { "_" },
       },
       textobj = { enabled = true },

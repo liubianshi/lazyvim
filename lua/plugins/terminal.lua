@@ -3,7 +3,7 @@ return {
     "is0n/fm-nvim",
     cmd = { "Lf", "Nnn", "Neomutt", "Lazygit" },
     keys = {
-      { "<leader>fo", "<cmd>Lf '%:p:h'<cr>", desc = "Open File with Lf" },
+      -- { "<leader>fo", "<cmd>Lf '%:p:h'<cr>", desc = "Open File with Lf" },
       -- { "<leader>fn", "<cmd>Nnn '%:p:h'<cr>", desc = "Open File with nnn" },
       -- { "<leader>gg", "<cmd>Lazygit<cr>", desc = "Open Lazy Git" },
     },
@@ -112,7 +112,7 @@ return {
     end,
     "m00qek/baleia.nvim",
   },
-  {
+  { -- willothy/flatten.nvim -------------------------------------------- {{{2
     "willothy/flatten.nvim",
     opts = {
       integrations = {
@@ -121,5 +121,24 @@ return {
     },
     lazy = false,
     priority = 1001,
+  },
+  { -- mikavilpas/yazi.nvim --------------------------------------------- {{{2
+    "mikavilpas/yazi.nvim",
+    event = "VeryLazy",
+    dependencies = {
+      { "nvim-lua/plenary.nvim", lazy = true },
+    },
+    -- stylua: ignore start
+    keys = {
+      { "<leader>fo", "<cmd>Yazi<cr>",     mode = { "n", "v" }, desc = "Open yazi at the current file" },
+      { "<leader>fO", "<cmd>Yazi cwd<cr>", mode = { "n", "v" }, desc = "Open yazi in working directory" },
+    },
+    -- stylua: ignore end
+    opts = {
+      integrations = {
+        picker_add_copy_relative_path_action = "snacks.picker",
+        grep_in_directory = "snacks.picker",
+      },
+    },
   },
 }

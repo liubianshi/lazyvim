@@ -8,6 +8,7 @@ return {
       xml = { "xmllint" },
       python = { "ruff" },
       yaml = { "yq" },
+      toml = { "taplo" },
       r = { "air" },
       markdown = { "injected", "mdwrap" },
       quarto = { "injected", "mdwrap" },

@@ -34,7 +34,7 @@ return {
       "mikavilpas/blink-ripgrep.nvim",
     },
     build = "cargo build --release",
-    opts = function(_, opts)
+    opts = function()
       local border = require("util").border("▔", "bottom")
       local config = {
         enabled = function()
@@ -214,15 +214,26 @@ return {
           end,
         },
         sources = {
-          compat = { "cmp_r" },
           per_filetype = {
-            codecompanion = { "lsp", "path", "snippets", "buffer", "ripgrep", "codecompanion" },
-            org = { "lsp", "path", "snippets", "buffer", "ripgrep", "orgmode" },
-            r = { "lsp", "path", "snippets", "buffer", "ripgrep", "cmp_r" },
+            codecompanion = { inherit_defaults = true, "codecompanion" },
+            org = { inherit_defaults = true, "orgmode" },
+            r = { inherit_defaults = true, "cmp_r" },
+            stata = { inherit_defaults = true, "omni" },
+            vim = { inherit_defaults = true, "cmdline" },
             snacks_picker_input = { "lsp" },
             snacks_input = { "lsp" },
-            lua = { "lazydev", "lsp", "path", "snippets", "buffer", "ripgrep" },
-            markdown = { "markdown", "lsp", "path", "snippets", "buffer", "ripgrep" },
+            lua = { inherit_defaults = true, "lazydev" },
+            markdown = {
+              "obsidian",
+              "obsidian_new",
+              "obsidian_tags",
+              "markdown",
+              "lsp",
+              "path",
+              "snippets",
+              "buffer",
+              "ripgrep",
+            },
           },
           default = { "lsp", "path", "snippets", "buffer", "ripgrep" },
           providers = {
@@ -232,9 +243,11 @@ return {
               end,
             },
             lazydev = {
+              name = "LazyDev",
               enabled = function()
                 return vim.bo.buftype ~= "prompt"
               end,
+              module = "lazydev.integrations.blink",
               fallbacks = { "lsp" },
             },
             snippets = {
@@ -321,7 +334,10 @@ return {
           },
         },
       }
-      return vim.tbl_deep_extend("force", opts, config)
+      return config
+    end,
+    config = function(_, opts)
+      require("blink.cmp").setup(opts)
     end,
   },
   { -- "saghen/blink.compat"
