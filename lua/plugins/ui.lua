@@ -268,6 +268,7 @@ return {
     "j-hui/fidget.nvim",
     opts = {
       notification = {
+        filter = vim.log.levels.WARN,
         window = {
           align = "top",
           x_padding = 2,
