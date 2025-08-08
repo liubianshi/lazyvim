@@ -9,12 +9,6 @@ return {
         inline = true,
         float = true,
       },
-      -- resolve = function(path, src)
-      --   dd({ path, src })
-      --   if require("obsidian.api").path_is_note(path) then
-      --     return require("obsidian.api").resolve_image_path(src)
-      --   end
-      -- end,
       math = {
         enabled = false,
         latex = {

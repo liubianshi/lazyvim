@@ -481,7 +481,11 @@ return {
       {
         "<leader>sy",
         function()
-          Snacks.picker.yanky()
+          Snacks.picker.yanky({
+            sort = function(a, b)
+              return a.idx < b.idx
+            end,
+          })
         end,
         desc = "Open Yank History",
       },

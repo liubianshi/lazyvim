@@ -346,7 +346,7 @@ if not picker_ok then
   return -- Exit if pickers are essential and not found.
 end
 
-keymap({ "<leader>sP", Snacks.picker.cliphist, desc = "System Clipboard History" })
+keymap({ "<leader>sP", picker.cliphist, desc = "System Clipboard History" })
 keymap({ "<leader>hc", picker.cheat,           desc = "CheatSheet: TL;DR" })
 keymap({ "<leader>fz", picker.fasd,            desc = "Jump with fasd" })
 keymap({ "<leader>fq", picker.mylib,           desc = "Open my library file" })
