@@ -123,17 +123,15 @@ keymap({ "<localleader>0",       "<C-v>u200b",                         desc = "S
 keymap({ "<localleader>)",       "<C-v>uFF08 <C-v>uFF09<C-o>F <c-o>x", desc = "Chinese Punctuation: （…）",       mode = "i" })
 keymap({ "<localleader>]",       "<C-v>u300c <C-v>u300d<C-o>F <c-o>x", desc = "Chinese Punctuation: 「…」",       mode = "i" })
 keymap({ "<localleader>}",       "<C-v>u201C <C-v>u201D<C-o>F <c-o>x", desc = "Chinese Punctuation: “…”",         mode = "i" })
-keymap({ "<localleader>'",       "<C-v>u300c",                         desc = "Chinese Punctuation: 「",          mode = "i" })
-keymap({ '<localleader>"',       "<C-v>u300d",                         desc = "Chinese Punctuation: 」",          mode = "i" })
-keymap({ "<localleader>,",       "<C-v>uFF0C",                         desc = "Chinese Punctuation: ，",          mode = "i" })
-keymap({ "<localleader>.",       "<C-v>u3002",                         desc = "Chinese Punctuation: 。",          mode = "i" })
-keymap({ "<localleader>\\",      "<C-v>u3001",                         desc = "Chinese Punctuation: 、",          mode = "i" })
-keymap({ "<localleader>:",       "<C-v>uff1a",                         desc = "Chinese Punctuation: ：",          mode = "i" })
-keymap({ "<localleader>/",       "<C-v>uff1b",                         desc = "Chinese Punctuation: ；",          mode = "i" })
-keymap({ "<localleader>_",       "<C-v>u2014<c-v>u2014",               desc = "Chinese Punctuation: ——",          mode = "i" })
-keymap({ "<localleader>^",       "<C-v>u2026<c-v>u2026",               desc = "Chinese Punctuation: ……",          mode = "i" })
-keymap({ "<localleader>?",       "<C-v>uff1f",                         desc = "Special Punctuation: ？",          mode = "i" })
-keymap({ "<localleader>-",       "<C-v>u2014",                         desc = "Special Punctuation: —",           mode = "i" })
+
+--- Set up keybinding for insert mode
+--- Triggers punctuation replacement when ';' followed by single quote is pressed
+keymap({
+  "<M-space>",
+  require("util.chinese").replace_en_with_cn_punctuation,
+  desc = 'Replace paired English punctuation with Chinese equivalents',
+  mode = 'i',
+})
 
 --- window manager ------------------------------------------------------ {{{1
 keymap({ "w0",    "<cmd>88wincmd |<cr>",         desc = "Window: Suitable Width"           })

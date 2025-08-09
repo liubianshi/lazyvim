@@ -2,37 +2,6 @@ return {
   { -- obsidian-nvim/obsidian.nvim -------------------------------------------- {{{2
     "obsidian-nvim/obsidian.nvim",
     ft = { "markdown" },
-    specs = {
-      {
-        "folke/snacks.nvim",
-        opts = {
-          picker = {
-            matcher = {
-              sort_empty = true,
-            },
-            exclude = { "*.{docx,pdf,html}" },
-            win = {
-              input = {
-                keys = {
-                  ["<c-x>n"] = { "obsidian_note", mode = { "n", "i" } },
-                },
-              },
-            },
-            actions = {
-              obsidian_note = function(picker)
-                local current_buf = vim.api.nvim_get_current_buf()
-                local lines = vim.api.nvim_buf_get_lines(current_buf, 0, 1, false)
-                local input_text = lines[1]
-                picker:close()
-                local note = require("obsidian.note").create({ title = input_text })
-                note:open({ sync = true })
-                note:write_to_buffer()
-              end,
-            },
-          },
-        },
-      },
-    },
     cmd = { "Obsidian" },
     keys = {
       { "<leader>nl", "<cmd>Obsidian quick_switch<cr>", desc = "Obsidian: Switch Note" },

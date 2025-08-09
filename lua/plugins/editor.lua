@@ -239,7 +239,7 @@ return {
   },
   { -- kevinhwang91/nvim-ufo: ultra fold in Neovim ---------------------- {{{3
     "kevinhwang91/nvim-ufo",
-    enabled = true,
+    enabled = false,
     event = "BufReadPost", -- later or on keypress would prevent saving folds
     init = function()
       vim.o.foldcolumn = "0" -- '0' is not bad
@@ -333,11 +333,7 @@ return {
       vim.keymap.set("n", "zr", require("ufo").openFoldsExceptKinds)
       vim.keymap.set("n", "zm", require("ufo").closeFoldsWith) -- closeAllFolds == closeFoldsWith(0)
       vim.keymap.set("n", "K", function()
-        local ufo_ok, ufo = pcall(require, "ufo")
-        local winid
-        if ufo_ok then
-          winid = ufo.peekFoldedLinesUnderCursor()
-        end
+        local winid = ufo.peekFoldedLinesUnderCursor()
         if not winid then
           vim.lsp.buf.hover()
         end
@@ -347,30 +343,32 @@ return {
   { -- chrisgrieser/nvim-origami: Fold with relentless elegance --------- {{{2
     "chrisgrieser/nvim-origami",
     event = "BufReadPost",
-    version = "v1.9",
-    opts = function()
-      local ufo_loaded = package.loaded["ufo"]
-      local opts = {
-        -- features incompatible with `nvim-ufo`
-        useLspFoldsWithTreesitterFallback = not ufo_loaded,
-        autoFold = {
-          enabled = false,
-          kinds = { "comment", "imports" },
-        },
-        foldtext = {
-          enabled = not ufo_loaded,
-          template = " ────────  %s lines", -- `%s` gets the number of folded lines
-          hlgroupForCount = "Comment",
-        },
-        keepFoldsAcrossSessions = ufo_loaded,
-        pauseFoldsOnSearch = true,
-        FoldKeymaps = {
-          setup = true,
-          hOnlyOpensOnFirstColumn = true,
-        },
-      }
-      return opts
+    init = function()
+      vim.opt.foldlevel = 99
+      vim.opt.foldlevelstart = 99
     end,
+    opts = {
+      useLspFoldsWithTreesitterFallback = true,
+      autoFold = {
+        enabled = false,
+        kinds = { "comment", "imports" },
+      },
+      foldtext = {
+        enabled = true,
+        padding = 3,
+        lineCount = {
+          template = " ────  %d lines", -- `%d` is replaced with the number of folded lines
+          hlgroup = "Comment",
+        },
+        diagnosticsCount = true, -- uses hlgroups and icons from `vim.diagnostic.config().signs`
+        gitsignsCount = true, -- requires `gitsigns.nvim`
+      },
+      pauseFoldsOnSearch = true,
+      foldKeymaps = {
+        setup = true,
+        hOnlyOpensOnFirstColumn = true,
+      },
+    },
   },
   { -- chrisgrieser/nvim-early-retirement ------------------------------- {{{2
     "chrisgrieser/nvim-early-retirement",
@@ -481,6 +479,7 @@ return {
       {
         "<leader>sy",
         function()
+          --- @diagnostic disable: undefined-field
           Snacks.picker.yanky({
             sort = function(a, b)
               return a.idx < b.idx
