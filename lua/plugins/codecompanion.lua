@@ -54,9 +54,33 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
   "olimorris/codecompanion.nvim",
   -- version = "v15.8.0",
   keys = {
-    { "<leader>al", "<cmd>CodeCompanionActions<cr>", desc = "CodeCompanion Actions", mode = { "n", "v" } },
-    { "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", desc = "CodeCompanion Toggle", mode = { "n", "v" } },
-    { "<leader>ap", "<cmd>CodeCompanionChat Add<cr>", desc = "CodeCompanion Toggle", mode = { "v" } },
+    -- CodeCompanion keymaps: optimized descriptions and consistent options
+    -- Open the CodeCompanion actions menu (normal/visual)
+    {
+      "<leader>al",
+      "<cmd>CodeCompanionActions<CR>",
+      desc = "CodeCompanion: Actions",
+      mode = { "n", "v" },
+      silent = true,
+    },
+
+    -- Toggle the CodeCompanion chat panel (normal/visual)
+    {
+      "<leader>ac",
+      "<cmd>CodeCompanionChat Toggle<CR>",
+      desc = "CodeCompanion: Chat Toggle",
+      mode = { "n", "v" },
+      silent = true,
+    },
+
+    -- Add the current visual selection to the CodeCompanion chat (visual only)
+    {
+      "<leader>ap",
+      "<cmd>CodeCompanionChat Add<CR>",
+      desc = "CodeCompanion: Chat Add Selection",
+      mode = "v",
+      silent = true,
+    },
     {
       "<A-o>",
       function()
@@ -122,7 +146,10 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
     },
     strategies = {
       chat = {
-        adapter = "aihubmix-openai-o3",
+        adapter = {
+          name = "aihubmix-openai",
+          model = "gpt-5",
+        },
         keymaps = {
           send = {
             callback = function(chat)
@@ -136,58 +163,18 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         },
       },
       inline = {
-        adapter = "aihubmix-openai",
+        adapter = {
+          name = "aihubmix-openai",
+        },
       },
       cmd = {
-        adapter = "gemini-flash",
+        adapter = {
+          name = "aihubmix-openai",
+        },
       },
     },
     adapters = {
-      ["gemini-flash"] = function()
-        return require("codecompanion.adapters").extend("openai_compatible", {
-          roles = {
-            llm = "model",
-          },
-          env = {
-            url = "https://aihubmix.com",
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-          },
-          handlers = {
-            chat_output = codecampanion_utils.handlers.gemini.chat_output,
-          },
-          schema = {
-            model = {
-              default = "gemini-2.5-flash",
-            },
-            temperature = {
-              default = 0.4,
-            },
-          },
-        })
-      end,
-      ["gemini-thinking"] = function()
-        return require("codecompanion.adapters").extend("openai_compatible", {
-          roles = {
-            llm = "model",
-          },
-          env = {
-            url = "https://aihubmix.com",
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-          },
-          handlers = {
-            chat_output = codecampanion_utils.handlers.gemini.chat_output,
-          },
-          schema = {
-            model = {
-              default = "gemini-2.5-pro",
-            },
-            temperature = {
-              default = 0.4,
-            },
-          },
-        })
-      end,
-      ["gemini-search"] = function()
+      ["aihubmix-gemini"] = function()
         return require("codecompanion.adapters").extend("openai_compatible", {
           roles = {
             llm = "model",
@@ -202,6 +189,14 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           schema = {
             model = {
               default = "gemini-2.5-pro-search",
+              choices = {
+                ["gemini-2.5-pro-search"] = { opts = { can_reason = true, has_vision = true } },
+                ["gemini-2.5-pro"] = { opts = { can_reason = true, has_vision = true } },
+                ["gemini-2.5-flash"] = { opts = { can_reason = true, has_vision = true } },
+                ["gemini-2.5-flash-search"] = { opts = { can_reason = true, has_vision = true } },
+                ["gemini-2.5-flash-lite"] = { opts = { can_reason = true, has_vision = true } },
+                ["gemini-2.5-flash-nothink"] = { opts = { can_reason = false, has_vision = true } },
+              },
             },
             temperature = {
               default = 0.4,
@@ -229,30 +224,22 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         })
       end,
       ["aihubmix-openai"] = function()
-        return require("codecompanion.adapters").extend("openai_compatible", {
+        return require("codecompanion.adapters").extend("openai", {
+          url = "https://aihubmix.com/v1/chat/completions",
           env = {
-            url = "https://aihubmix.com",
             api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
           },
           schema = {
             model = {
-              default = "gpt-4.1",
-            },
-            temperature = {
-              default = 0.4,
-            },
-          },
-        })
-      end,
-      ["aihubmix-openai-o3"] = function()
-        return require("codecompanion.adapters").extend("openai_compatible", {
-          env = {
-            url = "https://aihubmix.com",
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-          },
-          schema = {
-            model = {
-              default = "o3",
+              default = "gpt-5",
+              choices = {
+                ["gpt-5"] = { opts = { has_vision = true, can_reason = false, can_use_tools = true } },
+                ["gpt-5-mini"] = { opts = { has_vision = true, can_reason = false, can_use_tools = true } },
+                ["gpt-5-nano"] = { opts = { has_vision = true, can_reason = false, can_use_tools = true } },
+                ["aihubmix-router"] = { opts = { has_vision = true, can_reason = false, can_use_tools = true } },
+                ["o3"] = { opts = { can_reason = true, can_use_tools = true } },
+                ["o4-mini"] = { opts = { can_reason = true, can_use_tools = true } },
+              },
             },
             temperature = {
               default = 0.4,
@@ -269,6 +256,10 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           schema = {
             model = {
               default = "grok-3",
+              choices = {
+                ["grok-3"] = { opts = { has_vision = false, can_reason = false, can_use_tools = true } },
+                ["grok-3-mini"] = { opts = { has_vision = false, can_reason = false, can_use_tools = true } },
+              },
             },
             temperature = {
               default = 0.4,
@@ -282,17 +273,26 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
             api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
           },
           url = "https://aihubmix.com/v1/messages",
+          schema = {
+            model = {
+              default = "claude-sonnet-4-20250514",
+            },
+          },
         })
       end,
-      ["deepseek-r1"] = function()
-        return require("codecompanion.adapters").extend("openai_compatible", {
+      ["aihubmix-deepseek"] = function()
+        return require("codecompanion.adapters").extend("deepseek", {
+          url = "https://aihubmix.com/chat/completions",
           env = {
-            url = "https://aihubmix.com",
             api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
           },
           schema = {
             model = {
               default = "DeepSeek-R1",
+              choices = {
+                ["deepseek-R1"] = { opts = { can_reason = true, can_use_tools = false } },
+                ["deepseek-chat"] = { opts = { can_use_tools = true } },
+              },
             },
           },
         })
@@ -309,18 +309,6 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
         })
       end,
-      ["claude"] = function()
-        return require("codecompanion.adapters").extend("anthropic", {
-          env = {
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh anthropic",
-          },
-          schema = {
-            model = {
-              default = "claude-sonnet-4-20250514",
-            },
-          },
-        })
-      end,
     },
     prompt_library = {
       ["Text Polish"] = {
@@ -329,7 +317,8 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         opts = {
           index = 13,
           adapter = {
-            name = "xai",
+            name = "aihubmix-openai",
+            model = "gpt-5-mini",
           },
           is_slash_cmd = true,
           modes = { "v" },
@@ -337,6 +326,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           auto_submit = true,
           user_prompt = false,
           stop_context_insertion = true,
+          ignore_system_prompt = true,
           placement = "replace",
         },
         prompts = {
@@ -366,7 +356,8 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           index = 14,
           short_name = "optimize",
           adapter = {
-            name = "aihubmix-claude",
+            name = "aihubmix-openai",
+            model = "gpt-5",
           },
           is_slash_cmd = true,
           modes = { "v" },
@@ -407,6 +398,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           index = 15,
           adapter = {
             name = "aihubmix-opeanai",
+            model = "gpt-5-mini",
           },
           is_slash_cmd = true,
           modes = { "v" },
@@ -415,6 +407,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           user_prompt = false,
           stop_context_insertion = true,
           placement = "replace",
+          ignore_system_prompt = true,
         },
         prompts = {
           {
@@ -454,6 +447,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           index = 16,
           adapter = {
             name = "aihubmix-openai",
+            model = "gpt-5",
           },
           is_slash_cmd = true,
           modes = { "v" },

@@ -8,7 +8,7 @@ function M:init()
     pattern = "CodeCompanionRequest*",
     group = group,
     callback = function(request)
-      if request.data.strategy == "chat" then
+      if request.data.strategy and request.data.strategy == "chat" then
         return
       end
       if request.match == "CodeCompanionRequestStarted" then
