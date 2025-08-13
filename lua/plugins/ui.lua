@@ -291,4 +291,17 @@ return {
       return opts
     end,
   },
+  {
+    "alex-popov-tech/store.nvim",
+    cmd = "Store",
+    keys = {
+      {
+        "<leader>s",
+        function()
+          require("store").open()
+        end,
+        desc = "Open store.nvim modal",
+      },
+    },
+  },
 }

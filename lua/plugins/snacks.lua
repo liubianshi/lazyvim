@@ -36,20 +36,18 @@ return {
       width = 60,
       preset = {
         keys = {
-          { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
-          { icon = "󱙺", key = "a", desc = "Chat New", action = ":CodeCompanionChat" },
-          { icon = " ", key = "e", desc = "New File", action = ":silent ene | startinsert" },
-          { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
-          { icon = " ", key = "n", desc = "Obsidian Note", action = ":Obsidian quick_switch" },
-          {
-            icon = " ",
-            key = "c",
-            desc = "Config",
-            action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config')})",
-          },
+          -- stylua: ignore start
+          { icon = " ", key = "f", desc = "Find File",       action = ":lua Snacks.dashboard.pick('files')" },
+          { icon = "󱙺 ", key = "a", desc = "Chat New",        action = ":CodeCompanionChat" },
+          { icon = " ", key = "e", desc = "New File",        action = ":silent ene | startinsert" },
+          { icon = " ", key = "m", desc = "Neovim Store",    action = ":Store" },
+          { icon = " ", key = "r", desc = "Recent Files",    action = ":lua Snacks.dashboard.pick('oldfiles')" },
+          { icon = " ", key = "n", desc = "Obsidian Note",   action = ":Obsidian quick_switch" },
+          { icon = " ", key = "c", desc = "Config",          action = ":lua Snacks.dashboard.pick('files',        {cwd = vim.fn.stdpath('config')})", },
           { icon = " ", key = "s", desc = "Restore Session", section = "session" },
-          { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy" },
-          { icon = " ", key = "q", desc = "Quit", action = ":qa" },
+          { icon = "󰒲 ", key = "l", desc = "Lazy",            action = ":Lazy" },
+          { icon = " ", key = "q", desc = "Quit",            action = ":qa" },
+          -- stylua: ignore end
         },
       },
       sections = {
