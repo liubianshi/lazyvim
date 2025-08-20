@@ -740,3 +740,7 @@ vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
   group = augroups.lightbulb,
   callback = lightbulb,
 })
+
+-- external
+-- region yank
+require("reg_yank")

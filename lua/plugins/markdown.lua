@@ -163,8 +163,8 @@ return {
       picker = {
         name = "snacks.pick",
         note_mappings = {
-          new = "<C-x>n",
-          insert_link = "<C-x>l",
+          ["new"] = "<C-x>n",
+          ["insert_link"] = "<C-x>l",
         },
       },
 
