@@ -137,9 +137,6 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
         },
       },
-      diff = {
-        provider = "default",
-      },
       action_palette = {
         provider = "default",
       },
@@ -164,6 +161,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
       },
       inline = {
         adapter = {
+          model = "gpt-5",
           name = "aihubmix-openai",
         },
       },
