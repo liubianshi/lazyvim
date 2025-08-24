@@ -147,7 +147,7 @@ function M.translate_paragraph(content, opts)
     "fabric-ai",
     "--pattern",
     "translate",
-    "-m=gpt-4.1-mini",
+    "-m=gpt-5-mini",
     "--stream",
   }
 

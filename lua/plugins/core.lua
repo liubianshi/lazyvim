@@ -16,7 +16,7 @@ return {
 
       local colorschemes = {
         dark = vim.env.NVIM_COLOR_SCHEME_DARK or "rose-pine",
-        light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "default",
+        light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "everforest",
       }
 
       opts.colorscheme = colorschemes[background]
