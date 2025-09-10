@@ -253,8 +253,9 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "grok-3",
+              default = "grok-4",
               choices = {
+                ["grok-4"] = { opts = { has_vision = false, can_reason = true, can_use_tools = true } },
                 ["grok-3"] = { opts = { has_vision = false, can_reason = false, can_use_tools = true } },
                 ["grok-3-mini"] = { opts = { has_vision = false, can_reason = false, can_use_tools = true } },
               },
