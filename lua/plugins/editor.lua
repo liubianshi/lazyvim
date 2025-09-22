@@ -644,4 +644,28 @@ return {
       return opts
     end,
   },
+  {
+    "stevearc/aerial.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.icons" },
+    opts = {
+      layout = { default_derection = "prefer_left" },
+      highlight_on_hover = true,
+      close_on_select = true,
+      filter_kind = false,
+      manage_folds = true,
+      show_guides = true,
+      autojump = true,
+      nerd_font = "auto",
+      nav = { autojump = true, preview = true },
+      lsp = { diagnostics_trigger_update = true },
+      on_attach = function(bufnr)
+        -- Jump forwards/backwards with '{' and '}'
+        vim.keymap.set("n", "{", "<cmd>AerialPrev<CR>", { buffer = bufnr })
+        vim.keymap.set("n", "}", "<cmd>AerialNext<CR>", { buffer = bufnr })
+      end,
+    },
+    keys = {
+      { "<localleader>v", "<cmd>AerialToggle!<CR>", desc = "Toggle Aerial" },
+    },
+  },
 }

@@ -43,8 +43,8 @@ return {
       { "<leader>gh", "<cmd>DiffviewFileHistory<cr>", desc = "DiffviewOpen" },
     },
   },
-  { "williamboman/mason.nvim", enabled = false },
-  { "williamboman/mason-lspconfig.nvim", enabled = false },
+  { "mason-org/mason.nvim", enabled = false },
+  { "mason-org/mason-lspconfig.nvim", enabled = false },
   { -- neovim/nvim-lspconfig -------------------------------------------- {{{2
     "neovim/nvim-lspconfig",
     ft = { "lua", "perl", "markdown", "bash", "r", "python", "vim", "rmd", "hyprlang" },

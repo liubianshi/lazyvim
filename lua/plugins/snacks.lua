@@ -10,10 +10,7 @@ return {
         float = true,
       },
       math = {
-        enabled = false,
-        latex = {
-          font_size = "tiny",
-        },
+        enabled = true,
       },
     },
     zen = {

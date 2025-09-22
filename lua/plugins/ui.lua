@@ -181,7 +181,7 @@ return {
       vim.g.voom_tree_placement = "right"
     end,
   },
-  { "echasnovski/mini.pairs", enabled = false },
+  { "nvim-mini/mini.pairs", enabled = false },
   { -- windwp/nvim-autopairs: autopair tools ---------------------------- {{{2
     "windwp/nvim-autopairs",
     opts = {
@@ -277,8 +277,8 @@ return {
     },
     config = true,
   },
-  { -- echasnovski/mini.hipatterns: Highlight patterns in text. --------- {{{3
-    "echasnovski/mini.hipatterns",
+  { -- nvim-mini/mini.hipatterns: Highlight patterns in text. --------- {{{3
+    "nvim-mini/mini.hipatterns",
     opts = function(_, opts)
       opts.highlighters.citation = {
         pattern = function(buf_id)

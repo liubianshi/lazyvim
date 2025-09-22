@@ -362,7 +362,7 @@ return {
   },
   { -- MeanderingProgrammer/render-markdown.nvim ------------------------ {{{2
     "MeanderingProgrammer/render-markdown.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.icons" },
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.icons" },
     ft = { "markdown", "quarto", "rmd", "codecompanion", "Avante" },
     opts = {
       render_modes = { "n", "i", "c", ":", "no", "io", "co" },

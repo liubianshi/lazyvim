@@ -54,7 +54,7 @@ return {
   { -- stevearc/oil.nvim: file explorer: edit your filesystem like a buffer  {{{3
     "stevearc/oil.nvim",
     dependencies = {
-      { "echasnovski/mini.icons", opts = {} },
+      { "nvim-mini/mini.icons", opts = {} },
     },
     opts = {
       columns = {
