@@ -61,17 +61,17 @@ return {
           root_dir = require("lspconfig.util").root_pattern(".git", ".root", ".project"),
           single_file_support = true,
         },
-        r_language_server = {
-          cmd = {
-            "R",
-            "--slave",
-            -- "--default-packages=" .. vim.g.R_start_libs,
-            "-e",
-            "languageserver::run()",
-          },
-          root_dir = require("lspconfig.util").root_pattern(".git", "NAMESPACE", "R", ".root", ".project"),
-          single_file_support = true,
-        },
+        -- r_language_server = {
+        --   cmd = {
+        --     "R",
+        --     "--slave",
+        --     -- "--default-packages=" .. vim.g.R_start_libs,
+        --     "-e",
+        --     "languageserver::run()",
+        --   },
+        --   root_dir = require("lspconfig.util").root_pattern(".git", "NAMESPACE", "R", ".root", ".project"),
+        --   single_file_support = true,
+        -- },
         vimls = {},
         perlnavigator = {
           cmd = { "perlnavigator" },

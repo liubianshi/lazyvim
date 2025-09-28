@@ -5,7 +5,6 @@ return {
     branch = "blink.cmp",
     lazy = true,
     dev = true,
-    priority = 100,
     opts = {
       keys = { start = ";f", stop = ";;", esc = ";j" },
       cmd = vim.lsp.rpc.connect("127.0.0.1", 9257),
@@ -32,7 +31,8 @@ return {
     },
     build = "cargo build --release",
     opts = function()
-      local border = require("util").border("▔", "bottom")
+      -- local border = require("util").border("▔", "bottom")
+      local border = "rounded"
       local config = {
         enabled = function()
           local ft = vim.bo.filetype
@@ -95,7 +95,7 @@ return {
         },
         completion = {
           ghost_text = {
-            enabled = true,
+            enabled = false,
           },
           accept = {
             auto_brackets = {

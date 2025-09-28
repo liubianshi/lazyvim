@@ -324,6 +324,8 @@ function M.border(symbol, type, neovide, highlight)
     return { "", { symbol, highlight }, "", "", "", "", "", "" }
   elseif type == "bottom" then
     return { "", "", "", "", "", { symbol, highlight }, "", "" }
+  elseif type == "left" then
+    return { "", "", "", "", "", "", "", { symbol, highlight } }
   end
 end
 

@@ -1,6 +1,7 @@
 return {
   {
     "LazyVim/LazyVim",
+
     opts = function(_, opts)
       local background
       local env_bg = vim.env.NVIM_BACKGROUND and vim.env.NVIM_BACKGROUND:lower()
@@ -16,7 +17,7 @@ return {
 
       local colorschemes = {
         dark = vim.env.NVIM_COLOR_SCHEME_DARK or "rose-pine",
-        light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "everforest",
+        light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "rose-pine",
       }
 
       opts.colorscheme = colorschemes[background]

@@ -1,6 +1,7 @@
 return {
   { -- R.nvim ----------------------------------------------------------- {{{2
     "liubianshi/R.nvim",
+    enabled = true,
     dev = true,
     lazy = false,
     ft = { "r", "rmd", "quarto" },
@@ -63,7 +64,7 @@ return {
           end
         end,
         after_R_start = function()
-          require("r.term").highlight_term()
+          require("r.term.builtin").highlight_term()
           vim.opt_local.keywordprg = ":RHelp"
         end,
       }

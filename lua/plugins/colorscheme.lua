@@ -3,6 +3,9 @@ return {
     "folke/tokyonight.nvim",
     opts = {
       transparent = false,
+      styles = {
+        floats = "day",
+      },
     },
   },
   {
@@ -38,6 +41,11 @@ return {
     opts = {
       styles = {
         transparency = false,
+      },
+      palette = {
+        dawn = {
+          base = "#E5E5E5",
+        },
       },
     },
   },
