@@ -12,9 +12,11 @@ return {
     dscr = "Standard Rscript library imports",
   }, {
     t({
-      "box::use(magrittr[`%>%`, `%<>%`, `%T>%`])",
-      "box::use(stringr[glue = str_glue])",
-      "box::use(data.table[setDT, as.data.table, data.table, setnames])",
+      "box::use(",
+      "  data.table[setDT, as.data.table, data.table, setnames],",
+      "  stringr[glue = str_glue],",
+      "  magrittr[`%>%`, `%<>%`, `%T>%`]",
+      ")",
       "",
     }),
     i(0),

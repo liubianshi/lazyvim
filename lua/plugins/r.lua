@@ -16,7 +16,7 @@ return {
           require("r_box").set_keymap()
 
           -- Send command to R terminal
-          vim.keymap.set("n", "<c-i>", function()
+          vim.keymap.set("n", "<M-;>", function()
             vim.api.nvim_feedkeys(":RSend ", "n", false)
           end, {
             noremap = true,

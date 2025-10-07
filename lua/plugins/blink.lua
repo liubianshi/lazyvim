@@ -85,6 +85,9 @@ return {
                 return
               end
             end,
+            function() -- sidekick next edit suggestion
+              return require("sidekick").nes_jump_or_apply()
+            end,
             "fallback_to_mappings",
           },
           ["<Tab>"] = {
