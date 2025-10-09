@@ -3,24 +3,45 @@ return {
     "LazyVim/LazyVim",
 
     opts = function(_, opts)
-      local background
-      local env_bg = vim.env.NVIM_BACKGROUND and vim.env.NVIM_BACKGROUND:lower()
-      local current_time = tonumber(os.date("%H"))
+      -- Determine and apply background and colorscheme based on environment variables
+      -- and time-of-day, with sensible fallbacks.
 
-      if env_bg == "dark" or env_bg == "light" then
-        background = env_bg
-      else
-        background = (current_time >= 18 or current_time <= 6) and "dark" or "light"
-      end
+      -- Normalize environment-provided background preference ("dark", "light", or custom)
+      local env_bg = (vim.env.NVIM_BACKGROUND or ""):lower()
 
-      vim.opt.background = background
-
-      local colorschemes = {
+      -- Default colorschemes can be overridden via environment variables
+      local DEFAULTS = {
         dark = vim.env.NVIM_COLOR_SCHEME_DARK or "rose-pine",
         light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "rose-pine",
       }
 
-      opts.colorscheme = colorschemes[background]
+      local background, colorscheme
+
+      if env_bg == "dark" or env_bg == "light" then
+        -- Respect explicit background preference
+        background = env_bg
+        colorscheme = DEFAULTS[background]
+      elseif env_bg == "writeroom" then
+        -- Special preset: writing mode (force dark + specific scheme)
+        background = "dark"
+        colorscheme = "everforest"
+      else
+        -- No explicit preference: choose by local time
+        -- Dark from 18:00-23:59 and 00:00-06:59, light otherwise
+        local hour = tonumber(os.date("%H")) or 12
+        background = (hour >= 18 or hour <= 6) and "dark" or "light"
+        colorscheme = DEFAULTS[background]
+      end
+
+      -- Safety: ensure background is valid and colorscheme has a fallback
+      if background ~= "dark" and background ~= "light" then
+        background = "dark"
+      end
+      colorscheme = colorscheme or DEFAULTS[background] or "rose-pine"
+
+      -- Apply settings to Neovim and LazyVim
+      vim.opt.background = background
+      opts.colorscheme = colorscheme
     end,
   },
 }

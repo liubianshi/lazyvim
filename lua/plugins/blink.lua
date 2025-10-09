@@ -31,8 +31,8 @@ return {
     },
     build = "cargo build --release",
     opts = function()
-      -- local border = require("util").border("▔", "bottom")
-      local border = "rounded"
+      local border = require("util").border("▔", "bottom")
+      -- local border = "rounded"
       local config = {
         enabled = function()
           local ft = vim.bo.filetype

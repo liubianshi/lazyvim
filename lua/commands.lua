@@ -54,7 +54,7 @@ cmd("StataHelp", function(opts)
   local args = opts.fargs
   if args[1] == "pdf" then
     table.remove(args, 1)
-    vim.fn["utils#StataGenHelpDocs"](args:concat(" "), "pdf")
+    vim.fn["utils#StataGenHelpDocs"](table.concat(args, " "), "pdf")
   else
     vim.fn["utils#StataGenHelpDocs"](opts.args)
   end
