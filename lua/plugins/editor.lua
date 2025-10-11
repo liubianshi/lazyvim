@@ -340,7 +340,7 @@ return {
       end)
     end,
   },
-  { -- chrisgrieser/nvim-origami: Fold with relentless elegance --------- {{{2
+  { -- chrisgrieser/nvim-origami: Fold with relentless elegance --------- {{{3
     "chrisgrieser/nvim-origami",
     event = "BufReadPost",
     init = function()
@@ -370,7 +370,7 @@ return {
       },
     },
   },
-  { -- chrisgrieser/nvim-early-retirement ------------------------------- {{{2
+  { -- chrisgrieser/nvim-early-retirement ------------------------------- {{{3
     "chrisgrieser/nvim-early-retirement",
     config = true,
     event = "VeryLazy",
@@ -578,40 +578,6 @@ return {
       { "<A-k>", "<Plug>(VM-Add-Cursor-Up)", desc = "Add Cursors Up" },
     },
     config = true,
-  },
-  { -- andymass/vim-matchup: 显示匹配符号之间的内容 --------------------- {{{3
-    "andymass/vim-matchup",
-    config = function()
-      vim.api.nvim_exec2(
-        [[
-          function! s:matchup_convenience_maps()
-            xnoremap <sid>(std-I) I
-            xnoremap <sid>(std-A) A
-            xmap <expr> I mode()=='<c-v>'?'<sid>(std-I)':(v:count?'':'1').'i'
-            xmap <expr> A mode()=='<c-v>'?'<sid>(std-A)':(v:count?'':'1').'a'
-            for l:v in ['', 'v', 'V', '<c-v>']
-              execute 'omap <expr>' l:v.'I%' "(v:count?'':'1').'".l:v."i%'"
-              execute 'omap <expr>' l:v.'A%' "(v:count?'':'1').'".l:v."a%'"
-            endfor
-          endfunction
-          call s:matchup_convenience_maps()
-        ]],
-        { output = false }
-      )
-    end,
-  },
-  { -- Efficient targetted menu built for fast buffer navigation -------- {{{3
-    "leath-dub/snipe.nvim",
-    keys = {
-      {
-        "gb",
-        function()
-          require("snipe").open_buffer_menu()
-        end,
-        desc = "Open Snipe buffer menu",
-      },
-    },
-    opts = {},
   },
   { -- simulates wrapping a single line at a time ----------------------- {{{3
     "benlubas/wrapping-paper.nvim",

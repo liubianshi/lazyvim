@@ -11,10 +11,30 @@ return {
       {
         "<c-f>",
         function()
-          require("noice.lsp").signature()
+          if not require("noice.lsp").scroll(4) then
+            return "<c-f>"
+          end
         end,
-        mode = "i",
-        desc = "Noice: Show lsp documents",
+        mode = { "n", "i", "s" },
+        desc = "Noice: Scroll forward lsp documents",
+      },
+      {
+        "<c-b>",
+        function()
+          if not require("noice.lsp").scroll(-4) then
+            return "<c-b>"
+          end
+        end,
+        mode = { "n", "i", "s" },
+        desc = "Noice: Scroll backward lsp documents",
+      },
+      {
+        "<S-Enter>",
+        function()
+          require("noice").redirect(vim.fn.getcmdline())
+        end,
+        mode = "c",
+        desc = "Redirect Cmdline",
       },
     },
     opts = {
@@ -290,18 +310,5 @@ return {
       }
       return opts
     end,
-  },
-  {
-    "alex-popov-tech/store.nvim",
-    cmd = "Store",
-    keys = {
-      {
-        "<leader>s",
-        function()
-          require("store").open()
-        end,
-        desc = "Open store.nvim modal",
-      },
-    },
   },
 }
