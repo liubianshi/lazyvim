@@ -1,6 +1,6 @@
 local function disable_treesitter(lang, buf)
-  local disable_lang_list = { "tsv", "perl" }
-  local disable_filetype_list = { "tsv", "perl" }
+  local disable_lang_list = { "tsv", "perl", "csv" }
+  local disable_filetype_list = { "tsv", "perl", "csv" }
   if vim.tbl_contains(disable_lang_list, lang) then
     return true
   end

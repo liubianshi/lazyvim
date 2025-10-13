@@ -49,7 +49,7 @@ return {
         min_chars = 2,
       },
       callbacks = {
-        enter_note = function(_, note) -- client, note
+        enter_note = function(note) -- client, note
           local keymap = require("util").keymap
           -- stylua: ignore start
           keymap({ "<localleader>b", "<cmd>Obsidian backlinks<cr>",          buffer = note.bufnr, desc = "Obsidian: get back references",             })
