@@ -73,10 +73,6 @@ return {
         --   single_file_support = true,
         -- },
         vimls = {},
-        copilot = {
-          name = "copilot",
-          cmd = { "copilot-language-server", "--stdio" },
-        },
         perlnavigator = {
           cmd = { "perlnavigator" },
           single_file_support = true,
