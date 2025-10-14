@@ -60,7 +60,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
       "<leader>al",
       "<cmd>CodeCompanionActions<CR>",
       desc = "CodeCompanion: Actions",
-      mode = { "n", "v" },
+      mode = { "n", "v", "x" },
       silent = true,
     },
 
@@ -75,7 +75,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
 
     -- Add the current visual selection to the CodeCompanion chat (visual only)
     {
-      "<leader>ap",
+      "<A-l>",
       "<cmd>CodeCompanionChat Add<CR>",
       desc = "CodeCompanion: Chat Add Selection",
       mode = "v",
