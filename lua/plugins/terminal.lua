@@ -79,7 +79,7 @@ return {
   },
   { -- liubianshi/vimcmdline: Send code to command line interpreter ----- {{{2
     "liubianshi/vimcmdline",
-    ft = { "stata", "sh", "bash", "perl" },
+    ft = { "stata", "sh", "bash", "perl", "python" },
     dev = true,
   },
   { -- mikesmithgh/kitty-scrollback.nvim: Open kitty scrollback --------- {{{2
