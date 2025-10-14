@@ -49,7 +49,7 @@ for _, char in ipairs({ "-", "=", ".", "*" }) do
   })
   -- Add a separator line
   keymap({
-    string.format("<leader>a%s", char),
+    string.format("<leader>+%s", char),
     string.format('<cmd>call utils#AddDash("%s")<cr>', char),
     desc = string.format("Add '%s' separator line", char)
   })
