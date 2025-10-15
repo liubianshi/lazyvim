@@ -33,3 +33,5 @@ vim.api.nvim_create_autocmd({ "ColorScheme", "VimEnter" }, {
   group = vim.api.nvim_create_augroup("MyBorderHL", { clear = true }),
   callback = setup_myborder_hl,
 })
+
+

@@ -60,3 +60,4 @@ function M.launch_writing_room()
 end
 
 return M
+

@@ -1,5 +1,11 @@
 return {
   "folke/sidekick.nvim",
+  opts = {
+    nes = {
+      enabled = true,
+      auto_fetch = true,
+    },
+  },
   keys = {
     { "<leader>ac", false },
     { "<leader>as", false },
