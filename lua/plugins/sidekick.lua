@@ -25,6 +25,14 @@ return {
       desc = "Detach a CLI Session",
     },
     {
+      "<leader>at",
+      function()
+        require("sidekick.cli").send({ msg = "{this}" })
+      end,
+      mode = { "x", "n" },
+      desc = "Send This",
+    },
+    {
       "<leader>ag",
       function()
         require("sidekick.cli").toggle({ name = "gemini", focus = false })

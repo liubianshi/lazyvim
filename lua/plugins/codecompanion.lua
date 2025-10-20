@@ -1,3 +1,21 @@
+local ADAPTER = {
+  code = {
+    name = "aihubmix-claude",
+    mode = "claude-sonnet-4-5",
+  },
+  chat = {
+    name = "xai",
+    model = "grok-4-fast-reasoning",
+  },
+  write = {
+    name = "aihubmix-openai",
+    model = "gpt-5-mini",
+  },
+  academic = {
+    name = "aihubmix-openai",
+    model = "gpt-5",
+  },
+}
 local codecampanion_utils = {
   handlers = {
     gemini = {
@@ -143,10 +161,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
     },
     strategies = {
       chat = {
-        adapter = {
-          name = "aihubmix-openai",
-          model = "gpt-5",
-        },
+        adapter = ADAPTER.chat,
         keymaps = {
           send = {
             callback = function(chat)
@@ -160,18 +175,25 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         },
       },
       inline = {
-        adapter = {
-          model = "gpt-5",
-          name = "aihubmix-openai",
-        },
+        adapter = ADAPTER.code,
       },
       cmd = {
-        adapter = {
-          name = "aihubmix-openai",
-        },
+        adapter = ADAPTER.code,
       },
     },
     adapters = {
+      ["acp"] = {
+        gemini_cli = function()
+          return require("codecompanion.adapters").extend("gemini_cli", {
+            defaults = {
+              auth_method = "gemini-api-key", -- "oauth-personal"|"gemini-api-key"|"vertex-ai"
+            },
+            env = {
+              GEMINI_API_KEY = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh gemini",
+            },
+          })
+        end,
+      },
       ["aihubmix-gemini"] = function()
         return require("codecompanion.adapters").extend("openai_compatible", {
           roles = {
@@ -216,7 +238,13 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "grok-3",
+              default = "grok-4",
+              choices = {
+                "grok-4",
+                "grok-4-fast-reasoning",
+                "grok-4-fast-non-reasoning",
+                "grok-code-fast-1",
+              },
             },
           },
         })
@@ -274,24 +302,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           url = "https://aihubmix.com/v1/messages",
           schema = {
             model = {
-              default = "claude-sonnet-4-20250514",
-            },
-          },
-        })
-      end,
-      ["aihubmix-deepseek"] = function()
-        return require("codecompanion.adapters").extend("deepseek", {
-          url = "https://aihubmix.com/chat/completions",
-          env = {
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-          },
-          schema = {
-            model = {
-              default = "DeepSeek-R1",
-              choices = {
-                ["deepseek-R1"] = { opts = { can_reason = true, can_use_tools = false } },
-                ["deepseek-chat"] = { opts = { can_use_tools = true } },
-              },
+              default = "claude-sonnet-4-5",
             },
           },
         })
@@ -315,10 +326,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         description = "Polish the selected text",
         opts = {
           index = 13,
-          adapter = {
-            name = "aihubmix-openai",
-            model = "gpt-5-mini",
-          },
+          adapter = ADAPTER.write,
           is_slash_cmd = true,
           modes = { "v" },
           short_name = "polish",
@@ -354,10 +362,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         opts = {
           index = 14,
           short_name = "optimize",
-          adapter = {
-            name = "aihubmix-openai",
-            model = "gpt-5",
-          },
+          adapter = ADAPTER.code,
           is_slash_cmd = true,
           modes = { "v" },
           auto_submit = true,
@@ -395,10 +400,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         description = "Translate then Polish the selected text",
         opts = {
           index = 15,
-          adapter = {
-            name = "aihubmix-opeanai",
-            model = "gpt-5-mini",
-          },
+          adapter = ADAPTER.write,
           is_slash_cmd = true,
           modes = { "v" },
           short_name = "trans",
@@ -444,10 +446,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         description = "Polish the selected text",
         opts = {
           index = 16,
-          adapter = {
-            name = "aihubmix-openai",
-            model = "gpt-5",
-          },
+          adapter = ADAPTER.academic,
           is_slash_cmd = true,
           modes = { "v" },
           short_name = "apolish",
@@ -487,6 +486,17 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           -- Automatically generate titles for new chats
           auto_generate_title = true,
           -- On exiting and entering neovim, loads the last chat on opening chat
+          title_generation_opts = {
+            adapter = "aihubmix-openai",
+            model = "gpt-5-nano",
+            refresh_every_n_prompts = 2,
+          },
+          summary = {
+            generation_opts = {
+              adapter = "aihubmix-openai",
+              model = "gpt-5-mini",
+            },
+          },
           continue_last_chat = false,
           -- When chat is cleared with `gx` delete the chat from history
           delete_on_clearing_chat = false,

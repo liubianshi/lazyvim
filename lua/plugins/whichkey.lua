@@ -32,11 +32,6 @@ return { -- folke/which-key.nvim: displays a popup with possible keybindings - {
     },
     disable = {},
     spec = {
-      { "<leader>a", group = "Attach ...", icon = { icon = "󰹴", hl = "WhichKeyIconBlue" } },
-      { "<leader>a*", desc = "Attach Symbol *" },
-      { "<leader>a-", desc = "Attach Symbol -" },
-      { "<leader>a.", desc = "Attach Symbol ." },
-      { "<leader>a=", desc = "Attach Symbol +" },
       { "<leader>b", group = "buffer ..." },
       { "<leader>bB", desc = "List all Buffers" },
       { "<leader>c", group = "Code Operater ..." },
