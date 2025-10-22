@@ -1,7 +1,9 @@
 local ADAPTER = {
   code = {
-    name = "aihubmix-claude",
-    mode = "claude-sonnet-4-5",
+    -- name = "aihubmix-claude",
+    -- mode = "claude-sonnet-4-5",
+    name = "xai",
+    model = "grok-code-fast-1",
   },
   chat = {
     name = "xai",

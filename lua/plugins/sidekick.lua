@@ -35,19 +35,14 @@ return {
     { "<leader>as", false },
     { "<leader>aa", false },
 
-    -- Sidekick CLI keybindings group
-    { "<leader>a", "", desc = "+Sidekick" },
-    { "<leader>ac", "", desc = "+Sidekick CLI" },
     -- Send the entire file to sidekick CLI
-    { "<leader>acf", function() require("sidekick.cli").send({ msg = "{file}" }) end,                       desc = "Sidekick CLI: Send File" },
+    { "<leader>af", function() require("sidekick.cli").send({ msg = "{file}" }) end,                       desc = "Sidekick: Send File",            },
     -- Close the current CLI session
-    { "<leader>acd", function() require("sidekick.cli").close() end,                                        desc = "Sidekick CLI: Detach Session" },
+    { "<leader>ad", function() require("sidekick.cli").close() end,                                        desc = "Sidekick: Detach a CLI Session", },
     -- Send selected text or current line to sidekick CLI
-    { "<leader>act", function() require("sidekick.cli").send({ msg = "{this}" }) end, mode = { "x", "n" }, desc = "Sidekick CLI: Send This" },
-    -- New: Send visual selection only
-    { "<leader>acv", function() require("sidekick.cli").send({ msg = "{visual}" }) end, mode = "v",         desc = "Sidekick CLI: Send Visual Selection" },
+    { "<leader>at", function() require("sidekick.cli").send({ msg = "{this}" }) end, mode = { "x",  "n" }, desc = "Sidekick: Send This", },
     -- Toggle the Gemini AI integration (focus false means don't focus window)
-    { "<leader>acg", function() require("sidekick.cli").toggle({ name = "gemini", focus = false }) end,     desc = "Sidekick CLI: Toggle Gemini" },
+    { "<leader>ag", function() require("sidekick.cli").toggle({ name = "gemini", focus = false }) end,     desc = "Sidekick: Toggle Gemini", },
 
     -- Sidekick NES keybindings group
     { "<leader>an", "",                                                desc = "+Sidekick NES" },

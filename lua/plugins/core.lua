@@ -16,6 +16,10 @@ return {
       }
 
       local background, colorscheme
+      if vim.env.TERM == "xterm-ghostty" then
+        env_bg = "dark"
+        DEFAULTS.dark = "everforest"
+      end
 
       if env_bg == "dark" or env_bg == "light" then
         -- Respect explicit background preference
