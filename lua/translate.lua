@@ -144,7 +144,7 @@ function M.translate_paragraph(content, opts)
   end
 
   local cmd = {
-    "fabric-ai",
+    "fabric",
     "--pattern",
     "translate",
     "-m",

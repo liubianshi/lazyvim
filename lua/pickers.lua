@@ -77,7 +77,7 @@ M.fabric = function(opts)
           opts.stdin = require("util.term").get_pipe_stdin({ mode = mode })
         end
 
-        local cmd = { "fabric-ai", "--pattern", item.text, "--stream" }
+        local cmd = { "fabric", "--pattern", item.text, "--stream" }
         local ok, progress = pcall(require, "fidget.progress")
         local progress_handle
         if ok then
