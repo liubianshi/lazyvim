@@ -31,8 +31,8 @@ return {
     },
     build = "cargo build --release",
     opts = function()
-      local border = require("util").border("▔", "bottom")
-      -- local border = "rounded"
+      -- local border = require("util").border("▔", "bottom")
+      local border = "none"
       local config = {
         enabled = function()
           local ft = vim.bo.filetype
@@ -126,6 +126,7 @@ return {
             border = border,
             auto_show = true,
             draw = {
+              align_to = "cursor",
               columns = { { "kind_icon" }, { "label", gap = 1 } },
               components = {
                 label = {

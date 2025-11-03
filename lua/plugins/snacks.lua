@@ -159,14 +159,9 @@ return {
       },
     },
   },
+  -- stylua: ignore
   keys = {
-    {
-      "<leader>fm",
-      function()
-        Snacks.picker.recent()
-      end,
-      desc = "Smart",
-    },
+    { "<leader>fm", function() Snacks.picker.recent() end, desc = "Smart", },
     {
       "<leader>fn",
       function()
@@ -201,12 +196,6 @@ return {
       end,
       desc = "Search Personal Notes",
     },
-    {
-      "<A-x>",
-      function()
-        Snacks.picker.commands({ layout = { preset = "ivy" } })
-      end,
-      desc = "Run Command",
-    },
+    { "<A-x>", function() Snacks.picker.commands({ layout = { preset = "ivy" } }) end, desc = "Run Command", },
   },
 }

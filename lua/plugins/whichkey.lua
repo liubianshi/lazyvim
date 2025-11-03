@@ -1,13 +1,13 @@
 return { -- folke/which-key.nvim: displays a popup with possible keybindings - {{{3
   "folke/which-key.nvim",
   opts = {
-    preset = "modern",
-    layout = {
-      height = { min = 1, max = 15 },
-    },
-    win = {
-      border = require("util").border("═", "top", true, "Orange"),
-    },
+    -- preset = "modern",
+    -- layout = {
+    --   height = { min = 1, max = 15 },
+    -- },
+    -- win = {
+    --   border = require("util").border("═", "top", true, "Orange"),
+    -- },
     triggers = {
       { "<auto>", mode = "nixsoc" },
       { "s", mode = "nv" },

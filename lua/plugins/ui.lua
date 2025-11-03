@@ -242,6 +242,7 @@ return {
   },
   { -- Make your nvim window separators colorful ------------------------ {{{2
     "nvim-zh/colorful-winsep.nvim",
+    enabled = false,
     event = { "WinNew" },
     config = function()
       require("colorful-winsep").setup({

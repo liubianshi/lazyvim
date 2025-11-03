@@ -28,6 +28,7 @@ return {
       on_highlights = function(hl, palette)
         hl.NormalFloat = { fg = palette.fg, bg = palette.none }
         hl.FloatTitle = { bg = palette.none }
+        hl.FloatBorder = { bg = palette.none }
         require("util.ui").adjust_hi_group(palette)
       end,
     },

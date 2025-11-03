@@ -48,10 +48,13 @@ return {
   { -- neovim/nvim-lspconfig -------------------------------------------- {{{2
     "neovim/nvim-lspconfig",
     ft = { "lua", "perl", "markdown", "bash", "r", "python", "vim", "rmd", "hyprlang" },
-    opts = function(_, opts)
-      local keys = require("lazyvim.plugins.lsp.keymaps").get()
-      keys[#keys + 1] = { "K", false }
-      opts.servers = vim.tbl_deep_extend("force", opts.servers, {
+    opts = {
+      servers = {
+        ["*"] = {
+          keys = {
+            { "K", false },
+          },
+        },
         hyprls = {
           root_markers = { "hyprland.conf", "hyprland.d", ".git" },
         },
@@ -125,8 +128,8 @@ return {
             client.handlers["textDocument/publishDiagnostics"] = function() end
           end,
         },
-      })
-    end,
+      },
+    },
   },
   { -- stevearc/overseer.nvim: task runner and joib management ---------- {{{2
     "stevearc/overseer.nvim",
