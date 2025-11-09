@@ -46,6 +46,7 @@ return {
       -- Apply settings to Neovim and LazyVim
       vim.opt.background = background
       opts.colorscheme = colorscheme
+
     end,
   },
 }

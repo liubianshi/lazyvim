@@ -91,6 +91,7 @@ return {
         input = {
           keys = {
             ["<c-x>d"] = { "delete_file", mode = { "n", "i" } },
+            ["<c-x>n"] = { "new_note", mode = { "n", "i" } },
           },
         },
       },
@@ -136,9 +137,26 @@ return {
                 end)
               end
 
-              picker:close()
+              picker:refresh()
             end)
           end
+        end,
+        new_note = function(picker)
+          local note_name = picker:filter().pattern
+          picker:close()
+
+          if not note_name or note_name == "" then
+            return
+          end
+          local ok, obsidian_note = pcall(require, "obsidian.note")
+          if not ok then
+            return
+          end
+          local note = obsidian_note.create({ title = note_name })
+
+          -- Open the note in a new buffer.
+          note:open({ sync = true })
+          note:write_to_buffer()
         end,
       },
     },

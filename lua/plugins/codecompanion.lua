@@ -1,9 +1,11 @@
 local ADAPTER = {
   code = {
-    -- name = "aihubmix-claude",
-    -- mode = "claude-sonnet-4-5",
     name = "xai",
     model = "grok-code-fast-1",
+  },
+  advanced_code = {
+    name = "aihubmix-claude",
+    mode = "claude-sonnet-4-5",
   },
   chat = {
     name = "xai",
@@ -304,7 +306,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           url = "https://aihubmix.com/v1/messages",
           schema = {
             model = {
-              default = "claude-sonnet-4-5",
+              default = "claude-haiku-4-5",
             },
           },
         })

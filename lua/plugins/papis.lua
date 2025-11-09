@@ -21,10 +21,11 @@ return {
         ref = { "text", required = false, unique = false },
       },
       ["debug"] = {
-
-        -- Whether to enable this module.
-        enable = true,
+        enable = false,
       },
     },
+    config = function(_, opts)
+      require("papis").setup(opts)
+    end,
   },
 }

@@ -446,6 +446,7 @@ return {
       "folke/snacks.nvim",
     },
     keys = {
+      {"<leader>p", false},
       {
         "<leader>sy",
         function()

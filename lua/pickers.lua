@@ -138,13 +138,13 @@ end
 M.fasd = function()
   pick({
     finder = function(opts, ctx)
-      return require("snacks.picker.source.proc").proc({
-        opts,
-        {
+      return require("snacks.picker.source.proc").proc(
+        ctx:opts({
           cmd = "fasd",
           args = { "-al" },
-        },
-      }, ctx)
+        }),
+        ctx
+      )
     end,
     transform = function(item)
       item.file = item.text
@@ -176,13 +176,13 @@ M.citation = function()
 
   pick({
     finder = function(opts, ctx)
-      return require("snacks.picker.source.proc").proc({
-        opts,
-        {
+      return require("snacks.picker.source.proc").proc(
+        ctx:opts({
           cmd = "bibtex2csv",
           args = { os.getenv("HOME") .. "/Documents/url_ref.bib" },
-        },
-      }, ctx)
+        }),
+        ctx
+      )
     end,
     name = "bib_citation",
     transform = function(item)
@@ -282,13 +282,13 @@ M.cheat = function()
   local command = vim.env.HOME .. "/useScript/bin/help"
   pick({
     finder = function(opts, ctx)
-      return require("snacks.picker.source.proc").proc({
-        opts,
-        {
+      return require("snacks.picker.source.proc").proc(
+        ctx:opts({
           cmd = command,
           args = { "-l" },
-        },
-      }, ctx)
+        }),
+        ctx
+      )
     end,
     transform = function(item)
       local fields = vim.split(item.text, "%s+")
@@ -401,13 +401,13 @@ M.mylib = function()
 
   pick({
     finder = function(opts, ctx)
-      return require("snacks.picker.source.proc").proc({
-        opts,
-        {
+      return require("snacks.picker.source.proc").proc(
+        ctx:opts({
           cmd = "mylib",
           args = { "list", "--json" },
-        },
-      }, ctx)
+        }),
+        ctx
+      )
     end,
     transform = function(item)
       local fields = vim.json.decode(item.text)
@@ -512,9 +512,8 @@ end
 M.cliphist = function()
   pick({
     finder = function(opts, ctx)
-      return require("snacks.picker.source.proc").proc({
-        opts,
-        {
+      return require("snacks.picker.source.proc").proc(
+        ctx:opts({
           cmd = "cliphist",
           args = { "list" },
           transform = function(item)
@@ -543,8 +542,9 @@ M.cliphist = function()
               return false
             end
           end,
-        },
-      }, ctx)
+        }),
+        ctx
+      )
     end,
     sort = function(a, b)
       return a.id > b.id
@@ -642,13 +642,13 @@ end
 M.stata_doc = function()
   pick({
     finder = function(opts, ctx)
-      return require("snacks.picker.source.proc").proc({
-        opts,
-        {
+      return require("snacks.picker.source.proc").proc(
+        ctx:opts({
           cmd = ",sh",
           args = { "-l" },
-        },
-      }, ctx)
+        }),
+        ctx
+      )
     end,
     transform = function(item)
       local fields = vim.split(item.text, "%s+")
