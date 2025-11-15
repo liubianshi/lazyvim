@@ -73,7 +73,7 @@ return {
       },
       remote_op = {
         restore = false,
-      }
+      },
     },
     specs = {
       {
@@ -446,7 +446,7 @@ return {
       "folke/snacks.nvim",
     },
     keys = {
-      {"<leader>p", false},
+      { "<leader>p", false },
       {
         "<leader>sy",
         function()
@@ -471,6 +471,7 @@ return {
   { -- dhruvasagar/vim-table-mode: Table Mode for instant table creation  {{{3
     "dhruvasagar/vim-table-mode",
     ft = { "markdown", "pandoc", "rmd", "org" },
+    lazy = false,
     init = function()
       vim.g.table_mode_map_prefix = "<localleader>t"
       vim.g.table_mode_corner = "|"

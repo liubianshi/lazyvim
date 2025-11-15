@@ -6,8 +6,10 @@ return {
     -- NES configuration: enables and auto-fetches notes or sessions
     nes = {
       enabled = true,
-      auto_fetch = true,
-      -- New: Custom update interval in seconds (default: 300 for 5 minutes)
+      auto_fetch = false,
+      trigger = {
+        events = { "TextChanged", "User SidekickNesDone" },
+      },
       update_interval = 300,
       -- New: Enable error logging for better debugging
       log_errors = true,

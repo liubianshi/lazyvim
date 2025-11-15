@@ -20,6 +20,7 @@ local ADAPTER = {
     model = "gpt-5",
   },
 }
+
 local codecampanion_utils = {
   handlers = {
     gemini = {
@@ -71,6 +72,20 @@ local codecampanion_utils = {
   },
 }
 local PROMPTS = require("llm_prompts")
+local function using_prompt(bufnr)
+  bufnr = bufnr or 0
+  local filetype = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
+
+  if filetype == "quarto" then
+    return "apolish"
+  end
+
+  if vim.tbl_contains({ "markdown", "norg", "org", "mail" }, filetype) then
+    return "polish"
+  end
+
+  return "optimize"
+end
 
 return { -- olimorris/codecompanion.nvim ------------------------------------- {{{2
   "olimorris/codecompanion.nvim",
@@ -107,8 +122,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
       "<A-o>",
       function()
         -- Determine the appropriate polish prompt based on the filetype.
-        local filetype = vim.bo.filetype
-        local prompt_name = (filetype == "quarto") and "apolish" or "polish"
+        local prompt_name = using_prompt()
 
         -- Get the current mode.
         local current_mode = vim.fn.mode() -- Use vim.fn.mode() for simplicity
@@ -127,7 +141,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           require("codecompanion").prompt(prompt_name)
         end)
       end,
-      desc = "CodeCompanion: Polish selected text (Academic for Quarto)", -- Updated description
+      desc = "CodeCompanion: Optimize selected text", -- Updated description
       mode = { "n", "v" }, -- Retain original modes
     },
   },
