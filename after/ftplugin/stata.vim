@@ -15,10 +15,6 @@ let b:cached_varlist = b:cache_path . "/varlist.tsv"
 runtime  autoload/syntaxcomplete.vim
 let b:keywordlist = uniq(sort(OmniSyntaxList()))
 
-" Load Pluguin needed ======================================================== {{{1
-call utils#Load_Plug('stata-vim')
-call utils#Load_Plug("vimcmdline")
-
 "setlocal foldmarker={{{,}}}
 setlocal foldexpr=fold#GetFold()
 setlocal foldmethod=expr
@@ -76,7 +72,7 @@ endfunction
 function! s:Stata_sum(type = '')
     call <SID>StataCommandFactory("gstats sum", a:type)
 endfunction
- 
+
 " 将最新的变量名和标签写入 ./.varlist.tsv, 同时设置 buffer 变量 b:varlist -------- {{{2
 function! s:StataSyncVarlistGraphlist() abort
     call cmdline#SendCmd("VimSync_graphname_varlist")
@@ -105,7 +101,7 @@ function! StataComplete(findstart, base)
         endif
         let s:prepended = strpart(line, start, (col('.') - 1) - start)
         return start
-    endif 
+    endif
 
     let base = substitute(s:prepended, "'", "''", 'g')
     let compl_list = b:macrolist + b:varlist + b:graphlist + b:keywordlist

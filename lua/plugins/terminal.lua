@@ -78,9 +78,20 @@ return {
     lazy = false,
   },
   { -- liubianshi/vimcmdline: Send code to command line interpreter ----- {{{2
-    "liubianshi/vimcmdline",
+    "jalvesaq/hlterm",
     ft = { "stata", "sh", "bash", "perl", "python" },
-    dev = true,
+    opts = {
+      mapping = {
+        start = "<LocalLeader>ss",
+        send = "<LocalLeader>l",
+        send_and_stay = "<LocalLeader>se",
+        send_paragraph = "<LocalLeader>pe",
+        send_block = "<LocalLeader>be",
+        send_file = "<LocalLeader>fe",
+        send_motion = "<LocalLeader>m",
+        quit = "<LocalLeader>rq",
+      },
+    },
   },
   { -- mikesmithgh/kitty-scrollback.nvim: Open kitty scrollback --------- {{{2
     "mikesmithgh/kitty-scrollback.nvim",

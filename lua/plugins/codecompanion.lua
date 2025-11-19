@@ -275,8 +275,9 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "gpt-5",
+              default = "gpt-5.1",
               choices = {
+                ["gpt-5.1"] = { opts = { has_vision = true, can_reason = true, can_use_tools = true } },
                 ["gpt-5"] = { opts = { has_vision = true, can_reason = false, can_use_tools = true } },
                 ["gpt-5-mini"] = { opts = { has_vision = true, can_reason = false, can_use_tools = true } },
                 ["gpt-5-nano"] = { opts = { has_vision = true, can_reason = false, can_use_tools = true } },
