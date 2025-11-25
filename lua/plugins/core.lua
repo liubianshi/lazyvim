@@ -3,16 +3,12 @@ return {
     "LazyVim/LazyVim",
 
     opts = function(_, opts)
-      -- Determine and apply background and colorscheme based on environment variables
-      -- and time-of-day, with sensible fallbacks.
-
-      -- Normalize environment-provided background preference ("dark", "light", or custom)
-      local env_bg = (vim.env.NVIM_BACKGROUND or ""):lower()
+      local env_bg = vim.env.NVIM_BACKGROUND
 
       -- Default colorschemes can be overridden via environment variables
       local DEFAULTS = {
         dark = vim.env.NVIM_COLOR_SCHEME_DARK or "rose-pine",
-        light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "rose-pine",
+        light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "seoulbones",
       }
 
       local background, colorscheme
@@ -46,7 +42,6 @@ return {
       -- Apply settings to Neovim and LazyVim
       vim.opt.background = background
       opts.colorscheme = colorscheme
-
     end,
   },
 }
