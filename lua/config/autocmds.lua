@@ -40,6 +40,7 @@ end, {
   "Lsp",
   "HiGroup",
   "LightBulb",
+  "Background",
 })
 
 -- Buffer --------------------------------------------------------------- {{{1
@@ -739,6 +740,55 @@ end
 vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
   group = augroups.lightbulb,
   callback = lightbulb,
+})
+
+--- background ---------------------------------------------------------- {{{2
+-- Optimized function to get the first word from the background cache file
+-- Uses more efficient file handling and error checking
+local function fetch_terminal_background()
+  local file_path = os.getenv("TERM_BACKGROUND_CACHE")
+  if not file_path then
+    return nil
+  end
+
+  local file, err = io.open(file_path, "r")
+  if not file then
+    -- Log error if needed: print("Error opening file: " .. err)
+    return nil
+  end
+
+  -- Read the first line efficiently
+  local line = file:read("*l")
+  file:close()
+
+  if not line then
+    return nil
+  end
+
+  -- Extract the first word using pattern matching
+  local first_word = line:match("%S+")
+  return first_word
+end
+
+vim.api.nvim_create_autocmd("TermResponse", {
+  group = augroups.Background,
+  callback = function(ev)
+    if ev.data and ev.data.sequence and ev.data.sequence:find("^%\27%]11;rgb") then
+      local term_background = fetch_terminal_background()
+      if not term_background or not vim.tbl_contains({ "dark", "light" }, term_background) then
+        return
+      end
+      local current_background = vim.api.nvim_get_option_value("background", { scope = "global" })
+      if term_background == current_background then
+        return
+      end
+      vim.schedule(function()
+        vim.api.nvim_set_option_value("background", term_background, { scope = "global" })
+        vim.cmd.colorscheme(vim.g.default_colorscheme[term_background])
+        require("lualine").setup({})
+      end)
+    end
+  end,
 })
 
 -- external

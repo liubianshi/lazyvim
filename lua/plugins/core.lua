@@ -1,47 +1,46 @@
+-- Optimized function to get the first word from the background cache file
+-- Uses more efficient file handling and error checking
+local function fetch_terminal_background()
+  local file_path = os.getenv("TERM_BACKGROUND_CACHE")
+  if not file_path then
+    return nil
+  end
+
+  local file, err = io.open(file_path, "r")
+  if not file then
+    -- Log error if needed: print("Error opening file: " .. err)
+    return nil
+  end
+
+  -- Read the first line efficiently
+  local line = file:read("*l")
+  file:close()
+
+  if not line then
+    return nil
+  end
+
+  -- Extract the first word using pattern matching
+  local first_word = line:match("%S+")
+  return first_word
+end
+
 return {
   {
     "LazyVim/LazyVim",
 
     opts = function(_, opts)
-      local env_bg = vim.env.NVIM_BACKGROUND
+      local background = vim.env.NVIM_BACKGROUND or fetch_terminal_background()
+      background = (background or "dark"):lower()
 
-      -- Default colorschemes can be overridden via environment variables
-      local DEFAULTS = {
-        dark = vim.env.NVIM_COLOR_SCHEME_DARK or "rose-pine",
-        light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "seoulbones",
-      }
+      local colorschemes = vim.g.default_colorscheme
+        or {
+          dark = vim.env.NVIM_COLOR_SCHEME_DARK or "everforest",
+          light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "seoulbones",
+        }
 
-      local background, colorscheme
-      if vim.env.TERM == "xterm-ghostty" then
-        env_bg = "dark"
-        DEFAULTS.dark = "everforest"
-      end
-
-      if env_bg == "dark" or env_bg == "light" then
-        -- Respect explicit background preference
-        background = env_bg
-        colorscheme = DEFAULTS[background]
-      elseif env_bg == "writeroom" then
-        -- Special preset: writing mode (force dark + specific scheme)
-        background = "dark"
-        colorscheme = "everforest"
-      else
-        -- No explicit preference: choose by local time
-        -- Dark from 18:00-23:59 and 00:00-06:59, light otherwise
-        local hour = tonumber(os.date("%H")) or 12
-        background = (hour >= 18 or hour <= 6) and "dark" or "light"
-        colorscheme = DEFAULTS[background]
-      end
-
-      -- Safety: ensure background is valid and colorscheme has a fallback
-      if background ~= "dark" and background ~= "light" then
-        background = "dark"
-      end
-      colorscheme = colorscheme or DEFAULTS[background] or "rose-pine"
-
-      -- Apply settings to Neovim and LazyVim
       vim.opt.background = background
-      opts.colorscheme = colorscheme
+      opts.colorscheme = colorschemes[background]
     end,
   },
 }

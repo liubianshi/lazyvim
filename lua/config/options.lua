@@ -15,6 +15,12 @@ vim.g.lazyvim_python_lsp = "pyright"
 vim.g.lazyvim_python_ruff = "ruff"
 vim.g.lazyvim_python_lsp = "basedpyright"
 
+-- colorscheme
+vim.g.default_colorscheme = {
+  dark = vim.env.NVIM_COLOR_SCHEME_DARK or "everforest",
+  light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "seoulbones",
+}
+
 -- Resolving Errors Opening Man Files
 vim.cmd([[runtime plugin/man.lua]])
 
