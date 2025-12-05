@@ -35,6 +35,7 @@ return {
       end,
       ["mdwrap"] = {
         command = "mdwrap",
+        args = { "--keep-origin-wrap", "--line-width", 140 },
       },
       ["injected"] = {
         lang_to_ft = {

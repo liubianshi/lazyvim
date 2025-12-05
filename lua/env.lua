@@ -53,7 +53,7 @@ function M.launch_writing_room()
     end
 
     if ft and writing_ft[ft] then
-      vim.env.NVIM_BACKGROUND = "writeroom"
+      vim.env.NVIM_BACKGROUND = "dark"
       return
     end
   end

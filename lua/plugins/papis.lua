@@ -1,7 +1,7 @@
 return {
   {
     "jghauser/papis.nvim",
-    enabled = false,
+    enabled = true,
     dependencies = {
       "kkharji/sqlite.lua",
       "MunifTanjim/nui.nvim",
@@ -23,6 +23,11 @@ return {
       },
       ["debug"] = {
         enable = false,
+      },
+      ["at-cursor"] = {
+        auto_popup = {
+          enable = false,
+        },
       },
     },
     config = function(_, opts)

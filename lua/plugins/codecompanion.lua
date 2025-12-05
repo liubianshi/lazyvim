@@ -16,8 +16,8 @@ local ADAPTER = {
     model = "gpt-5-mini",
   },
   academic = {
-    name = "aihubmix-openai",
-    model = "gpt-5",
+    name = "aihubmix-gemini",
+    model = "gemini-3-pro-preview",
   },
 }
 
@@ -226,14 +226,9 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           },
           schema = {
             model = {
-              default = "gemini-2.5-pro-search",
+              default = "gemini-3-pro-preview",
               choices = {
-                ["gemini-2.5-pro-search"] = { opts = { can_reason = true, has_vision = true } },
-                ["gemini-2.5-pro"] = { opts = { can_reason = true, has_vision = true } },
-                ["gemini-2.5-flash"] = { opts = { can_reason = true, has_vision = true } },
-                ["gemini-2.5-flash-search"] = { opts = { can_reason = true, has_vision = true } },
-                ["gemini-2.5-flash-lite"] = { opts = { can_reason = true, has_vision = true } },
-                ["gemini-2.5-flash-nothink"] = { opts = { can_reason = false, has_vision = true } },
+                ["gemini-3-pro-preview"] = { opts = { can_reason = true, has_vision = true } },
               },
             },
             temperature = {

@@ -5,7 +5,7 @@ return {
   opts = {
     -- NES configuration: enables and auto-fetches notes or sessions
     nes = {
-      enabled = true,
+      enabled = false,
       auto_fetch = false,
       trigger = {
         events = { "TextChanged", "User SidekickNesDone" },
@@ -58,8 +58,6 @@ return {
     { "<leader>and", function() require("sidekick.nes").disable() end, desc = "Sidekick NES: Disable" },
     -- Update NES (likely fetch or refresh)
     { "<leader>anu", function() require("sidekick.nes").update() end,  desc = "Sidekick NES: Update" },
-    -- New: Toggle NES with focus on the window
-    { "<leader>anf", function() require("sidekick.nes").toggle({ focus = true }) end, desc = "Sidekick NES: Toggle (Focus)" },
     -- stylua: ignore end
   },
 }
