@@ -56,7 +56,6 @@ return {
     },
     -- stylua: ignore end
     opts = {
-      style = "overlay",
       modes = {
         char = {
           enabled = true,
@@ -70,6 +69,10 @@ return {
       },
       jump = {
         autojump = true,
+      },
+      label = {
+        style = "inline",
+        exclude = "iahl",
       },
       remote_op = {
         restore = false,
@@ -122,13 +125,27 @@ return {
         mode = { "n", "x", "o" },
         function()
           require("flash-zh").jump({
-            chinese_only = true,
-            labels = " ;,.123456789[]",
+            chinese_only = false,
           })
         end,
         desc = "Flash between Chinese",
       },
+      {
+        "<M-l>",
+        mode = { "n", "i" },
+        function()
+          require("flash-zh").jump({
+            chinese_only = false,
+            search = { forward = true, wrap = false, multi_window = false, multi_line = false, max_length = 1 },
+            autojump = true,
+          })
+        end,
+        desc = "Flash between Chinese on current line",
+      },
     },
+    config = function()
+      require("flash-zh").setup({})
+    end,
   },
   { -- easymotion/vim-easymotion: motion tools -------------------------- {{{3
     "easymotion/vim-easymotion",

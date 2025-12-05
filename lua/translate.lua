@@ -147,8 +147,6 @@ function M.translate_paragraph(content, opts)
     "fabric",
     "--pattern",
     "translate",
-    "-m",
-    "gemini-2.5-flash",
   }
 
   local head_chars = vim.trim(content[1]):sub(1, 20)
@@ -180,7 +178,6 @@ function M.translate_paragraph(content, opts)
   opts = vim.tbl_extend("keep", opts, { wrap = true, textwidth = 80, indent = 0 })
 
   vim.system(cmd, { stdin = content }, function(obj_trans)
-    dd(cmd)
     if progress_handle then
       if obj_trans.code ~= 0 then
         progress_handle.message = " Faild to translate with fabric"

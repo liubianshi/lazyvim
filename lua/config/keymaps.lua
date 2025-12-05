@@ -99,13 +99,14 @@ keymap({
 })
 
 --- buffer --------------------------------------------------------------- {{{1
-keymap({ "<leader>bD", "<cmd>Bclose!<cr>",        desc = "Delete Buffer (force)"      })
-keymap({ "<leader>bp", "<cmd>bp<cr>",             desc = "Previous Buffer"            })
-keymap({ "<leader>bn", "<cmd>bn<cr>",             desc = "Next Buffer"                })
-keymap({ "<leader>bq", "<cmd>q<cr>",              desc = "Quit Buffer"                })
-keymap({ "<leader>bQ", "<cmd>q!<cr>",             desc = "Quit Buffer (force)"        })
-keymap({ "<leader>bl", "<cmd>BufferLinePick<cr>", desc = "Pick Buffer on BufferLine", })
-keymap({ "<leader>bF", "<cmd>fclose<cr>",         desc = "Close Float buffer"         })
+keymap({ "<leader>bD", "<cmd>Bclose!<cr>",                     desc = "Delete Buffer (force)"      })
+keymap({ "<leader>bb", function() Snacks.picker.buffers() end, desc = "Previous Buffer"            })
+keymap({ "<leader>bp", "<cmd>bp<cr>",                          desc = "Previous Buffer"            })
+keymap({ "<leader>bn", "<cmd>bn<cr>",                          desc = "Next Buffer"                })
+keymap({ "<leader>bq", "<cmd>q<cr>",                           desc = "Quit Buffer"                })
+keymap({ "<leader>bQ", "<cmd>q!<cr>",                          desc = "Quit Buffer (force)"        })
+keymap({ "<leader>bl", "<cmd>BufferLinePick<cr>",              desc = "Pick Buffer on BufferLine", })
+keymap({ "<leader>bF", "<cmd>fclose<cr>",                      desc = "Close Float buffer"         })
 
 --- search -------------------------------------------------------------- {{{1
 keymap({
@@ -134,29 +135,29 @@ keymap({
 })
 
 --- window manager ------------------------------------------------------ {{{1
-keymap({ "w0",    "<cmd>88wincmd |<cr>",         desc = "Window: Suitable Width"           })
-keymap({ "wt",    "<cmd>wincmd T<cr>",           desc = "Move Current Window to a New Tab" })
-keymap({ "wo",    "<cmd>only<cr>",               desc = "Make current window the only one" })
-keymap({ "wv",    "<c-w>v",                      desc = "Vertical Split Current Buffer"    })
-keymap({ "ws",    "<c-w>s",                      desc = "Split Current Buffer"             })
-keymap({ "wF",    "<cmd>fclose<cr>",             desc = "Close Float Buffer"               })
-keymap({ "wh",    "<c-w>h",                      desc = "Move cursor to window left"       })
-keymap({ "wj",    "<c-w>j",                      desc = "Move cursor to window below"      })
-keymap({ "wk",    "<c-w>k",                      desc = "Move cursor to window above"      })
-keymap({ "wl",    "<c-w>l",                      desc = "Move cursor to window right"      })
-keymap({ "wH",    "<c-w>H",                      desc = "Move current window left"         })
-keymap({ "wJ",    "<c-w>J",                      desc = "Move current window below"        })
-keymap({ "wK",    "<c-w>K",                      desc = "Move current window above"        })
-keymap({ "wL",    "<c-w>L",                      desc = "Move current window right"        })
-keymap({ "wx",    "<c-w>x",                      desc = "Exchange window"                  })
-keymap({ "wq",    "<c-w>q",                      desc = "Quit the current window"          })
-keymap({ "w=",    "<c-w>=",                      desc = "Make Window size equally"         })
-keymap({ "<c-j>", "<cmd>resize -2<cr>",          desc = "Decrease window height"           })
-keymap({ "<c-k>", "<cmd>resize +2<cr>",          desc = "Increase window height"           })
-keymap({ "<c-h>", "<cmd>vertical resize -2<cr>", desc = "Decrease window width"            })
-keymap({ "<c-l>", "<cmd>vertical resize +2<cr>", desc = "Increase window width"            })
+-- keymap({ "w0",    "<cmd>88wincmd |<cr>",         desc = "Window: Suitable Width"           })
+-- keymap({ "wt",    "<cmd>wincmd T<cr>",           desc = "Move Current Window to a New Tab" })
+-- keymap({ "wo",    "<cmd>only<cr>",               desc = "Make current window the only one" })
+-- keymap({ "wv",    "<c-w>v",                      desc = "Vertical Split Current Buffer"    })
+-- keymap({ "ws",    "<c-w>s",                      desc = "Split Current Buffer"             })
+-- keymap({ "wF",    "<cmd>fclose<cr>",             desc = "Close Float Buffer"               })
+-- keymap({ "wh",    "<c-w>h",                      desc = "Move cursor to window left"       })
+-- keymap({ "wj",    "<c-w>j",                      desc = "Move cursor to window below"      })
+-- keymap({ "wk",    "<c-w>k",                      desc = "Move cursor to window above"      })
+-- keymap({ "wl",    "<c-w>l",                      desc = "Move cursor to window right"      })
+-- keymap({ "wH",    "<c-w>H",                      desc = "Move current window left"         })
+-- keymap({ "wJ",    "<c-w>J",                      desc = "Move current window below"        })
+-- keymap({ "wK",    "<c-w>K",                      desc = "Move current window above"        })
+-- keymap({ "wL",    "<c-w>L",                      desc = "Move current window right"        })
+-- keymap({ "wx",    "<c-w>x",                      desc = "Exchange window"                  })
+-- keymap({ "wq",    "<c-w>q",                      desc = "Quit the current window"          })
+-- keymap({ "w=",    "<c-w>=",                      desc = "Make Window size equally"         })
+-- keymap({ "<c-j>", "<cmd>resize -2<cr>",          desc = "Decrease window height"           })
+-- keymap({ "<c-k>", "<cmd>resize +2<cr>",          desc = "Increase window height"           })
+-- keymap({ "<c-h>", "<cmd>vertical resize -2<cr>", desc = "Decrease window width"            })
+-- keymap({ "<c-l>", "<cmd>vertical resize +2<cr>", desc = "Increase window width"            })
 keymap({
-  "wf",
+  "<c-w>f",
   function()
     -- This requires a utility function to identify the highest z-index window (likely a float).
     -- Assumes `require("util.ui").get_highest_zindex_win()` exists.
@@ -272,7 +273,7 @@ local function get_translate_module()
 end
 
 keymap({
-  "<F4>",
+  "<F2>",
   function()
     local trans = get_translate_module()
     if not trans then
