@@ -38,18 +38,18 @@ keymap({ "<A-m>",    "<cmd>call utils#MoveCursorTo()<cr>",                      
 -- and then performs the search.
 keymap({ "*", ":<C-u>call utils#VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>", desc = "Search for visual selection", mode = "v", })
 
--- Fold and add symbol -------------------------------------------------- {{{1
+-- Fold and add symbol -------------------------------------------------- {{{2
 -- DRY principle: Use a loop to create similar keymaps.
 for _, char in ipairs({ "-", "=", ".", "*" }) do
   -- Add fold markers with a separator line
   keymap({
-    string.format("<leader>z%s", char),
+    string.format("<leader>z+%s", char),
     string.format('<cmd>call utils#AddFoldMark("%s")<cr>', char),
     desc = string.format("Add fold marker with '%s' separator", char)
   })
   -- Add a separator line
   keymap({
-    string.format("<leader>+%s", char),
+    string.format("<leader>z%s", char),
     string.format('<cmd>call utils#AddDash("%s")<cr>', char),
     desc = string.format("Add '%s' separator line", char)
   })
@@ -372,3 +372,52 @@ keymap({
   desc = "Insert Citation Keys",
   mode = "i",
 })
+
+vim.keymap.set("n", "<M-k>", function()
+  -- 获取当前窗口和 Buffer
+  local win = vim.api.nvim_get_current_win()
+  local buf = vim.api.nvim_get_current_buf()
+
+  -- 获取关键属性
+  local win_config = vim.api.nvim_win_get_config(win)
+  local ft = vim.api.nvim_get_option_value("filetype", { buf = buf })
+  local buftype = vim.api.nvim_get_option_value("buftype", { buf = buf })
+  local winhl = vim.api.nvim_get_option_value("winhighlight", { win = win })
+
+  -- 格式化输出信息
+  local info = {
+    "=== Window Info ===",
+    "ID: " .. win,
+    "Buffer ID: " .. buf,
+    "Filetype: " .. (ft == "" and "<empty>" or ft),
+    "Buftype: " .. (buftype == "" and "<empty>" or buftype),
+    "Focusable: " .. tostring(win_config.focusable),
+    "Relative: " .. (win_config.relative == "" and "<none>" or win_config.relative),
+    "Z-Index: " .. (win_config.zindex or "<none>"),
+    "WinHighlight: " .. (winhl == "" and "<none>" or winhl),
+  }
+
+  -- 打印到 :messages (如果不想弹窗，看这里就行了)
+  -- print(table.concat(info, "\n"))
+
+  -- 创建一个临时的浮动窗口来展示这些信息 (更直观)
+  local width = 60
+  local height = #info
+  local buf_info = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(buf_info, 0, -1, false, info)
+
+  vim.api.nvim_open_win(buf_info, true, {
+    relative = "cursor",
+    width = width,
+    height = height,
+    row = 1,
+    col = 0,
+    style = "minimal",
+    border = "single",
+    title = " Window Inspector ",
+    title_pos = "center"
+  })
+
+  -- 设置快捷键 q 退出这个临时窗口
+  vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = buf_info })
+end, { desc = "Inspect current window properties" })

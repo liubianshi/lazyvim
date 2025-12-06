@@ -9,6 +9,7 @@ return {
     cmd = "EasyAlign",
     event = "VeryLazy",
   },
+
   { -- stevearc/quicker.nvim: Improved quickfix ------------------------- {{{3
     "stevearc/quicker.nvim",
     event = "FileType qf",
@@ -45,16 +46,60 @@ return {
   },
   { -- folke/flash.nvim: Navigate tools --------------------------------- {{{3
     "folke/flash.nvim",
-    -- stylua: ignore start
     keys = {
+      -- stylua: ignore start
       { "s",     mode = { "n", "x", "o" }, false },
       { "ss",    mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "Flash",                   },
       { "r",     mode = "o",               function() require("flash").remote() end,            desc = "Remote Flash",            },
       { "R",     mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "Flash Treesitter Search", },
       { "<c-s>", mode = { "c" },           function() require("flash").toggle() end,            desc = "Toggle Flash Search",     },
       { "st",    mode = { "n", "x", "o" }, function() require("flash").treesitter() end,        desc = "Flash Treesitter",        },
+      -- stylua: ignore end
+      {
+        "sj",
+        mode = { "n", "x", "o" },
+        function()
+          require("flash").jump({
+            search = { mode = "search", max_length = 0, forward = true, wrap = false, multi_window = false },
+            label = { before = true, after = false, style = "overlay" },
+            pattern = "^\\s*\\zs[^\\s]\\?",
+            jump = { pos = "end" },
+            highlight = { matches = false },
+          })
+        end,
+        desc = "Flash: Jump to a line forard",
+      },
+      {
+        "sk",
+        mode = { "n", "x", "o" },
+        function()
+          require("flash").jump({
+            search = { mode = "search", max_length = 0, forward = false, wrap = false, multi_window = false },
+            label = { before = true, after = false, style = "overlay" },
+            pattern = "^\\s*\\zs[^\\s]\\?",
+            jump = { pos = "start" },
+            highlight = { matches = false },
+          })
+        end,
+        desc = "Flash: Jump to a line forard",
+      },
+      {
+        "<M-l>",
+        mode = { "n", "i" },
+        function()
+          local punc = "，。“”「」、：,."
+          require("flash").jump({
+            search = { mode = "search", forward = true, wrap = false, multi_window = false, max_length = 0 },
+            autojump = true,
+            label = { before = true, after = false, style = "inline" },
+            pattern = ("\\(%s\\|[%s]\\)\\s*\\zs[^%s]\\+"):format("^\\s", punc, punc),
+            -- pattern = ("\\%%%dl[%s]\\s*\\zs[^%s]\\+"):format(pos[1], punc, punc),
+            highlight = { matches = true },
+          })
+        end,
+        desc = "Jump to phrases at current line",
+      },
     },
-    -- stylua: ignore end
     opts = {
       modes = {
         char = {
@@ -63,20 +108,12 @@ return {
           multi_line = false,
           jump_labels = true,
         },
-        search = {
-          enabled = false,
-        },
+        search = { enabled = false },
       },
-      jump = {
-        autojump = true,
-      },
-      label = {
-        style = "inline",
-        exclude = "iahl",
-      },
-      remote_op = {
-        restore = false,
-      },
+      search = { multi_window = true, exclude = { "blink-cmp-menu" } },
+      jump = { autojump = true },
+      label = { style = "inline", exclude = "iahl" },
+      remote_op = { restore = false },
     },
     specs = {
       {
@@ -96,6 +133,7 @@ return {
                 require("flash").jump({
                   pattern = "^",
                   label = { after = { 0, 0 } },
+                  highlight = { matches = false },
                   search = {
                     mode = "search",
                     exclude = {
@@ -130,99 +168,16 @@ return {
         end,
         desc = "Flash between Chinese",
       },
-      {
-        "<M-l>",
-        mode = { "n", "i" },
-        function()
-          require("flash-zh").jump({
-            chinese_only = false,
-            search = { forward = true, wrap = false, multi_window = false, multi_line = false, max_length = 1 },
-            autojump = true,
-          })
-        end,
-        desc = "Flash between Chinese on current line",
-      },
     },
     config = function()
-      require("flash-zh").setup({})
+      require("flash-zh").setup({
+        char_map = {
+          append_comma = {
+            [" "] = "，。」「、,.={}",
+          },
+        },
+      })
     end,
-  },
-  { -- easymotion/vim-easymotion: motion tools -------------------------- {{{3
-    "easymotion/vim-easymotion",
-    init = function()
-      vim.g.EasyMotion_do_mapping = 0 -- Disable default mappings
-      vim.g.EasyMotion_smartcase = 1
-      vim.g.EasyMotion_use_migemo = 1
-    end,
-    keys = {
-      {
-        "<localleader>s",
-        "<esc><Plug>(easymotion-sl)",
-        mode = { "i" },
-        desc = "EasyMotion: Find Char (current line)",
-      },
-      {
-        "s.",
-        "<Plug>(easymotion-repeat)",
-        desc = "EasyMotion: Repeat last motion",
-      },
-      {
-        "sl",
-        "<Plug>(easymotion-sl)",
-        mode = { "n", "v" },
-        desc = "EasyMotion: Find Char (current line)",
-      },
-      { "sj", "<plug>(easymotion-j)", desc = "EasyMotion: Line Downward" },
-      {
-        "sJ",
-        "<plug>(easymotion-eol-j)",
-        desc = "EasyMotion: Line Downword (end)",
-      },
-      { "sk", "<plug>(easymotion-k)", desc = "EasyMotion: Line Forward" },
-      {
-        "sK",
-        "<plug>(easymotion-eol-k)",
-        desc = "EasyMotion: Line Forward (end)",
-      },
-      { "sn", "<Plug>(easymotion-n)", desc = "EasyMotion: latest search" },
-      {
-        "sN",
-        "<Plug>(easymotion-N)",
-        desc = "EasyMotion: latest search (backward)",
-      },
-      {
-        "sw",
-        "<Plug>(easymotion-w)",
-        desc = "EasyMotion: Beginning of word",
-      },
-      {
-        "sW",
-        "<Plug>(easymotion-W)",
-        desc = "EasyMotion: Beginning of WORD",
-      },
-      {
-        "sb",
-        "<Plug>(easymotion-b)",
-        desc = "EasyMotion: EasyMotion: Beginning of word (backward)",
-      },
-      {
-        "sB",
-        "<Plug>(easymotion-B)",
-        desc = "EasyMotion: EasyMotion: Beginning of WORD (backward)",
-      },
-      { "se", "<Plug>(easymotion-e)", desc = "EasyMotion: End of word" },
-      { "sE", "<Plug>(easymotion-E)", desc = "EasyMotion: End of WROD" },
-      {
-        "sge",
-        "<Plug>(easymotion-e)",
-        desc = "EasyMotion: End of word (backward)",
-      },
-      {
-        "sgE",
-        "<Plug>(easymotion-E)",
-        desc = "EasyMotion: End of WROD (backward)",
-      },
-    },
   },
   { -- kevinhwang91/nvim-ufo: ultra fold in Neovim ---------------------- {{{3
     "kevinhwang91/nvim-ufo",
