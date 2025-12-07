@@ -338,86 +338,56 @@ keymap({ "<leader>fs", "<cmd>write<cr>",  desc = "Save File" })
 keymap({ "<leader>fS", "<cmd>write!<cr>", desc = "Save File (force)" })
 
 -- Picker --------------------------------------------------------------- {{{1
--- Assumes a 'pickers' module is available and configured.
-local picker_ok, picker = pcall(require, "pickers")
-if not picker_ok then
-  vim.notify("Picker module not found, some keymaps will not work.", vim.log.levels.WARN)
-  return -- Exit if pickers are essential and not found.
+-- Helper to safely require the picker module and create a lazy-loading wrapper
+local function safe_picker_call(picker_fn_name)
+  return function(...)
+    local ok, picker = pcall(require, "pickers")
+    if not ok then
+      vim.notify("Picker module not available", vim.log.levels.WARN)
+      return
+    end
+    local fn = picker[picker_fn_name]
+    if type(fn) == "function" then
+      return fn(...)
+    else
+      vim.notify(string.format("Picker function '%s' not found", picker_fn_name), vim.log.levels.ERROR)
+    end
+  end
 end
 
-keymap({ "<leader>sP", picker.cliphist, desc = "System Clipboard History" })
-keymap({ "<leader>hc", picker.cheat,           desc = "CheatSheet: TL;DR" })
-keymap({ "<leader>fz", picker.fasd,            desc = "Jump with fasd" })
-keymap({ "<leader>fq", picker.mylib,           desc = "Open my library file" })
-keymap({ "<leader>hs", picker.stata_doc,       desc = "Stata help pages" })
+keymap({ "<leader>sP", safe_picker_call("cliphist"), desc = "System Clipboard History" })
+keymap({ "<leader>hc", safe_picker_call("cheat"),    desc = "CheatSheet: TL;DR" })
+keymap({ "<leader>fz", safe_picker_call("fasd"),     desc = "Jump with fasd" })
+keymap({ "<leader>fq", safe_picker_call("mylib"),    desc = "Open my library file" })
+keymap({ "<leader>hs", safe_picker_call("stata_doc"), desc = "Stata help pages" })
 keymap({
   "<leader>a/",
-  picker.fabric,
+  safe_picker_call("fabric"),
   desc = "Fabric: use clipboard as input",
   mode = { "n", "v" },
-  icon = { icon = "", hl = "WhichKeyIconOrange" },
+  icon = { icon = "", hl = "WhichKeyIconOrange" },
 })
 keymap({
   "<leader>ic",
-  function()
-    require("pickers").citation()
-  end,
+  safe_picker_call("citation"),
   desc = "Insert Citation Keys"
 })
 keymap({
   "<localleader>ic",
-  function()
-    require("pickers").citation()
-  end,
+  safe_picker_call("citation"),
   desc = "Insert Citation Keys",
   mode = "i",
 })
 
-vim.keymap.set("n", "<M-k>", function()
-  -- 获取当前窗口和 Buffer
-  local win = vim.api.nvim_get_current_win()
-  local buf = vim.api.nvim_get_current_buf()
-
-  -- 获取关键属性
-  local win_config = vim.api.nvim_win_get_config(win)
-  local ft = vim.api.nvim_get_option_value("filetype", { buf = buf })
-  local buftype = vim.api.nvim_get_option_value("buftype", { buf = buf })
-  local winhl = vim.api.nvim_get_option_value("winhighlight", { win = win })
-
-  -- 格式化输出信息
-  local info = {
-    "=== Window Info ===",
-    "ID: " .. win,
-    "Buffer ID: " .. buf,
-    "Filetype: " .. (ft == "" and "<empty>" or ft),
-    "Buftype: " .. (buftype == "" and "<empty>" or buftype),
-    "Focusable: " .. tostring(win_config.focusable),
-    "Relative: " .. (win_config.relative == "" and "<none>" or win_config.relative),
-    "Z-Index: " .. (win_config.zindex or "<none>"),
-    "WinHighlight: " .. (winhl == "" and "<none>" or winhl),
-  }
-
-  -- 打印到 :messages (如果不想弹窗，看这里就行了)
-  -- print(table.concat(info, "\n"))
-
-  -- 创建一个临时的浮动窗口来展示这些信息 (更直观)
-  local width = 60
-  local height = #info
-  local buf_info = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(buf_info, 0, -1, false, info)
-
-  vim.api.nvim_open_win(buf_info, true, {
-    relative = "cursor",
-    width = width,
-    height = height,
-    row = 1,
-    col = 0,
-    style = "minimal",
-    border = "single",
-    title = " Window Inspector ",
-    title_pos = "center"
-  })
-
-  -- 设置快捷键 q 退出这个临时窗口
-  vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = buf_info })
-end, { desc = "Inspect current window properties" })
+-- Window Inspector ----------------------------------------------------- {{{1
+-- Display detailed information about the current window and buffer
+keymap({
+  "<M-k>",
+  function()
+    local ok, inspector = pcall(require, "util.window_inspector")
+    if ok and inspector then
+      inspector.show()
+    end
+  end,
+  desc = "Inspect current window properties"
+})

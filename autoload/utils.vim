@@ -190,43 +190,130 @@ function! utils#Math_Preview() range
 endfunction
 
 " 在末尾添加符号 ======================================================== {{{1
+" Add a line of repeated symbols to create section separators or underlines.
+"
+" This function appends a repeated symbol (like '=', '-', '#') to the end of
+" a line to fill it up to a target width, useful for creating visual separators
+" in comments or documentation.
+"
+" @param symbol The character(s) to repeat (e.g., '=', '-', '#')
+" @param line   Optional line content to process. If empty, uses current line.
+"
+" Special behaviors:
+" - For empty lines: fills with symbols matching previous line's display width
+" - Preserves fold markers at the end of lines
+" - Respects textwidth setting (defaults to 78 if not set)
 function! utils#AddDash(symbol, line = "") abort
+    " Get the line content to process
     if a:line == ""
-        substitute/\s*$//g
-        let lo = getline('.')
+        " Remove trailing whitespace from current line
+        silent! execute 'substitute/\s*$//e'
+        let line_content = getline('.')
     else
-        let lo = a:line
+        let line_content = a:line
     endif
 
-    " when the line is empty, keep the number of symbol euqal to {{{2
-    " display width of previous line, and keep the indentation
-    if lo =~ '^\s*$'
-        let lo_pre      = getline(line('.') - 1)
-        let space_pre   = substitute(lo_pre, '\v^(\s*)(.*)$', '\1', 'g')
-        let content_pre = substitute(lo_pre, '\v^(\s*)(.*)$', '\2', 'g')
-        let length_pre  = strdisplaywidth(content_pre)
-        call setline('.', space_pre . repeat(a:symbol, length_pre))
+    " Handle empty lines: fill with symbols matching previous line's width
+    if line_content =~# '^\s*$'
+        call s:FillEmptyLineWithSymbols(a:symbol)
         return
     endif
 
-    let w = &l:textwidth == 0 ? 78 : &l:textwidth
-    if &l:foldmarker =~ '\V' . lo[-4:-2]
-        let le = " " . lo[-4:-1]
-        let lo = lo[0:-5]
-    elseif &l:foldmarker =~ '\V' . lo[-3:-1]
-        let le = " " . lo[-3:-1]
-        let lo = lo[0:-4]
-    else
-        let le = ""
-    endif
-    let lo = substitute(lo, '\V\(' . a:symbol . '\| \)\*\$', "", 'g')
-    let conl = strdisplaywidth(lo)
-    if conl >= w
+    " Get target width (use textwidth if set, otherwise default to 78)
+    let target_width = &l:textwidth == 0 ? 78 : &l:textwidth
+    
+    " Extract and preserve fold marker if present
+    let [line_content, fold_marker] = s:ExtractFoldMarker(line_content)
+    
+    " Clean existing symbols and trailing spaces from line
+    let line_content = s:CleanLineEnd(line_content, a:symbol)
+    
+    " Check if line is already at or exceeds target width
+    let current_width = strdisplaywidth(line_content)
+    if current_width >= target_width
         return
     endif
-    let l = (w - conl) / strlen(a:symbol) - 6
-    let add = repeat(a:symbol, l)
-    call setline('.', lo . " " . add . le)
+    
+    " Calculate number of symbols to add (leave 6 chars margin for readability)
+    let available_space = target_width - current_width - 6
+    let symbol_count = available_space / strlen(a:symbol)
+    
+    " Don't add symbols if there's no space
+    if symbol_count <= 0
+        return
+    endif
+    
+    " Build and set the new line
+    let symbol_line = repeat(a:symbol, symbol_count)
+    let new_line = line_content . ' ' . symbol_line . fold_marker
+    call setline('.', new_line)
+endfunction
+
+" Fill an empty line with symbols matching the display width of previous line.
+" Preserves the indentation of the previous line.
+function! s:FillEmptyLineWithSymbols(symbol) abort
+    let prev_line = getline(line('.') - 1)
+    
+    " Extract leading whitespace (indentation) from previous line
+    let indentation = matchstr(prev_line, '^\s*')
+    
+    " Extract content (non-whitespace part) from previous line
+    let content = matchstr(prev_line, '^\s*\zs.*')
+    
+    " Calculate display width of content
+    let content_width = strdisplaywidth(content)
+    
+    " Create line with same indentation filled with symbols
+    let new_line = indentation . repeat(a:symbol, content_width)
+    call setline('.', new_line)
+endfunction
+
+" Extract fold marker from end of line if present.
+" Returns a list: [cleaned_line, fold_marker]
+" The fold_marker includes a leading space if found, empty string otherwise.
+function! s:ExtractFoldMarker(line) abort
+    " Get the opening fold marker pattern (e.g., '{{{' from '{{{,}}}')
+    let fold_markers = split(&l:foldmarker, ',')
+    if empty(fold_markers)
+        return [a:line, '']
+    endif
+    
+    let fold_marker_pattern = fold_markers[0]
+    let marker_regex = '\V' . escape(fold_marker_pattern, '\')
+    
+    " Check for fold marker with level digit (e.g., ' {{{1')
+    " Pattern: fold_marker followed by a digit at end of line
+    if a:line =~# marker_regex . '\d\$'
+        let marker_with_level = matchstr(a:line, marker_regex . '\d\$')
+        let marker_len = len(marker_with_level)
+        
+        " Extract marker (with leading space) and cleaned line
+        let fold_marker = ' ' . marker_with_level
+        let cleaned_line = a:line[0:-(marker_len + 2)]  " Remove space + marker
+        return [cleaned_line, fold_marker]
+    endif
+    
+    " Check for fold marker without level (e.g., ' {{{')
+    if a:line =~# marker_regex . '\$'
+        let marker_with_level = matchstr(a:line, marker_regex . '\$')
+        let marker_len = len(marker_with_level)
+        
+        let fold_marker = ' ' . marker_with_level
+        let cleaned_line = a:line[0:-(marker_len + 2)]
+        return [cleaned_line, fold_marker]
+    endif
+    
+    " No fold marker found
+    return [a:line, '']
+endfunction
+
+" Remove trailing spaces and existing symbol repetitions from line end.
+" This cleans up any previous dash additions to allow recalculation.
+function! s:CleanLineEnd(line, symbol) abort
+    " Pattern matches: the symbol or space, repeated zero or more times, at end of line
+    let escaped_symbol = escape(a:symbol, '\')
+    let pattern = '\V\(' . escaped_symbol . '\| \)\*\$'
+    return substitute(a:line, pattern, '', 'g')
 endfunction
 
 " 在末尾添加 comment symbol 和 folder marker ============================ {{{1
