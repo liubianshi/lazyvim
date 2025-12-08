@@ -84,6 +84,21 @@ return {
         desc = "Flash: Jump to a line forard",
       },
       {
+        "<M-h>",
+        mode = { "n", "i" },
+        function()
+          local punc = "，。“”「」、：,."
+          require("flash").jump({
+            search = { mode = "search", forward = false, wrap = false, multi_window = false, max_length = 0 },
+            autojump = true,
+            label = { before = true, after = false, style = "overlay" },
+            pattern = ("\\(^\\|%s\\|[%s]\\)\\s*\\zs[^%s]\\+"):format("^\\s", punc, punc),
+            highlight = { matches = true },
+          })
+        end,
+        desc = "Jump to phrases at current line",
+      },
+      {
         "<M-l>",
         mode = { "n", "i" },
         function()
@@ -91,9 +106,8 @@ return {
           require("flash").jump({
             search = { mode = "search", forward = true, wrap = false, multi_window = false, max_length = 0 },
             autojump = true,
-            label = { before = true, after = false, style = "inline" },
-            pattern = ("\\(%s\\|[%s]\\)\\s*\\zs[^%s]\\+"):format("^\\s", punc, punc),
-            -- pattern = ("\\%%%dl[%s]\\s*\\zs[^%s]\\+"):format(pos[1], punc, punc),
+            label = { before = true, after = false, style = "overlay" },
+            pattern = ("\\(^\\|%s\\|[%s]\\)\\s*\\zs[^%s]\\+"):format("^\\s", punc, punc),
             highlight = { matches = true },
           })
         end,
@@ -112,7 +126,7 @@ return {
       },
       search = { multi_window = true, exclude = { "blink-cmp-menu" } },
       jump = { autojump = true },
-      label = { style = "inline", exclude = "iahl" },
+      label = { style = "inline", exclude = "iahl", uppercase = false },
       remote_op = { restore = false },
     },
     specs = {

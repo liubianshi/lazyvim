@@ -382,7 +382,7 @@ keymap({
 -- Window Inspector ----------------------------------------------------- {{{1
 -- Display detailed information about the current window and buffer
 keymap({
-  "<M-k>",
+  "<leader>wi",
   function()
     local ok, inspector = pcall(require, "util.window_inspector")
     if ok and inspector then
