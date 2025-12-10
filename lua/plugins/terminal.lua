@@ -77,7 +77,7 @@ return {
     "typicode/bg.nvim",
     lazy = false,
   },
-  { -- liubianshi/vimcmdline: Send code to command line interpreter ----- {{{2
+  { -- jalvesaq/hlterm: Send code to command line interpreter ----- {{{2
     "jalvesaq/hlterm",
     ft = { "stata", "sh", "bash", "perl", "python" },
     opts = {

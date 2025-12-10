@@ -21,6 +21,7 @@ local function cheatsheets_filetype(path, bufnr)
   end
   return "sh"
 end
+
 vim.filetype.add({
   extension = {
     sxhkdrc = "sxhkd",
@@ -29,6 +30,7 @@ vim.filetype.add({
     ihlp = "smcl",
     norg = "norg",
     newsboat = "newsboat",
+    perl = "perl",
   },
   filename = {
     [".gitignore"] = "gitignore",

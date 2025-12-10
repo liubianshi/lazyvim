@@ -140,7 +140,7 @@ return {
     opts = {},
     config = function(opts)
       require("overseer").setup({
-        templates = { "builtin", "mytasks.source", "r" },
+        templates = { "builtin", "mytasks.taskfile", "mytasks.source", "r" },
       })
     end,
   },

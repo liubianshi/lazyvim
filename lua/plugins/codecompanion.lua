@@ -80,7 +80,7 @@ local function using_prompt(bufnr)
     return "apolish"
   end
 
-  if vim.tbl_contains({ "markdown", "norg", "org", "mail" }, filetype) then
+  if vim.tbl_contains({ "markdown", "norg", "org", "mail" }, filetype) or filetype == "" then
     return "polish"
   end
 
@@ -316,7 +316,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           url = "https://aihubmix.com/v1/messages",
           schema = {
             model = {
-              default = "claude-haiku-4-5",
+              default = "claude-sonnet-4-5",
             },
           },
         })
@@ -376,7 +376,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         opts = {
           index = 14,
           short_name = "optimize",
-          adapter = ADAPTER.code,
+          adapter = ADAPTER.advanced_code,
           is_slash_cmd = true,
           modes = { "v" },
           auto_submit = true,
