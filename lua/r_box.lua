@@ -4,7 +4,7 @@ local handle_choice = function(choice)
   if not choice then
     return
   end
-  local text = string.format("%s", string.gsub(choice, "%.[Rr]$", ""))
+  local text = string.format("box::use(%s)", string.gsub(choice, "%.[Rr]$", ""))
   local linenr = vim.fn.line(".")
   if vim.fn.getline(".") == "" then
     vim.fn.setline(linenr, text)
@@ -14,8 +14,16 @@ local handle_choice = function(choice)
   end
 end
 
+local function r_box_lib()
+  if vim.uv.fs_access("./r-box", "r") then
+    return "./r-box"
+  else
+    return vim.env.R_BOX_LIBRARY or (vim.env.HOME .. "/Repositories/R-script/box")
+  end
+end
+
 local insert_pkg = function()
-  local box_lib = vim.env.R_BOX_LIBRARY or (vim.env.HOME .. "/Repositories/R-script/box")
+  local box_lib = r_box_lib()
   local bash_code = {
     '[[ "$PWD" = "$HOME" ]] || fd -t f -e r "." R 2>/dev/null',
     "cd '" .. box_lib .. "'",
@@ -111,7 +119,7 @@ local function get_box_script(lib_fullname)
 
   local filepath = lib_fullname
   if not lib_fullname:find("^R%/") then
-    local box_lib = vim.env.R_BOX_LIBRARY or (vim.env.HOME .. "/Repositories/R-script/box")
+    local box_lib = r_box_lib()
     filepath = box_lib .. "/" .. lib_fullname
   end
 

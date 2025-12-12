@@ -7,7 +7,7 @@ return {
       json = { "jq" },
       xml = { "xmllint" },
       python = { "ruff" },
-      yaml = { "yq" },
+      yaml = { "yamlfmt" },
       toml = { "taplo" },
       r = { "air" },
       markdown = { "injected", "mdwrap" },

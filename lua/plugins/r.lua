@@ -64,15 +64,17 @@ return {
           end
         end,
         after_R_start = function()
-          require("r.term.builtin").highlight_term()
+          if require("r.config").get_option("R_app") ~= "radian" then
+            require("r.term.builtin").highlight_term()
+          end
           vim.opt_local.keywordprg = ":RHelp"
         end,
       }
 
       local opts = {
+        R_app = "radian",
         R_args = { "--quiet", "--no-save" },
         hook = hook,
-        hl_term = true,
         Rout_more_colors = true,
         min_editor_width = 72,
         rconsole_width = 78,
@@ -81,7 +83,7 @@ return {
         objbr_openlist = true,
         objbr_place = "console,left",
         objbr_opendf = true,
-        -- bracketed_paste = vim.fn.has('mac') and false or true,
+        bracketed_paste = vim.fn.has("mac") and false or true,
         setwd = "nvim",
         open_pdf = "no",
         open_html = "no",
@@ -97,6 +99,10 @@ return {
         },
         disable_cmds = {},
       }
+      if opts.R_app == "radian" then
+        opts.hl_term = false
+        opts.Rout_more_colors = false
+      end
       -- Check if the environment variable "R_AUTO_START" exists.
       -- If using fish shell, you could put in your config.fish:
       -- alias r "R_AUTO_START=true nvim"

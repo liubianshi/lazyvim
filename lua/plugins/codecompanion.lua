@@ -8,8 +8,8 @@ local ADAPTER = {
     mode = "claude-sonnet-4-5",
   },
   chat = {
-    name = "xai",
-    model = "grok-4-fast-reasoning",
+    name = "aihubmix-gemini",
+    model = "gemini-3-pro-preview-search",
   },
   write = {
     name = "aihubmix-openai",
@@ -531,6 +531,8 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         },
       },
     },
+    ignore_warnings = true,
+    language = "Chinese",
   },
   config = function(_, opts)
     local codecompanion = require("codecompanion")
