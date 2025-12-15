@@ -133,16 +133,9 @@ return {
   },
   { -- stevearc/overseer.nvim: task runner and joib management ---------- {{{2
     "stevearc/overseer.nvim",
-    keys = {
-      { "<leader>ot", "<cmd>OverseerRun<cr>", desc = "Overseer Run" },
-      { "<leader>uo", "<cmd>OverseerToggle<cr>", desc = "Overseer Toggle" },
+    opts = {
+      templates = { "builtin", "mytasks.taskfile", "mytasks.source", "r" },
     },
-    opts = {},
-    config = function(opts)
-      require("overseer").setup({
-        templates = { "builtin", "mytasks.taskfile", "mytasks.source", "r" },
-      })
-    end,
   },
   { -- Wansmer/symbol-usage.nvim ---------------------------------------- {{{2
     "Wansmer/symbol-usage.nvim",
