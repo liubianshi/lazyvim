@@ -5,8 +5,7 @@ interaction: inline
 opts:
   index: 14
   adapter:
-    name: aihubmix-gemini
-    model: gemini-3-pro-preview-search
+    name: advanced_code
   alias: optimize
   is_slash_cmd: true
   modes: [v]

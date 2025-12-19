@@ -5,8 +5,7 @@ interaction: inline
 opts:
   index: 16
   adapter:
-    name: aihubmix-gemini
-    model: gemini-3-pro-preview
+    name: academic
   is_slash_cmd: true
   modes: [v]
   alias: apolish

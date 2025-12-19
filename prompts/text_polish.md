@@ -5,8 +5,7 @@ interaction: inline
 opts:
   index: 13
   adapter:
-    name: aihubmix-gemini
-    model: gemini-3-flash-preview
+    name: write
   is_slash_cmd: true
   modes: [v]
   alias: polish

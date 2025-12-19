@@ -8,7 +8,7 @@ function M:init()
     pattern = "CodeCompanionRequest*",
     group = group,
     callback = function(request)
-      if request.data.strategy and request.data.strategy == "chat" then
+      if request.data.strategy and request.data.interaction == "chat" then
         return
       end
       if request.match == "CodeCompanionRequestStarted" then
@@ -39,7 +39,7 @@ end
 
 function M:create_progress_handle(request)
   return progress.handle.create({
-    title = " Requesting assistance (" .. request.data.strategy .. ")",
+    title = " Requesting assistance (" .. request.data.interaction .. ")",
     message = "In progress...",
     lsp_client = {
       name = M:llm_role_title(request.data.adapter),

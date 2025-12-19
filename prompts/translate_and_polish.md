@@ -5,8 +5,7 @@ description: Translate then Polish the selected text
 opts:
   index: 15
   adapter:
-    name: aihubmix-gemini
-    model: gemini-3-flash-preview
+    name: academic
   is_slash_cmd: true
   modes: [v]
   alias: trans
