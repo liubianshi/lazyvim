@@ -133,14 +133,14 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
       background = {
         adapter = "background",
         chat = {
-          callbacks = {
-            ["on_ready"] = {
-              actions = {
-                "interactions.background.builtin.chat_make_title",
-              },
-              enabled = true,
-            },
-          },
+          -- callbacks = {
+          --   ["on_ready"] = {
+          --     actions = {
+          --       "interactions.background.builtin.chat_make_title",
+          --     },
+          --     enabled = true,
+          --   },
+          -- },
           opts = {
             enabled = true,
           },
@@ -181,7 +181,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         opts = {
           auto_save = true,
           keymap = "gh",
-          auto_generate_title = false,
+          auto_generate_title = true,
           summary = {
             generation_opts = {
               adapter = "background",

@@ -1,95 +1,97 @@
+-- Base Adapter Definitions
+-- Separated configuration from logic. Uses cached 'secret_cmd' for cleanliness.
+
+---@class LazyVim.AI.Adapter.Schema
+---@field default any
+---@field choices? table<string, any>|string[]
+
+---@class LazyVim.AI.Adapter.Opts
+---@field env? table<string, string>
+---@field roles? table<string, string>
+---@field handlers? table<string, string|function>
+---@field schema? table<string, LazyVim.AI.Adapter.Schema>
+---@field url? string
+
+---@class LazyVim.AI.Adapter
+---@field base string
+---@field opts? LazyVim.AI.Adapter.Opts
+
+---@class LazyVim.AI.Adapters
+---@field acp? table<string, LazyVim.AI.Adapter>
+---@field http? table<string, LazyVim.AI.Adapter>
+
 local M = {}
 
-M.use_models = {
-  background = {
-    name = "xai",
-    model = "grok-4-1-fast-non-reasoning",
-  },
-  code = {
-    name = "xai",
-    model = "grok-code-fast-1",
-  },
-  advanced_code = {
-    -- name = "aihubmix-claude",
-    -- mode = "claude-sonnet-4-5",
-    name = "aihubmix-gemini",
-    model = "gemini-3-pro-preview-search",
-  },
-  chat = {
-    name = "aihubmix-gemini",
-    model = "gemini-3-pro-preview-search",
-  },
-  write = {
-    name = "aihubmix-gemini",
-    model = "gemini-3-flash-preview",
-  },
-  academic = {
-    name = "aihubmix-gemini",
-    model = "gemini-3-pro-preview",
-  },
-}
+-- Pre-calculate common paths to avoid repeated system calls during adapter construction
+local home = os.getenv("HOME") or ""
+local secret_cmd = "cmd:" .. home .. "/.private_info.sh "
 
+-- User configuration: Mapping intents (e.g., 'code', 'chat') to specific provider/model pairs
+-- stylua: ignore start
+M.use_models = {
+  background    = { name = "xai",             model = "grok-4-1-fast-non-reasoning" },
+  code          = { name = "xai",             model = "grok-code-fast-1"            },
+  advanced_code = { name = "aihubmix-claude", model = "claude-sonnet-4-5"           },
+  chat          = { name = "aihubmix-gemini", model = "gemini-3-pro-preview"        },
+  write         = { name = "aihubmix-gemini", model = "gemini-3-flash-preview"      },
+  academic      = { name = "aihubmix-gemini", model = "gemini-3-pro-preview"        },
+}
+-- stylua: ignore end
+
+-- Custom Handlers
 M.handlers = {
   gemini = {
+    ---Parse Gemini output for CodeCompanion
+    ---@param self table The adapter instance
+    ---@param data string The raw data chunk
+    ---@return table|nil
     chat_output = function(self, data)
-      local output = {}
+      if not data or data == "" then
+        return
+      end
+
       local utils = require("codecompanion.utils.adapters")
-      if data and data ~= "" then
-        local data_mod = utils.clean_streamed_data(data)
-        local ok, json = pcall(vim.json.decode, data_mod, { luanil = { object = true } })
+      -- Optimization: Flattened logic and reduced nesting for readability
+      local ok, json = pcall(vim.json.decode, utils.clean_streamed_data(data), { luanil = { object = true } })
 
-        if ok and json.choices and #json.choices > 0 then
-          local choice = json.choices[1]
+      if not ok or not json.choices or #json.choices == 0 then
+        return
+      end
 
-          if choice.finish_reason then
-            local reason = choice.finish_reason
-            if reason ~= "stop" and reason ~= "" then
-              return {
-                status = "error",
-                output = "The stream was stopped with the a finish_reason of '" .. reason .. "'",
-              }
-            end
-          end
+      local choice = json.choices[1]
+      local reason = choice.finish_reason
 
-          local delta = (self.opts and self.opts.stream) and choice.delta or choice.message
+      -- Check for error stops
+      if reason and reason ~= "stop" and reason ~= "" then
+        return {
+          status = "error",
+          output = string.format("Stream stopped. Finish reason: '%s'", reason),
+        }
+      end
 
-          if delta then
-            if delta.role then
-              output.role = delta.role
-            else
-              output.role = "llm"
-            end
+      -- Handle both streaming (delta) and standard (message) responses
+      local delta = (self.opts and self.opts.stream) and choice.delta or choice.message
 
-            -- Some providers may return empty content
-            if delta.content then
-              output.content = delta.content
-            else
-              output.content = ""
-            end
-
-            return {
-              status = "success",
-              output = output,
-            }
-          end
-        end
+      if delta then
+        return {
+          status = "success",
+          output = {
+            role = delta.role or "llm",
+            content = delta.content or "",
+          },
+        }
       end
     end,
   },
 }
 
--- Definitions of base adapters (configuration only, no implementation logic)
+---@type LazyVim.AI.Adapters
 M.adapter_definitions = {
   acp = {
-    ["gemini_cli"] = {
+    gemini_cli = {
       base = "gemini_cli",
       opts = {
-        defaults = {
-          auth_method = "gemini-api-key",
-        },
-        env = {
-          GEMINI_API_KEY = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh gemini",
-        },
+        env = { GEMINI_API_KEY = secret_cmd .. "gemini" },
       },
     },
   },
@@ -97,20 +99,19 @@ M.adapter_definitions = {
     ["aihubmix-gemini"] = {
       base = "openai_compatible",
       opts = {
-        roles = {
-          llm = "model",
-        },
+        roles = { llm = "model" },
         env = {
           url = "https://aihubmix.com",
-          api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+          api_key = secret_cmd .. "aihubmix",
           chat_url = "/v1/chat/completions",
         },
         handlers = {
-          chat_output = "M.handlers.gemini.chat_output", -- Placeholder, resolved in runtime for cleaner data
+          -- Reference resolved at runtime to avoid definition order issues
+          chat_output = "M.handlers.gemini.chat_output",
         },
         schema = {
           model = {
-            default = "gemini-2.0-flash-exp",
+            default = "gemini-3.0-flash-exp",
             choices = {
               ["gemini-3-pro-preview"] = {
                 formatted_name = "Gemini 3 Pro",
@@ -122,35 +123,24 @@ M.adapter_definitions = {
               },
             },
           },
-          temperature = {
-            default = 0.4,
-          },
+          temperature = { default = 0.4 },
         },
       },
     },
-    ["gemini"] = {
+    gemini = {
       base = "gemini",
       opts = {
-        env = {
-          api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh gemini",
-        },
+        env = { api_key = secret_cmd .. "gemini" },
       },
     },
-    ["xai"] = {
+    xai = {
       base = "xai",
       opts = {
-        env = {
-          api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh xai",
-        },
+        env = { api_key = secret_cmd .. "xai" },
         schema = {
           model = {
             default = "grok-4-1-fast-reasoning",
-            choices = {
-              "grok-4-1-fast-non-reasoning",
-              "grok-4-1-fast-reasoning",
-              "grok-4",
-              "grok-code-fast-1",
-            },
+            choices = { "grok-4-1-fast-non-reasoning", "grok-4-1-fast-reasoning", "grok-4", "grok-code-fast-1" },
           },
         },
       },
@@ -159,20 +149,16 @@ M.adapter_definitions = {
       base = "openai",
       opts = {
         url = "https://aihubmix.com/v1/chat/completions",
-        env = {
-          api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-        },
+        env = { api_key = secret_cmd .. "aihubmix" },
         schema = {
           model = {
             default = "gpt-5.1",
             choices = {
-              ["gpt-5.1"] = { opts = { has_vision = true, can_reason = true, can_use_tools = true } },
+              ["gpt-5.2"] = { opts = { has_vision = true, can_reason = true, can_use_tools = true } },
               ["qwen3-max"] = { opts = { has_vision = true, can_reason = true, can_use_tools = true } },
             },
           },
-          temperature = {
-            default = 0.4,
-          },
+          temperature = { default = 0.4 },
         },
       },
     },
@@ -181,7 +167,8 @@ M.adapter_definitions = {
       opts = {
         env = {
           url = "https://aihubmix.com",
-          api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+          api_key = secret_cmd .. "aihubmix",
+          chat_url = "/v1/chat/completions",
         },
         schema = {
           model = {
@@ -192,43 +179,26 @@ M.adapter_definitions = {
               ["grok-3-mini"] = { opts = { has_vision = false, can_reason = false, can_use_tools = true } },
             },
           },
-          temperature = {
-            default = 0.4,
-          },
+          temperature = { default = 0.4 },
         },
       },
     },
     ["aihubmix-claude"] = {
       base = "anthropic",
       opts = {
-        env = {
-          api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-        },
+        env = { api_key = secret_cmd .. "aihubmix" },
         url = "https://aihubmix.com/v1/messages",
         schema = {
-          model = {
-            default = "claude-sonnet-4-5",
-          },
-        },
-      },
-    },
-    ["deepseek"] = {
-      base = "deepseek",
-      opts = {
-        env = {
-          api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh deepseek",
-        },
-        schema = {
-          model = {
-            default = "deepseek-reasoner",
-          },
+          model = { default = "claude-sonnet-4-5" },
         },
       },
     },
   },
 }
 
--- Private helper to resolve handlers references in definition
+---Resolves string references to functions in handler options
+---@param opts table The options table to resolve
+---@return table opts The resolved options
 local function resolve_handlers(opts)
   if opts.handlers and opts.handlers.chat_output == "M.handlers.gemini.chat_output" then
     opts.handlers.chat_output = M.handlers.gemini.chat_output
@@ -236,50 +206,35 @@ local function resolve_handlers(opts)
   return opts
 end
 
+---Main entry point: Generates and registers all CodeCompanion adapters
+---@return table adapters The final table of configured adapters
 function M.codecompanion_adapters()
-  local adapters = {
-    acp = {},
-    http = {},
-  }
-
-  -- 1. Register Base Adapters
+  local adapters = { acp = {}, http = {} }
+  -- 1. Register Base Adapters from definitions
   for section, definitions in pairs(M.adapter_definitions) do
     for name, def in pairs(definitions) do
       adapters[section][name] = function()
-        local extend_adapter = require("codecompanion.adapters").extend
-        local opts = vim.deepcopy(def.opts)
-        opts = resolve_handlers(opts)
-        return extend_adapter(def.base, opts)
+        local opts = resolve_handlers(vim.deepcopy(def.opts))
+        return require("codecompanion.adapters").extend(def.base, opts)
       end
     end
   end
 
-  -- Helper to find factory function (now constructed from definition)
-  local function get_factory(name)
-    if adapters.http[name] then return adapters.http[name] end
-    if adapters.acp[name] then return adapters.acp[name] end
-    return nil
-  end
-
-  -- 2. Register Dynamic Adapters (chat, code, etc.)
+  -- 2. Register Dynamic Adapters (Aliases defined in M.use_models)
   for name, config in pairs(M.use_models) do
-    local factory = get_factory(config.name)
+    -- Locate the base factory function (check both sections)
+    local base_factory = adapters.http[config.name] or adapters.acp[config.name]
 
-    if factory then
-      -- Define the adapter function which inherits from the base factory but overrides the model
-      local adapter_func = function()
-        local adapter = factory() -- Instantiate the base adapter
+    if base_factory then
+      local section = adapters.acp[config.name] and "acp" or "http"
+
+      -- Create a wrapper that inherits from base but overrides the model
+      adapters[section][name] = function()
+        local adapter = base_factory()
         if adapter.schema and adapter.schema.model then
           adapter.schema.model.default = config.model
         end
         return adapter
-      end
-
-      -- Assign to appropriate category (same as the factory's category)
-      if M.adapter_definitions.acp[config.name] then
-        adapters.acp[name] = adapter_func
-      else
-        adapters.http[name] = adapter_func
       end
     end
   end
