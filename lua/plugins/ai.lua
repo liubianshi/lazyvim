@@ -1,5 +1,3 @@
-local PROMPTS = require("llm_prompts")
-
 return {
   { -- ravitemer/mcphub.nvim -------------------------------------------- {{{2
     "ravitemer/mcphub.nvim",

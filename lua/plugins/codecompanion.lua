@@ -27,7 +27,7 @@ local ADAPTER = {
   },
 }
 
-local codecampanion_utils = {
+local utils = {
   handlers = {
     gemini = {
       chat_output = function(self, data)
@@ -77,7 +77,7 @@ local codecampanion_utils = {
     },
   },
 }
-local PROMPTS = require("llm_prompts")
+
 local function using_prompt(bufnr)
   bufnr = bufnr or 0
   local filetype = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
@@ -182,6 +182,31 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         provider = "default",
       },
     },
+    rules = {
+    default = {
+      description = "Collection of common files for all projects",
+      files = {
+        ".clinerules",
+        ".cursorrules",
+        ".goosehints",
+        ".rules",
+        ".windsurfrules",
+        ".github/copilot-instructions.md",
+        "AGENT.md",
+        "AGENTS.md",
+        { path = "CLAUDE.md", parser = "claude" },
+        { path = "CLAUDE.local.md", parser = "claude" },
+        { path = "~/.claude/CLAUDE.md", parser = "claude" },
+      },
+      is_preset = true,
+    },
+    opts = {
+      chat = {
+        enabled = true,
+        default_rules = "default", -- The rule groups to load
+      },
+    },
+  },
     interactions = {
       background = {
         adapter = ADAPTER.background,
@@ -244,7 +269,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
               api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
             },
             handlers = {
-              chat_output = codecampanion_utils.handlers.gemini.chat_output,
+              chat_output = utils.handlers.gemini.chat_output,
             },
             schema = {
               model = {
@@ -360,158 +385,9 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
       },
     },
     prompt_library = {
-      ["Text Polish"] = {
-        strategy = "inline",
-        description = "Polish the selected text",
-        opts = {
-          index = 13,
-          adapter = ADAPTER.write,
-          is_slash_cmd = true,
-          modes = { "v" },
-          alias = "polish",
-          auto_submit = true,
-          user_prompt = false,
-          stop_context_insertion = true,
-          ignore_system_prompt = true,
-          placement = "replace",
-        },
-        prompts = {
-          {
-            role = "system",
-            content = PROMPTS.improve_writing,
-            opts = {
-              visible = false,
-            },
-          },
-          {
-            role = "user",
-            content = function(context)
-              local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
-              return string.format("Please polish the text from buffer %d:\n\n```\n%s\n```\n\n", context.bufnr, code)
-            end,
-            opts = {
-              contains_code = true,
-            },
-          },
-        },
-      },
-      ["Optimize and Comment"] = {
-        strategy = "inline",
-        description = "Optimize and add necessary comments",
-        opts = {
-          index = 14,
-          alias = "optimize",
-          adapter = ADAPTER.advanced_code,
-          is_slash_cmd = true,
-          modes = { "v" },
-          auto_submit = true,
-          user_prompt = false,
-          stop_context_insertion = true,
-          placement = "replace",
-        },
-        prompts = {
-          {
-            role = "system",
-            content = PROMPTS.optimize_with_comment,
-            opts = {
-              visible = false,
-            },
-          },
-          {
-            role = "user",
-            content = function(context)
-              local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
-              return string.format(
-                "Please optimize the text from buffer %d:\n\n```%s\n%s\n```\n\n",
-                context.bufnr,
-                context.filetype,
-                code
-              )
-            end,
-            opts = {
-              contains_code = true,
-            },
-          },
-        },
-      },
-      ["Translate and Polish"] = {
-        interaction = "inline",
-        description = "Translate then Polish the selected text",
-        opts = {
-          index = 15,
-          adapter = ADAPTER.write,
-          is_slash_cmd = true,
-          modes = { "v" },
-          alias = "trans",
-          auto_submit = true,
-          user_prompt = false,
-          stop_context_insertion = true,
-          placement = "replace",
-          ignore_system_prompt = true,
-        },
-        prompts = {
-          {
-            role = "system",
-            content = PROMPTS.translate_then_improve_academic_writing,
-            opts = {
-              visible = false,
-            },
-          },
-          {
-            role = "user",
-            content = function(context)
-              local lines = vim.api.nvim_buf_get_lines(context.bufnr, context.start_line - 1, context.end_line, false)
-              local grouped_strings = table.concat(require("util").join_strings_by_paragraph(lines), "\n")
-
-              local head_chars = vim.trim(grouped_strings):sub(1, 20)
-              local is_cjk = false
-              for _, char in ipairs(vim.fn.split(head_chars, "\\zs")) do
-                if is_cjk_character(char) then
-                  is_cjk = true
-                  break
-                end
-              end
-
-              return string.format("%s\n\n%s", (is_cjk and "en_US" or "zh_CN"), grouped_strings)
-            end,
-            opts = {
-              contains_code = true,
-            },
-          },
-        },
-      },
-      ["Academic Polish"] = {
-        strategy = "inline",
-        description = "Polish the selected text",
-        opts = {
-          index = 16,
-          adapter = ADAPTER.academic,
-          is_slash_cmd = true,
-          modes = { "v" },
-          alias = "apolish",
-          auto_submit = true,
-          user_prompt = false,
-          stop_context_insertion = true,
-          placement = "replace",
-        },
-        prompts = {
-          {
-            role = "system",
-            content = PROMPTS.improve_academic_writing,
-            opts = {
-              visible = false,
-            },
-          },
-          {
-            role = "user",
-            content = function(context)
-              local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
-              return string.format("Please polish the text from buffer %d:\n\n```\n%s\n```\n\n", context.bufnr, code)
-            end,
-            opts = {
-              contains_code = true,
-            },
-          },
+      markdown = {
+        dirs = {
+          vim.fn.stdpath("config") .. "/prompts",
         },
       },
     },
