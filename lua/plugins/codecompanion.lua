@@ -15,63 +15,38 @@ local function using_prompt(bufnr)
   return "optimize"
 end
 
+local function optimize_select()
+  -- Determine the appropriate polish prompt based on the filetype.
+  local prompt_name = using_prompt()
+
+  -- Get the current mode.
+  local current_mode = vim.fn.mode() -- Use vim.fn.mode() for simplicity
+
+  -- If in normal mode, visually select the current line before proceeding.
+  if current_mode == "n" then
+    vim.cmd.normal({ "V", bang = true }) -- Select current line visually
+    -- Ensure we are in some form of visual mode (visual, visual line, visual block)
+  elseif not (current_mode == "v" or current_mode == "V" or current_mode == "\22") then -- \22 is Ctrl-V/blockwise
+    vim.notify("Mapping <A-o> requires normal or visual mode.", vim.log.levels.WARN)
+    return
+  end
+
+  -- Construct and execute the CodeCompanion command for the visual selection.
+  vim.schedule(function()
+    require("codecompanion").prompt(prompt_name)
+  end)
+end
+
 return { -- olimorris/codecompanion.nvim ------------------------------------- {{{2
   "olimorris/codecompanion.nvim",
+  -- stylua: ignore start
   keys = {
-    -- CodeCompanion keymaps: optimized descriptions and consistent options
-    -- Open the CodeCompanion actions menu (normal/visual)
-    {
-      "<leader>al",
-      "<cmd>CodeCompanionActions<CR>",
-      desc = "CodeCompanion: Actions",
-      mode = { "n", "v", "x" },
-      silent = true,
-    },
-
-    -- Toggle the CodeCompanion chat panel (normal/visual)
-    {
-      "<leader>ac",
-      "<cmd>CodeCompanionChat Toggle<CR>",
-      desc = "CodeCompanion: Chat Toggle",
-      mode = { "n", "v" },
-      silent = true,
-    },
-
-    -- Add the current visual selection to the CodeCompanion chat (visual only)
-    {
-      "<A-l>",
-      "<cmd>CodeCompanionChat Add<CR>",
-      desc = "CodeCompanion: Chat Add Selection",
-      mode = "v",
-      silent = true,
-    },
-    {
-      "<A-o>",
-      function()
-        -- Determine the appropriate polish prompt based on the filetype.
-        local prompt_name = using_prompt()
-
-        -- Get the current mode.
-        local current_mode = vim.fn.mode() -- Use vim.fn.mode() for simplicity
-
-        -- If in normal mode, visually select the current line before proceeding.
-        if current_mode == "n" then
-          vim.cmd.normal({ "V", bang = true }) -- Select current line visually
-        -- Ensure we are in some form of visual mode (visual, visual line, visual block)
-        elseif not (current_mode == "v" or current_mode == "V" or current_mode == "\22") then -- \22 is Ctrl-V/blockwise
-          vim.notify("Mapping <A-o> requires normal or visual mode.", vim.log.levels.WARN)
-          return
-        end
-
-        -- Construct and execute the CodeCompanion command for the visual selection.
-        vim.schedule(function()
-          require("codecompanion").prompt(prompt_name)
-        end)
-      end,
-      desc = "CodeCompanion: Optimize selected text", -- Updated description
-      mode = { "n", "v" }, -- Retain original modes
-    },
+    { "<leader>al", "<cmd>CodeCompanionActions<CR>",     desc = "CodeCompanion: Actions",                mode = { "n", "v", "x" } },
+    { "<leader>ac", "<cmd>CodeCompanionChat Toggle<CR>", desc = "CodeCompanion: Chat Toggle",            mode = { "n", "v"      } },
+    { "<A-l>",      "<cmd>CodeCompanionChat Add<CR>",    desc = "CodeCompanion: Chat Add Selection",     mode = { "v"           } },
+    { "<A-o>",      function() optimize_select() end,    desc = "CodeCompanion: Optimize selected text", mode = { "n", "v"      } },
   },
+  -- stylua: ignore end
   cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions", "CodeCompanionHistory" },
   dependencies = {
     "nvim-lua/plenary.nvim",
@@ -148,17 +123,17 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
       },
       chat = {
         adapter = "chat",
-        keymaps = {
-          send = {
-            callback = function(chat)
-              vim.cmd("stopinsert")
-              chat:add_buf_message({ role = "llm", content = "" })
-              chat:submit()
-            end,
-            index = 1,
-            description = "Send",
-          },
-        },
+        -- keymaps = {
+        --   send = {
+        --     callback = function(chat)
+        --       vim.cmd("stopinsert")
+        --       chat:add_buf_message({ role = "llm", content = "" })
+        --       chat:submit()
+        --     end,
+        --     index = 1,
+        --     description = "Send",
+        --   },
+        -- },
       },
       inline = {
         adapter = "code",
@@ -210,5 +185,4 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
     ignore_warnings = true,
     language = "Chinese",
   },
-
 }
