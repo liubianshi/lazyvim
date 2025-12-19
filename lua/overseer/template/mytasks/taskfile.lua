@@ -68,12 +68,13 @@ local function create_task_definition(task, dir)
         cwd = dir,
         components = {
           -- Open output window and focus on completion
+          { "on_output_summarize", max_lines = 10 },
           { "open_output", on_complete = "always", focus = true },
           "default",
         },
       }
     end,
-    tags = { overseer.TAG.RUN },
+    tags = { "TASK" },
     params = {
       args = {
         type = "string",
@@ -117,7 +118,9 @@ return {
         -- Generate overseer task definitions
         local task_definitions = {}
         for _, task in ipairs(tasks) do
-          table.insert(task_definitions, create_task_definition(task, opts.dir))
+          if not task.internal then
+            table.insert(task_definitions, create_task_definition(task, opts.dir))
+          end
         end
 
         cb(task_definitions)

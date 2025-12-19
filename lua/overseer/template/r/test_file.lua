@@ -1,8 +1,8 @@
 return {
-  name = "test current file",
+  name = "R: test current file",
   builder = function()
     local test_file = require("rlib.test").source_to_test_filepath(vim.fn.expand("%"))
-    local cwd = vim.v.cwd or vim.fn.getcwd()
+    local cwd = vim.fn.getcwd()
     return {
       cmd = { "Rscript" },
       args = {
@@ -23,7 +23,7 @@ return {
   end,
   condition = {
     callback = function()
-      local cwd = vim.v.cwd or vim.fn.getcwd()
+      local cwd = vim.fn.getcwd()
       if not vim.fn.isdirectory(cwd .. "/R") then
         return false
       end

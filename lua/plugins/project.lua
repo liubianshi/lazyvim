@@ -64,17 +64,20 @@ return {
           root_dir = require("lspconfig.util").root_pattern(".git", ".root", ".project"),
           single_file_support = true,
         },
-        -- r_language_server = {
-        --   cmd = {
-        --     "R",
-        --     "--slave",
-        --     -- "--default-packages=" .. vim.g.R_start_libs,
-        --     "-e",
-        --     "languageserver::run()",
-        --   },
-        --   root_dir = require("lspconfig.util").root_pattern(".git", "NAMESPACE", "R", ".root", ".project"),
-        --   single_file_support = true,
-        -- },
+        r_language_server = {
+          root_markers = {
+            function(name)
+              return name:match("^R$")
+            end,
+            "taskfile.yml",
+            ".git",
+            "NAMESPACE",
+            "config.R",
+            ".root",
+            ".project",
+          },
+          single_file_support = true,
+        },
         vimls = {},
         copilot = {
           name = "copilot",
@@ -133,8 +136,24 @@ return {
   },
   { -- stevearc/overseer.nvim: task runner and joib management ---------- {{{2
     "stevearc/overseer.nvim",
+    keys = {
+      {
+        "<leader>or",
+        function()
+          local overseer = require("overseer")
+          local tasks = overseer.list_tasks({ recent_first = true })
+          if #tasks == 0 then
+            vim.cmd("OverseerRun")
+          else
+            overseer.run_action(tasks[1], "restart")
+          end
+        end,
+        desc = "Rerun Last Task",
+        mode = "n",
+      },
+    },
     opts = {
-      templates = { "builtin", "mytasks.taskfile", "mytasks.source", "r" },
+      templates = { "builtin", "mytasks.source", "r", "mytasks.taskfile" },
     },
   },
   { -- Wansmer/symbol-usage.nvim ---------------------------------------- {{{2

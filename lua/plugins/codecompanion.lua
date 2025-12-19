@@ -1,19 +1,25 @@
 local ADAPTER = {
+  background = {
+    name = "xai",
+    model = "grok-4-1-fast-non-reasoning",
+  },
   code = {
     name = "xai",
     model = "grok-code-fast-1",
   },
   advanced_code = {
-    name = "aihubmix-claude",
-    mode = "claude-sonnet-4-5",
+    -- name = "aihubmix-claude",
+    -- mode = "claude-sonnet-4-5",
+    name = "aihubmix-gemini",
+    model = "gemini-3-pro-preview-search",
   },
   chat = {
     name = "aihubmix-gemini",
     model = "gemini-3-pro-preview-search",
   },
   write = {
-    name = "aihubmix-openai",
-    model = "gpt-5-mini",
+    name = "aihubmix-gemini",
+    model = "gemini-3-flash-preview",
   },
   academic = {
     name = "aihubmix-gemini",
@@ -89,7 +95,6 @@ end
 
 return { -- olimorris/codecompanion.nvim ------------------------------------- {{{2
   "olimorris/codecompanion.nvim",
-  -- version = "v15.8.0",
   keys = {
     -- CodeCompanion keymaps: optimized descriptions and consistent options
     -- Open the CodeCompanion actions menu (normal/visual)
@@ -177,7 +182,23 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         provider = "default",
       },
     },
-    strategies = {
+    interactions = {
+      background = {
+        adapter = ADAPTER.background,
+        chat = {
+          callbacks = {
+            ["on_ready"] = {
+              actions = {
+                "interactions.background.builtin.chat_make_title",
+              },
+              enabled = true,
+            },
+          },
+          opts = {
+            enabled = true,
+          },
+        },
+      },
       chat = {
         adapter = ADAPTER.chat,
         keymaps = {
@@ -212,127 +233,131 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           })
         end,
       },
-      ["aihubmix-gemini"] = function()
-        return require("codecompanion.adapters").extend("openai_compatible", {
-          roles = {
-            llm = "model",
-          },
-          env = {
-            url = "https://aihubmix.com",
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-          },
-          handlers = {
-            chat_output = codecampanion_utils.handlers.gemini.chat_output,
-          },
-          schema = {
-            model = {
-              default = "gemini-3-pro-preview",
-              choices = {
-                ["gemini-3-pro-preview"] = { opts = { can_reason = true, has_vision = true } },
+      http = {
+        ["aihubmix-gemini"] = function()
+          return require("codecompanion.adapters").extend("openai_compatible", {
+            roles = {
+              llm = "model",
+            },
+            env = {
+              url = "https://aihubmix.com",
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+            },
+            handlers = {
+              chat_output = codecampanion_utils.handlers.gemini.chat_output,
+            },
+            schema = {
+              model = {
+                default = "gemini-3-pro-preview",
+                choices = {
+                  ["gemini-3-pro-preview"] = {
+                    formatted_name = "Gemini 3 Pro",
+                    opts = { can_reason = true, has_vision = true },
+                  },
+                  ["gemini-3-flash-preview"] = {
+                    formatted_name = "Gemini 3 Flash",
+                    opts = { can_reason = true, has_vision = true },
+                  },
+                },
+              },
+              temperature = {
+                default = 0.4,
               },
             },
-            temperature = {
-              default = 0.4,
+          })
+        end,
+        ["gemini"] = function()
+          return require("codecompanion.adapters").extend("gemini", {
+            env = {
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh gemini",
             },
-          },
-        })
-      end,
-      ["gemini"] = function()
-        return require("codecompanion.adapters").extend("gemini", {
-          env = {
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh gemini",
-          },
-        })
-      end,
-      ["xai"] = function()
-        return require("codecompanion.adapters").extend("xai", {
-          env = {
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh xai",
-          },
-          schema = {
-            model = {
-              default = "grok-4",
-              choices = {
-                "grok-4",
-                "grok-4-fast-reasoning",
-                "grok-4-fast-non-reasoning",
-                "grok-code-fast-1",
+          })
+        end,
+        ["xai"] = function()
+          return require("codecompanion.adapters").extend("xai", {
+            env = {
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh xai",
+            },
+            schema = {
+              model = {
+                default = "grok-4-1-fast-reasoning",
+                choices = {
+                  "grok-4-1-fast-non-reasoning",
+                  "grok-4-1-fast-reasoning",
+                  "grok-4",
+                  "grok-code-fast-1",
+                },
               },
             },
-          },
-        })
-      end,
-      ["aihubmix-openai"] = function()
-        return require("codecompanion.adapters").extend("openai", {
-          url = "https://aihubmix.com/v1/chat/completions",
-          env = {
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-          },
-          schema = {
-            model = {
-              default = "gpt-5.1",
-              choices = {
-                ["gpt-5.1"] = { opts = { has_vision = true, can_reason = true, can_use_tools = true } },
-                ["gpt-5"] = { opts = { has_vision = true, can_reason = false, can_use_tools = true } },
-                ["gpt-5-mini"] = { opts = { has_vision = true, can_reason = false, can_use_tools = true } },
-                ["gpt-5-nano"] = { opts = { has_vision = true, can_reason = false, can_use_tools = true } },
-                ["aihubmix-router"] = { opts = { has_vision = true, can_reason = false, can_use_tools = true } },
-                ["o3"] = { opts = { can_reason = true, can_use_tools = true } },
-                ["o4-mini"] = { opts = { can_reason = true, can_use_tools = true } },
+          })
+        end,
+        ["aihubmix-openai"] = function()
+          return require("codecompanion.adapters").extend("openai", {
+            url = "https://aihubmix.com/v1/chat/completions",
+            env = {
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
+            },
+            schema = {
+              model = {
+                default = "gpt-5.1",
+                choices = {
+                  ["gpt-5.1"] = { opts = { has_vision = true, can_reason = true, can_use_tools = true } },
+                  ["qwen3-max"] = { opts = { has_vision = true, can_reason = true, can_use_tools = true } },
+                },
+              },
+              temperature = {
+                default = 0.4,
               },
             },
-            temperature = {
-              default = 0.4,
+          })
+        end,
+        ["aihubmix-xai"] = function()
+          return require("codecompanion.adapters").extend("openai_compatible", {
+            env = {
+              url = "https://aihubmix.com",
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
             },
-          },
-        })
-      end,
-      ["aihubmix-xai"] = function()
-        return require("codecompanion.adapters").extend("openai_compatible", {
-          env = {
-            url = "https://aihubmix.com",
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-          },
-          schema = {
-            model = {
-              default = "grok-4",
-              choices = {
-                ["grok-4"] = { opts = { has_vision = false, can_reason = true, can_use_tools = true } },
-                ["grok-3"] = { opts = { has_vision = false, can_reason = false, can_use_tools = true } },
-                ["grok-3-mini"] = { opts = { has_vision = false, can_reason = false, can_use_tools = true } },
+            schema = {
+              model = {
+                default = "grok-4",
+                choices = {
+                  ["grok-4"] = { opts = { has_vision = false, can_reason = true, can_use_tools = true } },
+                  ["grok-3"] = { opts = { has_vision = false, can_reason = false, can_use_tools = true } },
+                  ["grok-3-mini"] = { opts = { has_vision = false, can_reason = false, can_use_tools = true } },
+                },
+              },
+              temperature = {
+                default = 0.4,
               },
             },
-            temperature = {
-              default = 0.4,
+          })
+        end,
+        ["aihubmix-claude"] = function()
+          return require("codecompanion.adapters").extend("anthropic", {
+            env = {
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
             },
-          },
-        })
-      end,
-      ["aihubmix-claude"] = function()
-        return require("codecompanion.adapters").extend("anthropic", {
-          env = {
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh aihubmix",
-          },
-          url = "https://aihubmix.com/v1/messages",
-          schema = {
-            model = {
-              default = "claude-sonnet-4-5",
+            url = "https://aihubmix.com/v1/messages",
+            schema = {
+              model = {
+                default = "claude-sonnet-4-5",
+              },
             },
-          },
-        })
-      end,
-      ["deepseek"] = function()
-        return require("codecompanion.adapters").extend("deepseek", {
-          env = {
-            api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh deepseek",
-          },
-          schema = {
-            model = {
-              default = "deepseek-reasoner",
+          })
+        end,
+        ["deepseek"] = function()
+          return require("codecompanion.adapters").extend("deepseek", {
+            env = {
+              api_key = "cmd:" .. os.getenv("HOME") .. "/.private_info.sh deepseek",
             },
-          },
-        })
-      end,
+            schema = {
+              model = {
+                default = "deepseek-reasoner",
+              },
+            },
+          })
+        end,
+      },
     },
     prompt_library = {
       ["Text Polish"] = {
@@ -343,7 +368,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           adapter = ADAPTER.write,
           is_slash_cmd = true,
           modes = { "v" },
-          short_name = "polish",
+          alias = "polish",
           auto_submit = true,
           user_prompt = false,
           stop_context_insertion = true,
@@ -375,7 +400,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         description = "Optimize and add necessary comments",
         opts = {
           index = 14,
-          short_name = "optimize",
+          alias = "optimize",
           adapter = ADAPTER.advanced_code,
           is_slash_cmd = true,
           modes = { "v" },
@@ -410,14 +435,14 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         },
       },
       ["Translate and Polish"] = {
-        strategy = "inline",
+        interaction = "inline",
         description = "Translate then Polish the selected text",
         opts = {
           index = 15,
           adapter = ADAPTER.write,
           is_slash_cmd = true,
           modes = { "v" },
-          short_name = "trans",
+          alias = "trans",
           auto_submit = true,
           user_prompt = false,
           stop_context_insertion = true,
@@ -463,7 +488,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
           adapter = ADAPTER.academic,
           is_slash_cmd = true,
           modes = { "v" },
-          short_name = "apolish",
+          alias = "apolish",
           auto_submit = true,
           user_prompt = false,
           stop_context_insertion = true,
@@ -495,20 +520,12 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         enabled = true,
         opts = {
           auto_save = true,
-          -- Keymap to open history from chat buffer (default: gh)
           keymap = "gh",
-          -- Automatically generate titles for new chats
-          auto_generate_title = true,
-          -- On exiting and entering neovim, loads the last chat on opening chat
-          title_generation_opts = {
-            adapter = "aihubmix-openai",
-            model = "gpt-5-nano",
-            refresh_every_n_prompts = 2,
-          },
+          auto_generate_title = false,
           summary = {
             generation_opts = {
-              adapter = "aihubmix-openai",
-              model = "gpt-5-mini",
+              adapter = ADAPTER.background.name,
+              model = ADAPTER.background.model,
             },
           },
           continue_last_chat = false,

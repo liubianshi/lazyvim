@@ -1,5 +1,5 @@
 return {
-  name = "test current project",
+  name = "R: test current project",
   builder = function()
     local args
     if vim.uv.fs_access("NAMESPACE", "R") then
