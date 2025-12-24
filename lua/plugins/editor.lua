@@ -102,13 +102,31 @@ return {
         "<M-l>",
         mode = { "n", "i" },
         function()
+          local pos = vim.api.nvim_win_get_cursor(0)
           local punc = "，。“”「」、：,."
           require("flash").jump({
-            search = { mode = "search", forward = true, wrap = false, multi_window = false, max_length = 0 },
+            search = { mode = "search", forward = true, wrap = true, multi_window = false, max_length = 0 },
             autojump = true,
             label = { before = true, after = false, style = "overlay" },
-            pattern = ("\\(^\\|%s\\|[%s]\\)\\s*\\zs[^%s]\\+"):format("^\\s", punc, punc),
+            pattern = ("\\%%%dl\\(^\\|%s\\|[%s]\\)\\s*\\zs[^%s]\\+"):format(pos[1], "^\\s", punc, punc),
             highlight = { matches = true },
+            action = function(match, state)
+              vim.api.nvim_win_call(match.win, function()
+                vim.api.nvim_win_set_cursor(match.win, match.pos)
+                -- 当前行超长时，跳转的同时断行
+                if match.pos[2] <= 60 then
+                  return
+                end
+                local current_line = vim.api.nvim_get_current_line()
+                if vim.fn.strdisplaywidth(current_line) <= 100 then
+                  return
+                end
+                if vim.fn.strdisplaywidth(current_line:sub(0, match.pos[2])) > 60 then
+                  local keys = vim.api.nvim_replace_termcodes("i<CR><Esc>", true, false, true)
+                  vim.api.nvim_feedkeys(keys, "n", false)
+                end
+              end)
+            end,
           })
         end,
         desc = "Jump to phrases at current line",
