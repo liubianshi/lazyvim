@@ -322,11 +322,11 @@ return {
       vim.opt.foldlevelstart = 99
     end,
     opts = {
-      useLspFoldsWithTreesitterFallback = true,
-      autoFold = {
-        enabled = false,
-        kinds = { "comment", "imports" },
+      useLspFoldsWithTreesitterFallback = {
+        enabled = true,
+        foldmethodIfNeitherIsAvailable = "marker",
       },
+      autoFold = { enabled = false, kinds = { "comment", "imports" } },
       foldtext = {
         enabled = true,
         padding = 3,
@@ -340,7 +340,7 @@ return {
       pauseFoldsOnSearch = true,
       foldKeymaps = {
         setup = true,
-        hOnlyOpensOnFirstColumn = true,
+        closeOnlyOnFirstColumn = true,
       },
     },
   },
@@ -432,7 +432,7 @@ return {
         noremap = true,
       },
       {
-        "<leader>si",
+        "<leader>sI",
         "<cmd>IconPickerYank history nerd_font_v3 alt_font symbols emoji<cr>",
         desc = "Pick Icon and yank it to register",
         mode = "n",

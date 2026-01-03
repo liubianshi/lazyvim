@@ -62,6 +62,10 @@ return {
         -- stylua: ignore end
       },
 
+      footer = {
+        format = "{{backlinks}} backlinks  {{properties}} properties  {{words}} words  {{chars}} chars",
+        separator = string.rep("─", 80),
+      },
       -- Where to put new notes. Valid options are
       --  * "current_dir" - put new notes in same directory as the current buffer.
       --  * "notes_subdir" - put new notes in the default notes subdirectory.

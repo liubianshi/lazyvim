@@ -298,7 +298,7 @@ return {
     },
     config = true,
   },
-  { -- nvim-mini/mini.hipatterns: Highlight patterns in text. --------- {{{3
+  { -- nvim-mini/mini.hipatterns: Highlight patterns in text. --------- {{{2
     "nvim-mini/mini.hipatterns",
     opts = function(_, opts)
       opts.highlighters.citation = {
