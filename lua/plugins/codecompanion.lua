@@ -1,50 +1,52 @@
+-- CodeCompanion 插件配置
+-- 提供 AI 辅助编程功能，包括聊天、代码优化等
+
 local ai_adapters = require("util.ai_adapters")
 
-local function using_prompt(bufnr)
+-- 根据文件类型获取对应的优化提示
+-- @param bufnr 缓冲区编号，默认为当前缓冲区
+-- @return string 提示名称 (apolish/polish/optimize)
+local function get_prompt_by_filetype(bufnr)
   bufnr = bufnr or 0
   local filetype = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
 
   if filetype == "quarto" then
     return "apolish"
-  end
-
-  if vim.tbl_contains({ "markdown", "norg", "org", "mail" }, filetype) or filetype == "" then
+  elseif vim.tbl_contains({ "markdown", "norg", "org", "mail" }, filetype) or filetype == "" then
     return "polish"
+  else
+    return "optimize"
   end
-
-  return "optimize"
 end
 
+-- 智能选择并优化文本
+-- 在普通模式下自动选择当前行，在可视模式下使用已选择的文本
 local function optimize_select()
-  -- Determine the appropriate polish prompt based on the filetype.
-  local prompt_name = using_prompt()
+  local prompt_name = get_prompt_by_filetype()
+  local current_mode = vim.fn.mode()
 
-  -- Get the current mode.
-  local current_mode = vim.fn.mode() -- Use vim.fn.mode() for simplicity
-
-  -- If in normal mode, visually select the current line before proceeding.
+  -- 普通模式：自动选择当前行
   if current_mode == "n" then
-    vim.cmd.normal({ "V", bang = true }) -- Select current line visually
-    -- Ensure we are in some form of visual mode (visual, visual line, visual block)
-  elseif not (current_mode == "v" or current_mode == "V" or current_mode == "\22") then -- \22 is Ctrl-V/blockwise
+    vim.cmd.normal({ "V", bang = true })
+  elseif not (current_mode == "v" or current_mode == "V" or current_mode == "\22") then
     vim.notify("Mapping <A-o> requires normal or visual mode.", vim.log.levels.WARN)
     return
   end
 
-  -- Construct and execute the CodeCompanion command for the visual selection.
   vim.schedule(function()
     require("codecompanion").prompt(prompt_name)
   end)
 end
 
-return { -- olimorris/codecompanion.nvim ------------------------------------- {{{2
+return {
   "olimorris/codecompanion.nvim",
   -- stylua: ignore start
+  -- 键位映射
   keys = {
-    { "<leader>al", "<cmd>CodeCompanionActions<CR>",     desc = "CodeCompanion: Actions",                mode = { "n", "v", "x" } },
-    { "<leader>ac", "<cmd>CodeCompanionChat Toggle<CR>", desc = "CodeCompanion: Chat Toggle",            mode = { "n", "v"      } },
-    { "<A-l>",      "<cmd>CodeCompanionChat Add<CR>",    desc = "CodeCompanion: Chat Add Selection",     mode = { "v"           } },
-    { "<A-o>",      function() optimize_select() end,    desc = "CodeCompanion: Optimize selected text", mode = { "n", "v"      } },
+    { "<leader>al",      "<cmd>CodeCompanionActions<CR>",     desc = "CodeCompanion: Actions",                mode = { "n", "v", "x" } },
+    { "<leader><space>", "<cmd>CodeCompanionChat Toggle<CR>", desc = "CodeCompanion: Chat Toggle",            mode = { "n", "v"      } },
+    { "<A-l>",           "<cmd>CodeCompanionChat Add<CR>",    desc = "CodeCompanion: Chat Add Selection",     mode = { "v"           } },
+    { "<A-o>",           function() optimize_select() end,    desc = "CodeCompanion: Optimize selected text", mode = { "n", "v"      } },
   },
   -- stylua: ignore end
   cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions", "CodeCompanionHistory" },
@@ -62,6 +64,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
     end
   end,
   opts = {
+    -- 显示设置
     display = {
       chat = {
         show_settings = false,
@@ -79,6 +82,7 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         provider = "default",
       },
     },
+    -- 规则配置：自动加载项目中的 AI 指令文件
     rules = {
       default = {
         description = "Collection of common files for all projects",
@@ -98,87 +102,46 @@ return { -- olimorris/codecompanion.nvim ------------------------------------- {
         is_preset = true,
       },
       opts = {
-        chat = {
-          enabled = true,
-          default_rules = "default", -- The rule groups to load
-        },
+        chat = { enabled = true, default_rules = "default" },
       },
     },
+    -- 交互模式配置
     interactions = {
-      background = {
-        adapter = "background",
-        chat = {
-          -- callbacks = {
-          --   ["on_ready"] = {
-          --     actions = {
-          --       "interactions.background.builtin.chat_make_title",
-          --     },
-          --     enabled = true,
-          --   },
-          -- },
-          opts = {
-            enabled = true,
-          },
-        },
-      },
-      chat = {
-        adapter = "chat",
-        -- keymaps = {
-        --   send = {
-        --     callback = function(chat)
-        --       vim.cmd("stopinsert")
-        --       chat:add_buf_message({ role = "llm", content = "" })
-        --       chat:submit()
-        --     end,
-        --     index = 1,
-        --     description = "Send",
-        --   },
-        -- },
-      },
-      inline = {
-        adapter = "code",
-      },
-      cmd = {
-        adapter = "code",
-      },
+      background = { adapter = "background", chat = { opts = { enabled = true } } },
+      chat = { adapter = "chat" },
+      inline = { adapter = "code" },
+      cmd = { adapter = "code" },
     },
+    -- AI 适配器配置（从 util.ai_adapters 加载）
     adapters = ai_adapters.codecompanion_adapters(),
+    -- 提示词库配置
     prompt_library = {
-      markdown = {
-        dirs = {
-          vim.fn.stdpath("config") .. "/prompts",
-        },
-      },
+      markdown = { dirs = { vim.fn.stdpath("config") .. "/prompts" } },
     },
+    -- 扩展配置
     extensions = {
+      -- 历史记录扩展
       history = {
         enabled = true,
         opts = {
           auto_save = true,
           keymap = "gh",
           auto_generate_title = true,
-          summary = {
-            generation_opts = {
-              adapter = "background",
-            },
-          },
+          summary = { generation_opts = { adapter = "background" } },
           continue_last_chat = false,
-          -- When chat is cleared with `gx` delete the chat from history
           delete_on_clearing_chat = false,
-          -- Picker interface ("telescope" or "default")
           picker = "snacks",
-          -- Enable detailed logging for history extension
           enable_logging = false,
-          -- Directory path to save the chats
           dir_to_save = vim.fn.stdpath("data") .. "/codecompanion-history",
         },
       },
+      -- MCP Hub 扩展（Model Context Protocol）
       mcphub = {
         callback = "mcphub.extensions.codecompanion",
         opts = {
-          show_result_in_chat = true, -- Show mcp tool results in chat
-          make_vars = true, -- Convert resources to #variables
-          make_slash_commands = true, -- Add prompts as /slash commands
+          show_result_in_chat = true,
+          make_vars = true,
+          make_slash_commands = true,
         },
       },
     },

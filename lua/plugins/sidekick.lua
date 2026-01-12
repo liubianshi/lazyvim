@@ -41,11 +41,18 @@ return {
     { "<leader>af", function() require("sidekick.cli").send({ msg = "{file}" }) end,                       desc = "Sidekick: Send File",            },
     -- Close the current CLI session
     { "<leader>ad", function() require("sidekick.cli").close() end,                                        desc = "Sidekick: Detach a CLI Session", },
-    -- Send selected text or current line to sidekick CLI
     { "<leader>at", function() require("sidekick.cli").send({ msg = "{this}" }) end, mode = { "x",  "n" }, desc = "Sidekick: Send This", },
-    -- Toggle the Gemini AI integration (focus false means don't focus window)
     { "<leader>ag", function() require("sidekick.cli").toggle({ name = "gemini", focus = false }) end,     desc = "Sidekick: Toggle Gemini", },
-
+    { "<leader>ac", function() require("sidekick.cli").toggle({ name = "claude", focus = false }) end,     desc = "Sidekick: Toggle Gemini", },
+    -- Open float buffer to write prompt
+    { "<leader>ap",
+      function()
+        require("util.float_prompt").toggle("Sidekick", {
+          filetype = "markdown",
+          title_prefix = " 💬 ",
+          on_submit = function(text) require("sidekick.cli").send({msg = text}) end
+        })
+      end, mode = { "n" }, desc = "Sidekick: open window for prompts", },
     -- Sidekick NES keybindings group
     { "<leader>an", "",                                                desc = "+Sidekick NES" },
     -- Toggle NES on/off

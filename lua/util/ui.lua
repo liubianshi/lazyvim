@@ -477,6 +477,7 @@ function M.adjust_hi_group(palette)
 
   vim.api.nvim_set_hl(0, "IndentLine", { link = "LineNr" })
   vim.api.nvim_set_hl(0, "IndentLineCurrent", { fg = palette.orange })
+  vim.api.nvim_set_hl(0, "Bold", { underline = true })
 end
 
 return M

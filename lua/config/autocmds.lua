@@ -226,13 +226,19 @@ aucmd({ "InsertLeave", "WinEnter", "BufEnter" }, {
 -- Term Open ------------------------------------------------------------ {{{1
 aucmd({ "TermOpen" }, {
   group = augroups.Term,
-  callback = function()
+  callback = function(ev)
     vim.opt_local.number = false
     vim.opt_local.relativenumber = false
     vim.opt_local.bufhidden = "hide"
     vim.opt_local.foldcolumn = "0"
   end,
 })
+
+-- IM Switch ------------------------------------------------------------- {{{1
+-- 延迟初始化输入法自动切换模块
+vim.schedule(function()
+  require("util.im_switch").setup()
+end)
 
 -- Highlight on yank ---------------------------------------------------- {{{1
 aucmd("InsertEnter", {

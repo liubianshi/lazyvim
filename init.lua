@@ -31,7 +31,8 @@ setup_myborder_hl()
 -- Keep highlight in sync with colorscheme or GUI changes
 vim.api.nvim_create_autocmd({ "ColorScheme", "VimEnter" }, {
   group = vim.api.nvim_create_augroup("MyBorderHL", { clear = true }),
-  callback = setup_myborder_hl,
+  callback = function()
+    require("util.ui").adjust_hi_group()
+    setup_myborder_hl()
+  end,
 })
-
-

@@ -152,7 +152,7 @@ return {
           if not ok then
             return
           end
-          local note = obsidian_note.create({ title = note_name })
+          local note = obsidian_note.create({ id = note_name })
 
           -- Open the note in a new buffer.
           note:open({ sync = true })

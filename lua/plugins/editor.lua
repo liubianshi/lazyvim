@@ -103,7 +103,7 @@ return {
         mode = { "n", "i" },
         function()
           local pos = vim.api.nvim_win_get_cursor(0)
-          local punc = "，。“”「」、：,."
+          local punc = "，。“”「」、：,.;；"
           require("flash").jump({
             search = { mode = "search", forward = true, wrap = true, multi_window = false, max_length = 0 },
             autojump = true,

@@ -31,10 +31,10 @@ local secret_cmd = "cmd:" .. home .. "/.private_info.sh "
 M.use_models = {
   background    = { name = "xai",             model = "grok-4-1-fast-non-reasoning" },
   code          = { name = "xai",             model = "grok-code-fast-1"            },
-  advanced_code = { name = "aihubmix-claude", model = "claude-sonnet-4-5"           },
-  chat          = { name = "aihubmix-gemini", model = "gemini-3-pro-preview"        },
-  write         = { name = "aihubmix-gemini", model = "gemini-3-flash-preview"      },
-  academic      = { name = "aihubmix-gemini", model = "gemini-3-pro-preview"        },
+  advanced_code = { name = "aihubmix_claude", model = "claude-sonnet-4-5"           },
+  chat          = { name = "aihubmix_gemini", model = "gemini-3-pro-preview"        },
+  write         = { name = "aihubmix_gemini", model = "gemini-3-flash-preview"      },
+  academic      = { name = "aihubmix_gemini", model = "gemini-3-pro-preview"        },
 }
 -- stylua: ignore end
 
@@ -96,7 +96,7 @@ M.adapter_definitions = {
     },
   },
   http = {
-    ["aihubmix-gemini"] = {
+    ["aihubmix_gemini"] = {
       base = "openai_compatible",
       opts = {
         roles = { llm = "model" },
@@ -145,7 +145,7 @@ M.adapter_definitions = {
         },
       },
     },
-    ["aihubmix-openai"] = {
+    ["aihubmix_openai"] = {
       base = "openai",
       opts = {
         url = "https://aihubmix.com/v1/chat/completions",
@@ -162,7 +162,7 @@ M.adapter_definitions = {
         },
       },
     },
-    ["aihubmix-xai"] = {
+    ["aihubmix_xai"] = {
       base = "openai_compatible",
       opts = {
         env = {
@@ -183,7 +183,7 @@ M.adapter_definitions = {
         },
       },
     },
-    ["aihubmix-claude"] = {
+    ["aihubmix_claude"] = {
       base = "anthropic",
       opts = {
         env = { api_key = secret_cmd .. "aihubmix" },

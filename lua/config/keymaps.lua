@@ -190,24 +190,6 @@ keymap({
   desc = "Open Daily English Notes"
 })
 
---- Terminal ------------------------------------------------------------- {{{1
--- Mappings for toggleterm plugin.
-keymap({ "<space><space>v", "<cmd>ToggleTerm direction=vertical<cr>",   desc = "Toggle Terminal (vertical)"   })
-keymap({ "<space><space>s", "<cmd>ToggleTerm direction=horizontal<cr>", desc = "Toggle Terminal (horizontal)" })
-keymap({ "<space><space>f", "<cmd>ToggleTerm direction=float<cr>",      desc = "Toggle Terminal (float)"      })
-keymap({ "<space><space>t", "<cmd>ToggleTerm direction=tab<cr>",        desc = "Toggle Terminal (tab)"        })
-
--- Mappings to open a *new* terminal instance.
-do
-  local function new_term(direction)
-    require("toggleterm.terminal").Terminal:new({ direction = direction }):toggle()
-  end
-  keymap({ "<space><space>V", function() new_term("vertical") end,   desc = "New Terminal (vertical)"   })
-  keymap({ "<space><space>S", function() new_term("horizontal") end, desc = "New Terminal (horizontal)" })
-  keymap({ "<space><space>F", function() new_term("float") end,      desc = "New Terminal (float)"      })
-  keymap({ "<space><space>T", function() new_term("tab") end,        desc = "New Terminal (tab)"        })
-end
-
 -- Terminal mode mappings for easier navigation.
 -- `<C-\\><C-n>` is the standard way to exit terminal mode.
 if vim.fn.has("mac") == 1 then
