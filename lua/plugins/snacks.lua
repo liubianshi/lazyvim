@@ -10,7 +10,7 @@ return {
         float = true,
       },
       math = {
-        enabled = true,
+        enabled = false,
       },
     },
     zen = {
