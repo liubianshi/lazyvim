@@ -50,7 +50,7 @@ local function get_content(buf, separator, mode)
   end
 
   -- 向下找分隔符
-  for i = cursor_row, line_count do
+  for i = cursor_row + 1, line_count do
     local line = vim.api.nvim_buf_get_lines(buf, i, i + 1, false)[1]
     if line and line:match(pattern_sep) then
       end_row = i
@@ -107,7 +107,7 @@ local function submit(id, mode)
   end
 
   if chat.config.hide_after_submit then
-    M.close_window(id)
+    M.hide_window(id)
   end
 end
 
@@ -129,7 +129,7 @@ function M.toggle(id, opts)
 
   -- 1. 窗口已打开 -> 关闭
   if chat.win and vim.api.nvim_win_is_valid(chat.win) then
-    vim.api.nvim_win_hide(chat.win)
+    M.hide_window(id)
     return
   end
 
@@ -156,12 +156,13 @@ function M.toggle(id, opts)
       return vim.tbl_extend("force", map_opts, { desc = desc })
     end
     -- stylua: ignore start
-    vim.keymap.set("n",          "<CR>", function() submit(id, "n")    end, map_with_desc("Submit current prompt block"))
-    vim.keymap.set("n",          "<C-CR>", function() submit(id, "n")    end, map_with_desc("Submit current prompt block"))
-    vim.keymap.set("i",          "<C-CR>", function() submit(id, "i")    end, map_with_desc("Submit current prompt block"))
-    vim.keymap.set("v",          "<CR>", function() submit(id, "v")    end, map_with_desc("Submit selection"))
-    vim.keymap.set("n",          "q",      function() M.close_window(id) end, map_with_desc("Close window"))
-    vim.keymap.set("n",          "<Esc>",  function() M.close_window(id) end, map_with_desc("Close window"))
+    vim.keymap.set("n", "<CR>",   function() submit(id, "n")    end, map_with_desc("Submit current prompt block"))
+    vim.keymap.set("n", "<C-CR>", function() submit(id, "n")    end, map_with_desc("Submit current prompt block"))
+    vim.keymap.set("i", "<C-CR>", function() submit(id, "i")    end, map_with_desc("Submit current prompt block"))
+    vim.keymap.set("v", "<CR>",   function() submit(id, "v")    end, map_with_desc("Submit selection"))
+    vim.keymap.set("n", "q",      function() M.hide_window(id) end, map_with_desc("Hide window"))
+    vim.keymap.set("n", "<Esc>",  function() M.hide_window(id) end, map_with_desc("Hide window"))
+    vim.keymap.set("n", "<C-q>",  function() M.delete_window(id) end, map_with_desc("Close window"))
     -- stylua: ignore end
   end
 
@@ -173,6 +174,9 @@ function M.toggle(id, opts)
 
   if opts.pos == "bottom" then
     row = vim.o.lines - height - 1
+    if vim.o.laststatus > 0 then
+      row = row - 2
+    end
     if vim.o.cmdheight > 0 then
       row = row - vim.o.cmdheight -- 让出命令行位置，防止遮挡
     end
@@ -195,6 +199,7 @@ function M.toggle(id, opts)
   }
 
   chat.win = vim.api.nvim_open_win(chat.buf, true, win_opts)
+  vim.wo[chat.win].scrolloff = 0
 
   -- 自动定位到最后一行
   local line_count = vim.api.nvim_buf_line_count(chat.buf)
@@ -203,10 +208,17 @@ function M.toggle(id, opts)
 end
 
 -- 补充 helper 以防报错
-function M.close_window(id)
+function M.hide_window(id)
   local chat = M.instances[id]
   if chat and chat.win and vim.api.nvim_win_is_valid(chat.win) then
     vim.api.nvim_win_hide(chat.win)
+  end
+end
+
+function M.delete_window(id)
+  local chat = M.instances[id]
+  if chat and chat.win and vim.api.nvim_win_is_valid(chat.win) then
+    vim.api.nvim_win_close(chat.win, true)
   end
 end
 
