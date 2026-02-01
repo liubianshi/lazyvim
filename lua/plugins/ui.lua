@@ -240,25 +240,6 @@ return {
       })
     end,
   },
-  { -- Make your nvim window separators colorful ------------------------ {{{2
-    "nvim-zh/colorful-winsep.nvim",
-    enabled = false,
-    event = { "WinNew" },
-    config = function()
-      require("colorful-winsep").setup({
-        no_exec_files = {
-          "packer",
-          "TelescopePrompt",
-          "mason",
-          "CompetiTest",
-          "NvimTree",
-          "aerial",
-          "neo-tree",
-        },
-        symbols = { "─", "│", "┌", "┐", "└", "┘" },
-      })
-    end,
-  },
   { -- kevinhwang91/nvim-hlslens: Hlsearch Lens for Neovim -------------- {{{2
     "kevinhwang91/nvim-hlslens",
     event = { "SearchWrapped", "CursorMoved" },

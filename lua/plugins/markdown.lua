@@ -237,117 +237,6 @@ return {
     cmd = { "Glow" },
     config = true,
   },
-  { -- OXY2DEV/markview.nvim -------------------------------------------- {{{3
-    "OXY2DEV/markview.nvim",
-    enabled = false,
-    condition = false,
-    lazy = false,
-    opts = function()
-      local default_heading = {
-        style = "icon",
-        sign = " ",
-      }
-      local hl_normal = vim.api.nvim_get_hl(0, { name = "Normal" })
-      local hl_code = vim.api.nvim_get_hl(0, { name = "MarkviewCode" })
-      local hl_code_info = vim.api.nvim_get_hl(0, { name = "MarkviewCodeInfo" })
-      hl_code.bg = hl_normal.bg
-      hl_code_info.bg = hl_normal.bg
-      local repeat_symbol = {
-        type = "repeating",
-        repeat_amount = function(_)
-          local indent = vim.fn.indent(vim.fn.line("."))
-          local wininfo = vim.fn.getwininfo(vim.api.nvim_get_current_win())[1]
-          return math.floor(wininfo.width / 2) - wininfo.textoff - 1 - indent
-        end,
-        text = "─",
-        hl = {
-          "MarkviewGradient1",
-          "MarkviewGradient2",
-          "MarkviewGradient3",
-          "MarkviewGradient4",
-          "MarkviewGradient5",
-          "MarkviewGradient6",
-          "MarkviewGradient7",
-          "MarkviewGradient8",
-          "MarkviewGradient9",
-          "MarkviewGradient10",
-        },
-        --- Placement direction of the gradient.
-        ---@type "left" | "right"
-        direction = "left",
-      }
-
-      return {
-        modes = { "n", "i", "c", ":", "no", "io", "co" },
-        hybrid_modes = { "i", "n" },
-        ignore_nodes = { "list_item", "fenced_code_block", "block_quote" },
-        headings = {
-          enable = true,
-          shift_width = 0,
-          heading_1 = {
-            style = "label",
-            align = "left",
-            icon = "",
-            sign = " ",
-            corner_left = " ░▒▓",
-            padding_left = " ",
-            corner_left_hl = "@comment.warning",
-          },
-          heading_2 = default_heading,
-          heading_3 = default_heading,
-          heading_4 = default_heading,
-          heading_5 = default_heading,
-          heading_6 = default_heading,
-        },
-        footnotes = {
-          enable = false,
-        },
-        code_blocks = {
-          enable = true,
-          icons = "mini",
-          style = "simple",
-          hl = hl_code,
-          info_hl = hl_code_info,
-          pad_amount = 0,
-          sign = false,
-          language_direction = "left",
-        },
-        latex = {
-          block = { enable = false },
-        },
-        list_items = {
-          enable = false,
-        },
-        inline_codes = {
-          enable = false,
-        },
-        links = {
-          enable = false,
-        },
-        horizontal_rules = {
-          enable = true,
-          parts = {
-            repeat_symbol,
-            {
-              type = "text",
-              text = "  ",
-              hl = "MarkviewGradient10",
-            },
-            repeat_symbol,
-          },
-        },
-      }
-    end,
-    config = function(_, opts)
-      require("markview").setup(opts)
-      for i = 1, 6 do
-        vim.api.nvim_set_hl(0, "MarkviewHeading" .. i, {
-          bg = "NONE",
-          bold = true,
-        })
-      end
-    end,
-  },
   { -- MeanderingProgrammer/render-markdown.nvim ------------------------ {{{2
     "MeanderingProgrammer/render-markdown.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.icons" },
@@ -359,9 +248,10 @@ return {
       },
       code = {
         disable_background = true,
-        sign = false,
+        sign = true,
         style = "language",
-        border = "none",
+        border = "hide",
+        language = false,
       },
       dash = {
         enabled = true,
@@ -370,7 +260,8 @@ return {
       heading = {
         width = "block",
         sign = false,
-        icons = { "🌀  ", "🌕  ", "🌖  ", "🌗  ", "🌘  ", "🌑  " },
+        -- icons = { "🌀  ", "🌕  ", "🌖  ", "🌗  ", "🌘  ", "🌑  " },
+        icons = { "󰉫  ", "󰉬  ", "󰉭  ", "󰉮  ", "󰉯  ", "󰉰  " },
         position = "inline",
         right_pad = 0.02,
         backgrounds = {},
@@ -379,8 +270,9 @@ return {
         enabled = false,
       },
       indent = {
-        enabled = false,
+        enabled = true,
         skip_heading = true,
+        skip_level = 2,
         icon = "",
       },
       html = {

@@ -6,7 +6,7 @@ return {
   },
   { -- chentoast/marks.nvim: viewing and interacting with vim marks ----- {{{3
     "chentoast/marks.nvim",
-    enabled = false,
+    enabled = true,
     event = "VeryLazy",
     config = true,
   },

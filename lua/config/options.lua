@@ -3,7 +3,7 @@
 -- Add any additional options here
 local opt = vim.opt
 local cache_path = vim.fn.stdpath("cache")
-local config_path = vim.fn.stdpath("config")
+-- local config_path = vim.fn.stdpath("config") -- Commented out: only used in disabled dictionary config
 local opt_get = function(name, scope)
   scope = scope or "global"
   return vim.api.nvim_get_option_value(name, { scope = scope })
@@ -11,7 +11,6 @@ end
 
 vim.g.lazyvim_blink_main = true
 vim.g.lazyvim_picker = "snacks"
-vim.g.lazyvim_python_lsp = "pyright"
 vim.g.lazyvim_python_ruff = "ruff"
 vim.g.lazyvim_python_lsp = "basedpyright"
 
@@ -216,10 +215,10 @@ opt.completeopt = "menu,noinsert,menuone,noselect"
 opt.conceallevel = 2
 opt.confirm = true
 opt.cursorline = true
-opt.dictionary:append({
-  config_path .. "/paper.dict",
-  config_path .. "/nvim/dict",
-})
+-- opt.dictionary:append({
+--   config_path .. "/paper.dict",
+--   config_path .. "/dict",
+-- })
 opt.directory = cache_path .. "/.swap//"
 opt.encoding = "utf-8"
 opt.expandtab = true -- 将制表符扩展为空格
@@ -316,8 +315,7 @@ opt.wildmenu = true
 opt.wildmode = "longest:full,full" -- Command-line completion mode
 opt.winblend = 5 -- pseudo transparency for floating window
 opt.winminwidth = 5 -- Minimum window width
-opt.wrap = vim.tbl_contains({ "markdown", "quarto", "norg", "org", "mial" }, vim.bo.filetype)
+opt.wrap = false -- Default to no wrap; ftplugin files will enable for specific filetypes
 opt.linebreak = true
-opt.breakindent = true
 opt.wrapmargin = 2 -- 指定拆行处与编辑窗口右边缘之间空出的字符数
 opt.writebackup = false

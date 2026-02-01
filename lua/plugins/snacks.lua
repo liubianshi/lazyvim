@@ -179,9 +179,9 @@ return {
   },
   -- stylua: ignore
   keys = {
+    { "<leader><space>", false},
     { "<leader>fm", function() Snacks.picker.recent() end, desc = "Smart", },
-    {
-      "<leader>fn",
+    { "<leader>fn",
       function()
         local ori_cmd = vim.uv.cwd()
         vim.cmd.cd(vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/writing")
