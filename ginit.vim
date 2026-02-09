@@ -6,7 +6,7 @@ if exists("g:neovide")
     if current_time >= "07:00" && current_time <= "17:00"
         call setenv("NVIM_BACKGROUND", "light")
         call setenv("NVIM_COLOR_SCHEME_DARK", "vague")
-        call setenv("NVIM_COLOR_SCHEME_LIGHT", "tokyonight-day")
+        call setenv("NVIM_COLOR_SCHEME_LIGHT", "default")
     endif
     if has('mac')
         let &guifont =  "Maple Mono NF,LXGW WenKai Mono,Symbols Nerd Font Mono,Apple Color Emoji:h16:w-1.5"
@@ -37,7 +37,7 @@ if exists("g:neovide")
     let g:neovide_border = [['', 'NormalFloat'], ['', 'NormalFloat']]
     let g:neovide_confirm_quit = v:true
     let g:neovide_cursor_vfx_mode = "railgun"
-    let g:neovide_scale_factor = 1.05
+    let g:neovide_scale_factor = 1.00
     " 动态调整 Neovide 的字体大小 / Dynamically resize Neovide's fonts
     function! ChangeScaleFactor(delta)
         let g:neovide_scale_factor = g:neovide_scale_factor * a:delta

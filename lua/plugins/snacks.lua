@@ -12,6 +12,9 @@ return {
       math = {
         enabled = false,
       },
+      convert = {
+        notify = true,
+      },
     },
     zen = {
       win = {

@@ -72,7 +72,7 @@ return {
       }
 
       local opts = {
-        R_app = "radian",
+        -- R_app = "radian",
         R_args = { "--quiet", "--no-save" },
         hook = hook,
         Rout_more_colors = true,
