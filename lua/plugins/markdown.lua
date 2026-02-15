@@ -270,7 +270,7 @@ return {
         enabled = false,
       },
       indent = {
-        enabled = true,
+        enabled = false,
         skip_heading = true,
         skip_level = 2,
         icon = "",
