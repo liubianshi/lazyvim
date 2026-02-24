@@ -1,7 +1,7 @@
 return {
   {
     "jghauser/papis.nvim",
-    enabled = true,
+    enabled = false,
     dependencies = {
       "kkharji/sqlite.lua",
       "MunifTanjim/nui.nvim",
