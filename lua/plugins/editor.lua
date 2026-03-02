@@ -268,13 +268,6 @@ return {
         }
       end
 
-      local global_opts = {
-        keymaps = {
-          insert = ";s",
-          insert_line = ";S",
-        },
-      }
-
       local filetype_opts = {
         markdown = {
           surrounds = {
@@ -289,7 +282,7 @@ return {
         },
       }
 
-      surround.setup(global_opts)
+      surround.setup()
       local group_surround = vim.api.nvim_create_augroup("Surround_buffer", { clear = true })
       for type, opt in pairs(filetype_opts) do
         vim.api.nvim_create_autocmd({ "FileType" }, {
