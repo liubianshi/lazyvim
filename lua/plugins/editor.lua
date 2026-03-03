@@ -268,13 +268,6 @@ return {
         }
       end
 
-      local global_opts = {
-        keymaps = {
-          insert = ";s",
-          insert_line = ";S",
-        },
-      }
-
       local filetype_opts = {
         markdown = {
           surrounds = {
