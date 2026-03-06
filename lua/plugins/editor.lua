@@ -484,7 +484,7 @@ return {
       highlight_on_hover = true,
       close_on_select = true,
       filter_kind = false,
-      manage_folds = true,
+      manage_folds = false,
       show_guides = true,
       autojump = true,
       nerd_font = "auto",
