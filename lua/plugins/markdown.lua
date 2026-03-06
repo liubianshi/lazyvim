@@ -267,7 +267,7 @@ return {
         backgrounds = {},
       },
       latex = {
-        enabled = false,
+        enabled = true,
       },
       indent = {
         enabled = false,

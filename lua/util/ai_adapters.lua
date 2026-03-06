@@ -32,9 +32,9 @@ M.use_models = {
   background    = { name = "xai",             model = "grok-4-1-fast-non-reasoning" },
   code          = { name = "xai",             model = "grok-code-fast-1"            },
   advanced_code = { name = "aihubmix_claude", model = "claude-sonnet-4-5"           },
-  chat          = { name = "aihubmix_gemini", model = "gemini-3-pro-preview"        },
+  chat          = { name = "aihubmix_gemini", model = "gemini-3.1-pro-preview"      },
   write         = { name = "aihubmix_gemini", model = "gemini-3-flash-preview"      },
-  academic      = { name = "aihubmix_gemini", model = "gemini-3-pro-preview"        },
+  academic      = { name = "aihubmix_gemini", model = "gemini-3.1-pro-preview"      },
 }
 -- stylua: ignore end
 
