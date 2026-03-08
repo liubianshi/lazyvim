@@ -1,5 +1,5 @@
 return {
-  { "kkharji/sqlite.lua", lazy = true },
+  { "liubianshi/sqlite.lua", lazy = true },
   { -- lambdalisue/suda.vim: Read and write with sudo command ----------- {{{3
     "lambdalisue/suda.vim",
     cmd = { "SudaWrite", "SudaRead" },

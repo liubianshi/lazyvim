@@ -13,18 +13,9 @@ return {
       legacy_commands = false,
 
       workspaces = {
-        {
-          name = "research",
-          path = "~/Documents/Writing/vaults/research",
-        },
-        {
-          name = "bb",
-          path = "~/Documents/Writing/vaults/bb",
-        },
-        {
-          name = "organize",
-          path = "~/Documents/Writing/vaults/organize",
-        },
+        { name = "research", path = "~/Documents/Writing/vaults/research" },
+        { name = "bb", path = "~/Documents/Writing/vaults/bb" },
+        { name = "organize", path = "~/Documents/Writing/vaults/organize" },
       },
 
       log_level = vim.log.levels.WARN,
@@ -89,29 +80,6 @@ return {
         end
         return suffix
       end,
-
-      -- Optional, customize how wiki links are formatted.
-      ---@param opts {path: string, label: string, id: string|?}
-      ---@return string
-      wiki_link_func = function(opts)
-        if opts.id == nil then
-          return string.format("[[%s]]", opts.label)
-        elseif opts.label ~= opts.id then
-          return string.format("[[%s|%s]]", opts.id, opts.label)
-        else
-          return string.format("[[%s]]", opts.id)
-        end
-      end,
-
-      -- Optional, customize how markdown links are formatted.
-      ---@param opts {path: string, label: string, id: string|?}
-      ---@return string
-      markdown_link_func = function(opts)
-        return string.format("[%s](%s)", opts.label, opts.path)
-      end,
-
-      -- Either 'wiki' or 'markdown'.
-      preferred_link_style = "markdown",
 
       frontmatter = {
         enabled = true,

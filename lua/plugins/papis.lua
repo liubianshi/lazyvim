@@ -2,10 +2,6 @@ return {
   {
     "jghauser/papis.nvim",
     enabled = true,
-    dependencies = {
-      "kkharji/sqlite.lua",
-      "MunifTanjim/nui.nvim",
-    },
     opts = {
       enable_keymaps = true,
       cite_formats = {
