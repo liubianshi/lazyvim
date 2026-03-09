@@ -13,7 +13,7 @@ return {
         enabled = false,
       },
       convert = {
-        notify = true,
+        notify = false,
       },
     },
     zen = {
