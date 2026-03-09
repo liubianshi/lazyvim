@@ -187,7 +187,7 @@ return {
     { "<leader>fn",
       function()
         local ori_cmd = vim.uv.cwd()
-        vim.cmd.cd(vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/writing")
+        vim.cmd.cd(vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/Writing")
         Snacks.picker.files({
           exclude = {
             "*.{bck,html}",
@@ -204,7 +204,7 @@ return {
       "<leader>fN",
       function()
         local ori_cmd = vim.uv.cwd()
-        vim.cmd.cd(vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/writing")
+        vim.cmd.cd(vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/Writing")
         Snacks.picker.grep({
           exclude = {
             "*.{bck,html}",

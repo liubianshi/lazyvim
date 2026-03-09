@@ -11,14 +11,14 @@ return {
         },
       },
       -- Filetypes that start papis.nvim.
-      init_filetypes = { "markdown", "norg", "yaml", "typst", "quarto", "rmarkdown", "rmd" },
+      init_filetypes = { "quarto", "rmarkdown", "rmd" },
       -- The sqlite schema of the main `data` table. Only the "text" and "luatable"
       -- types are allowed.
       data_tbl_schema = {
         ref = { "text", required = false, unique = false },
       },
       ["debug"] = {
-        enable = false,
+        enable = true,
       },
       ["at-cursor"] = {
         auto_popup = {
