@@ -10,15 +10,6 @@ return {
       cmd = vim.lsp.rpc.connect("127.0.0.1", 9257),
       always_incomplete = false,
       schema_trigger_character = "&",
-      cmp_keymaps = {
-        disable = {
-          space = false,
-          numbers = false,
-          enter = false,
-          brackets = false,
-          backspace = false,
-        },
-      },
     },
     config = function(_, opts)
       require("rimels").setup(opts)
