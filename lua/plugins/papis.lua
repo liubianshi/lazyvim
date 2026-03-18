@@ -1,7 +1,7 @@
 return {
   {
     "jghauser/papis.nvim",
-    enabled = true,
+    enabled = false,
     opts = {
       enable_keymaps = true,
       cite_formats = {
