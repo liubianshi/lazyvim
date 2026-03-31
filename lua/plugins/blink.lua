@@ -210,7 +210,6 @@ return {
             codecompanion = { inherit_defaults = true, "codecompanion" },
             org = { inherit_defaults = true, "orgmode" },
             r = { inherit_defaults = true, "cmp_r" },
-            yaml = { inherit_defaults = true, "papis" },
             stata = { inherit_defaults = true, "omni" },
             vim = { inherit_defaults = true, "cmdline" },
             snacks_picker_input = { "lsp" },

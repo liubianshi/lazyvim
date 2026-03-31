@@ -29,12 +29,12 @@ local secret_cmd = "cmd:" .. home .. "/.private_info.sh "
 -- User configuration: Mapping intents (e.g., 'code', 'chat') to specific provider/model pairs
 -- stylua: ignore start
 M.use_models = {
-  background    = { name = "xai",             model = "grok-4-1-fast-non-reasoning" },
-  code          = { name = "xai",             model = "grok-code-fast-1"            },
-  advanced_code = { name = "aihubmix_claude", model = "claude-sonnet-4-5"           },
-  chat          = { name = "aihubmix_gemini", model = "gemini-3.1-pro-preview"      },
-  write         = { name = "aihubmix_gemini", model = "gemini-3-flash-preview"      },
-  academic      = { name = "aihubmix_gemini", model = "gemini-3.1-pro-preview"      },
+  background    = { name = "aihubmix_gemini", model = "gemini-3.1-flash-lite-preview"     },
+  code          = { name = "xai",             model = "grok-4.20-beta-0309-non-reasoning" },
+  advanced_code = { name = "aihubmix_claude", model = "claude-sonnet-4-6"                 },
+  chat          = { name = "aihubmix_openai", model = "gpt-5.4"                           },
+  write         = { name = "aihubmix_gemini", model = "gemini-3.1-flash-lite-preview"     },
+  academic      = { name = "aihubmix_gemini", model = "gemini-3.1-pro-preview"            },
 }
 -- stylua: ignore end
 
@@ -123,7 +123,7 @@ M.adapter_definitions = {
               },
             },
           },
-          temperature = { default = 0.4 },
+          temperature = { default = 0.7 },
         },
       },
     },
@@ -140,7 +140,12 @@ M.adapter_definitions = {
         schema = {
           model = {
             default = "grok-4-1-fast-reasoning",
-            choices = { "grok-4-1-fast-non-reasoning", "grok-4-1-fast-reasoning", "grok-4", "grok-code-fast-1" },
+            choices = {
+              "grok-4-1-fast-non-reasoning",
+              "grok-4-1-fast-reasoning",
+              "grok-4",
+              "grok-code-fast-1",
+            },
           },
         },
       },
@@ -152,9 +157,9 @@ M.adapter_definitions = {
         env = { api_key = secret_cmd .. "aihubmix" },
         schema = {
           model = {
-            default = "gpt-5.1",
+            default = "gpt-5.4",
             choices = {
-              ["gpt-5.2"] = { opts = { has_vision = true, can_reason = true, can_use_tools = true } },
+              ["gpt-5.4"] = { opts = { has_vision = true, can_reason = true, can_use_tools = true } },
               ["qwen3-max"] = { opts = { has_vision = true, can_reason = true, can_use_tools = true } },
             },
           },

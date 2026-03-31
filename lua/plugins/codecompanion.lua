@@ -41,7 +41,6 @@ end
 return {
   "olimorris/codecompanion.nvim",
   -- stylua: ignore start
-  -- 键位映射
   keys = {
     { "<leader>al",      "<cmd>CodeCompanionActions<CR>",     desc = "CodeCompanion: Actions",                mode = { "n", "v", "x" } },
     { "<leader><space>", "<cmd>CodeCompanionChat Toggle<CR>", desc = "CodeCompanion: Chat Toggle",            mode = { "n", "v"      } },
@@ -133,15 +132,6 @@ return {
           picker = "snacks",
           enable_logging = false,
           dir_to_save = vim.fn.stdpath("data") .. "/codecompanion-history",
-        },
-      },
-      -- MCP Hub 扩展（Model Context Protocol）
-      mcphub = {
-        callback = "mcphub.extensions.codecompanion",
-        opts = {
-          show_result_in_chat = true,
-          make_vars = true,
-          make_slash_commands = true,
         },
       },
     },
