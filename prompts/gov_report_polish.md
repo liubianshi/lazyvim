@@ -5,7 +5,7 @@ interaction: inline
 opts:
   index: 17
   adapter:
-    name: write
+    name: academic
   is_slash_cmd: true
   modes: [v]
   alias: gpolish
