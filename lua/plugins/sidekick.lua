@@ -3,6 +3,9 @@
 return {
   "folke/sidekick.nvim",
   opts = {
+    mux = {
+      enabled = true,
+    },
     -- NES configuration: enables and auto-fetches notes or sessions
     nes = {
       enabled = false,
@@ -13,6 +16,11 @@ return {
       update_interval = 300,
       -- New: Enable error logging for better debugging
       log_errors = true,
+    },
+    tools = {
+      claude = {
+        cmd = { "claude", "--allow-dangerously-skip-permissions" },
+      }
     },
     -- CLI configuration: defines prompts for interactions
     cli = {
@@ -38,23 +46,27 @@ return {
     { "<leader>aa", false },
 
     -- Send the entire file to sidekick CLI
-    { "<leader>af", function() require("sidekick.cli").send({ msg = "{file}" }) end,                       desc = "Sidekick: Send File",            },
+    { "<leader>af", function() require("sidekick.cli").send({ msg = "{file}" }) end,                   desc = "Sidekick: Send File", },
     -- Close the current CLI session
-    { "<leader>ad", function() require("sidekick.cli").close() end,                                        desc = "Sidekick: Detach a CLI Session", },
-    { "<leader>at", function() require("sidekick.cli").send({ msg = "{this}" }) end, mode = { "x",  "n" }, desc = "Sidekick: Send This", },
-    { "<leader>ag", function() require("sidekick.cli").toggle({ name = "gemini", focus = false }) end,     desc = "Sidekick: Toggle Gemini", },
-    { "<leader>ac", function() require("sidekick.cli").toggle({ name = "claude", focus = false }) end,     desc = "Sidekick: Toggle Gemini", },
+    { "<leader>ad", function() require("sidekick.cli").close() end,                                    desc = "Sidekick: Detach a CLI Session", },
+    { "<leader>at", function() require("sidekick.cli").send({ msg = "{this}" }) end,                   mode = { "x", "n" },                     desc = "Sidekick: Send This", },
+    { "<leader>ag", function() require("sidekick.cli").toggle({ name = "gemini", focus = false }) end, desc = "Sidekick: Toggle Gemini", },
+    { "<leader>ac", function() require("sidekick.cli").toggle({ name = "claude", focus = false }) end, desc = "Sidekick: Toggle Gemini", },
     -- Open float buffer to write prompt
-    { "<leader>ap",
+    {
+      "<leader>ap",
       function()
         require("util.float_prompt").toggle("Sidekick", {
           filetype = "markdown",
           title_prefix = " 💬 ",
-          on_submit = function(text) require("sidekick.cli").send({msg = text}) end
+          on_submit = function(text) require("sidekick.cli").send({ msg = text }) end
         })
-      end, mode = { "n" }, desc = "Sidekick: open window for prompts", },
+      end,
+      mode = { "n" },
+      desc = "Sidekick: open window for prompts",
+    },
     -- Sidekick NES keybindings group
-    { "<leader>an", "",                                                desc = "+Sidekick NES" },
+    { "<leader>an",  "",                                               desc = "+Sidekick NES" },
     -- Toggle NES on/off
     { "<leader>ant", function() require("sidekick.nes").toggle() end,  desc = "Sidekick NES: Toggle" },
     -- Clear NES content

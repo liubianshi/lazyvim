@@ -469,7 +469,7 @@ local function fetch_terminal_background()
     return nil
   end
 
-  local file, err = io.open(file_path, "r")
+  local file, _ = io.open(file_path, "r")
   if not file then
     -- Log error if needed: print("Error opening file: " .. err)
     return nil

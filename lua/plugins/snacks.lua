@@ -37,21 +37,21 @@ return {
       preset = {
         keys = {
           -- stylua: ignore start
-          { icon = " ", key = "f", desc = "Find File",       action = ":lua Snacks.dashboard.pick('files')" },
-          { icon = "󱙺 ", key = "a", desc = "Chat New",        action = ":CodeCompanionChat" },
-          { icon = " ", key = "e", desc = "New File",        action = ":silent ene | startinsert" },
-          { icon = " ", key = "r", desc = "Recent Files",    action = ":lua Snacks.dashboard.pick('oldfiles')" },
-          { icon = " ", key = "n", desc = "Obsidian Note",   action = ":Obsidian quick_switch" },
-          { icon = " ", key = "c", desc = "Config",          action = ":lua Snacks.dashboard.pick('files',        {cwd = vim.fn.stdpath('config')})", },
+          { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
+          { icon = "󱙺 ", key = "a", desc = "Chat New", action = ":CodeCompanionChat" },
+          { icon = " ", key = "e", desc = "New File", action = ":silent ene | startinsert" },
+          { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
+          { icon = " ", key = "n", desc = "Obsidian Note", action = ":Obsidian quick_switch" },
+          { icon = " ", key = "c", desc = "Config", action = ":lua Snacks.dashboard.pick('files',        {cwd = vim.fn.stdpath('config')})", },
           { icon = " ", key = "s", desc = "Restore Session", section = "session" },
-          { icon = "󰒲 ", key = "l", desc = "Lazy",            action = ":Lazy" },
-          { icon = " ", key = "q", desc = "Quit",            action = ":qa" },
+          { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy" },
+          { icon = " ", key = "q", desc = "Quit", action = ":qa" },
           -- stylua: ignore end
         },
       },
       sections = {
         { section = "header" },
-        { section = "keys", padding = 1, gap = 0 },
+        { section = "keys",  padding = 1, gap = 0 },
         {
           pane = 1,
           icon = " ",
@@ -68,9 +68,9 @@ return {
       enabled = true,
       filter = function(buf)
         return vim.g.snacks_indent ~= false
-          and vim.b[buf].snacks_indent ~= false
-          and vim.bo[buf].buftype == ""
-          and not vim.tbl_contains({ "norg", "quarto", "markdown" }, vim.bo[buf].filetype)
+            and vim.b[buf].snacks_indent ~= false
+            and vim.bo[buf].buftype == ""
+            and not vim.tbl_contains({ "norg", "quarto", "markdown" }, vim.bo[buf].filetype)
       end,
     },
     notifier = {
@@ -80,8 +80,8 @@ return {
     picker = {
       ui_select = true,
       matcher = {
-        cwd_bonus = true, -- give bonus for matching files in the cwd
-        frecency = true, -- frecency bonus
+        cwd_bonus = true,     -- give bonus for matching files in the cwd
+        frecency = true,      -- frecency bonus
         history_bonus = true, -- give more weight to chronological order
       },
       win = {
@@ -133,7 +133,7 @@ return {
                       "Error deleting file %s: %s (%s)",
                       file_path,
                       unlink_err[1] or "Unknown Error", -- Error code string
-                      unlink_err[2] or "No details" -- Error description string
+                      unlink_err[2] or "No details"     -- Error description string
                     )
                     vim.notify(error_message, vim.log.levels.ERROR, { title = "File Deletion" })
                   end
@@ -182,9 +182,10 @@ return {
   },
   -- stylua: ignore
   keys = {
-    { "<leader><space>", false},
-    { "<leader>fm", function() Snacks.picker.recent() end, desc = "Smart", },
-    { "<leader>fn",
+    { "<leader><space>", false },
+    { "<leader>fm",      function() Snacks.picker.recent() end, desc = "Smart", },
+    {
+      "<leader>fn",
       function()
         local ori_cmd = vim.uv.cwd()
         vim.cmd.cd(vim.env.WRITING_LIB or vim.env.HOME .. "/Documents/Writing")
