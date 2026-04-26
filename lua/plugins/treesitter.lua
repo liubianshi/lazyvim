@@ -27,6 +27,7 @@ return {
       highlight = {
         disable = disable_treesitter,
       },
+      ensure_installed = { "r", "rnoweb", "latex", "csv" },
     },
   },
   { -- Wansmer/treesj: Neovim plugin for splitting/joining blocks of code  {{{3
@@ -49,7 +50,7 @@ return {
       { "<localleader>o", "<cmd>FeMaco<cr>", desc = "FeMaco: Edit Code Block" },
     },
     opts = {
-      ensure_newline = function(base_filetype)
+      ensure_newline = function(_)
         return true
       end,
     },

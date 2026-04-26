@@ -64,9 +64,9 @@ return {
           end
         end,
         after_R_start = function()
-          if require("r.config").get_option("R_app") ~= "radian" then
-            require("r.term.builtin").highlight_term()
-          end
+          -- if require("r.config").get_option("R_app") ~= "radian" then
+          --   require("r.term.builtin").highlight_term()
+          -- end
           vim.opt_local.keywordprg = ":RHelp"
         end,
       }
