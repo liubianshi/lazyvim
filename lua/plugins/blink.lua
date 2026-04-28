@@ -17,10 +17,11 @@ return {
   },
   { -- "saghen/blink.cmp"
     "saghen/blink.cmp",
+    branch = 'v1',
     dependencies = {
+      -- 'saghen/blink.lib',
       "mikavilpas/blink-ripgrep.nvim",
     },
-    build = "cargo build --release",
     opts = function()
       -- local border = require("util").border("▔", "bottom")
       local border = "none"
@@ -192,18 +193,6 @@ return {
               },
             },
           },
-          sources = function()
-            local type = vim.fn.getcmdtype()
-            -- Search forward and backward
-            if type == "/" or type == "?" then
-              return { "buffer" }
-            end
-            -- Commands
-            if type == ":" or type == "@" then
-              return { "cmdline" }
-            end
-            return {}
-          end,
         },
         sources = {
           per_filetype = {
@@ -279,16 +268,16 @@ return {
               transform_items = function(_, items)
                 local transformed_items = vim.tbl_filter(function(item)
                   return item.kind ~= require("blink.cmp.types").CompletionItemKind.Text
-                    or (item.source_id == "lsp" and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls")
+                      or (item.source_id == "lsp" and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls")
                 end, items)
                 -- the default transformer will do this
                 for _, item in ipairs(transformed_items) do
                   if item.kind == require("blink.cmp.types").CompletionItemKind.Snippet then
                     item.score_offset = item.score_offset - 3
                   elseif
-                    item.kind == require("blink.cmp.types").CompletionItemKind.Text
-                    and item.source_id == "lsp"
-                    and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls"
+                      item.kind == require("blink.cmp.types").CompletionItemKind.Text
+                      and item.source_id == "lsp"
+                      and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls"
                   then
                     item.score_offset = item.score_offset
                   end
