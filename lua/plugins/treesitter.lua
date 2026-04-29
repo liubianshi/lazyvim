@@ -27,7 +27,7 @@ return {
       highlight = {
         disable = disable_treesitter,
       },
-      ensure_installed = { "r", "rnoweb", "latex", "csv" },
+      ensure_installed = { "r", "rnoweb", "csv" },
     },
   },
   { -- Wansmer/treesj: Neovim plugin for splitting/joining blocks of code  {{{3

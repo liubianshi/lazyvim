@@ -17,11 +17,11 @@ return {
   },
   { -- "saghen/blink.cmp"
     "saghen/blink.cmp",
-    branch = 'v1',
     dependencies = {
-      -- 'saghen/blink.lib',
+      'saghen/blink.lib',
       "mikavilpas/blink-ripgrep.nvim",
     },
+    build = function() require('blink.cmp').build():wait(60000) end,
     opts = function()
       -- local border = require("util").border("▔", "bottom")
       local border = "none"
@@ -216,7 +216,7 @@ return {
               "ripgrep",
             },
           },
-          default = { "lsp", "path", "snippets", "buffer", "ripgrep" },
+          default = { "lsp", "path", "snippets", "buffer" },
           providers = {
             buffer = {
               enabled = function()
