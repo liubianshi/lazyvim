@@ -10,3 +10,5 @@ data
 lazy-lock.json
 lazy-lock.json
 .aider*
+
+.scout/

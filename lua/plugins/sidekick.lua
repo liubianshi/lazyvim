@@ -1,5 +1,23 @@
 -- Neovim configuration for the sidekick.nvim plugin
 -- This plugin provides AI-assisted coding features via CLI and NES (Note-taking or Session management)
+local function get_sidekick_terminal_win()
+  local ok, State = pcall(require, "sidekick.cli.state")
+  if ok then
+    for _, st in ipairs(State.get({ attached = true, terminal = true })) do
+      local t = st.terminal
+      if t and t:win_valid() then
+        return t.win
+      end
+    end
+  end
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.b[buf].sidekick_cli ~= nil then
+      return win
+    end
+  end
+end
+
 return {
   "folke/sidekick.nvim",
   opts = {
@@ -52,18 +70,20 @@ return {
     { "<leader>at", function() require("sidekick.cli").send({ msg = "{this}" }) end,                   mode = { "x", "n" },                     desc = "Sidekick: Send This", },
     { "<leader>ag", function() require("sidekick.cli").toggle({ name = "gemini", focus = false }) end, desc = "Sidekick: Toggle Gemini", },
     { "<leader>ac", function() require("sidekick.cli").toggle({ name = "claude", focus = false }) end, desc = "Sidekick: Toggle Gemini", },
-    -- Open float buffer to write prompt
+    -- Open split buffer (anchored under sidekick CLI terminal) to write prompt
     {
       "<leader>ap",
       function()
         require("util.float_prompt").toggle("Sidekick", {
           filetype = "markdown",
           title_prefix = " 💬 ",
-          on_submit = function(text) require("sidekick.cli").send({ msg = text }) end
+          pos = "split",
+          anchor_win_fn = get_sidekick_terminal_win,
+          on_submit = function(text) require("sidekick.cli").send({ msg = text }) end,
         })
       end,
       mode = { "n" },
-      desc = "Sidekick: open window for prompts",
+      desc = "Sidekick: open split window for prompts",
     },
     -- Sidekick NES keybindings group
     { "<leader>an",  "",                                               desc = "+Sidekick NES" },

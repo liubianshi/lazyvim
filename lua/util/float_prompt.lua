@@ -166,39 +166,52 @@ function M.toggle(id, opts)
     -- stylua: ignore end
   end
 
-  -- 3. 创建浮动窗口
-  local width = math.floor(vim.o.columns * opts.width_ratio)
+  -- 3. 创建窗口：split 模式 vs 浮动模式
   local height = opts.height_ratio and math.floor(vim.o.lines * opts.height_ratio) or opts.height
 
-  local row, col
-
-  if opts.pos == "bottom" then
-    row = vim.o.lines - height - 1
-    if vim.o.laststatus > 0 then
-      row = row - 2
+  if opts.pos == "split" then
+    local anchor = opts.anchor_win_fn and opts.anchor_win_fn() or nil
+    if anchor and vim.api.nvim_win_is_valid(anchor) then
+      vim.api.nvim_set_current_win(anchor)
+      vim.cmd((opts.split_dir or "belowright") .. " " .. height .. "split")
+    else
+      vim.cmd("botright " .. height .. "split")
     end
-    if vim.o.cmdheight > 0 then
-      row = row - vim.o.cmdheight -- 让出命令行位置，防止遮挡
-    end
+    chat.win = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_buf(chat.win, chat.buf)
+    vim.wo[chat.win].winbar = (opts.title_prefix or "") .. id
   else
-    row = math.floor((vim.o.lines - height) / 2)
+    local width = math.floor(vim.o.columns * opts.width_ratio)
+    local row, col
+
+    if opts.pos == "bottom" then
+      row = vim.o.lines - height - 1
+      if vim.o.laststatus > 0 then
+        row = row - 2
+      end
+      if vim.o.cmdheight > 0 then
+        row = row - vim.o.cmdheight -- 让出命令行位置，防止遮挡
+      end
+    else
+      row = math.floor((vim.o.lines - height) / 2)
+    end
+    col = math.floor((vim.o.columns - width) / 2)
+
+    local win_opts = {
+      relative = "editor",
+      width = width,
+      height = height,
+      row = row,
+      col = col,
+      style = "minimal",
+      border = "rounded",
+      title = opts.pos == "center" and (opts.title_prefix .. id) or nil,
+      title_pos = opts.pos == "center" and "center" or nil,
+      zindex = 50, -- 确保在最上层
+    }
+
+    chat.win = vim.api.nvim_open_win(chat.buf, true, win_opts)
   end
-  col = math.floor((vim.o.columns - width) / 2)
-
-  local win_opts = {
-    relative = "editor",
-    width = width,
-    height = height,
-    row = row,
-    col = col,
-    style = "minimal",
-    border = "rounded",
-    title = opts.pos == "center" and (opts.title_prefix .. id) or nil,
-    title_pos = opts.pos == "center" and "center" or nil,
-    zindex = 50, -- 确保在最上层
-  }
-
-  chat.win = vim.api.nvim_open_win(chat.buf, true, win_opts)
   vim.wo[chat.win].scrolloff = 0
 
   -- 自动定位到最后一行
