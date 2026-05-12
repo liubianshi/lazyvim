@@ -10,7 +10,7 @@ if exists("g:neovide")
     endif
     if has('mac')
         let &guifont =  "Maple Mono NF,LXGW WenKai Mono,Symbols Nerd Font Mono,Apple Color Emoji:h16:w-1.5"
-        let &linespace = 18
+        let &linespace = 21
         let g:neovide_padding_top = 0
         let g:neovide_padding_bottom = 0
         let g:neovide_padding_right = 0
