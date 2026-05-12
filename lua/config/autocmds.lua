@@ -461,50 +461,59 @@ vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "CursorMoved" }, {
 require("util.lightbulb").setup()
 
 --- background ---------------------------------------------------------- {{{2
--- Optimized function to get the first word from the background cache file
--- Uses more efficient file handling and error checking
-local function fetch_terminal_background()
-  local file_path = os.getenv("TERM_BACKGROUND_CACHE")
-  if not file_path then
+-- Translate an OSC 11 reply (`ESC ] 11 ; rgb:RRRR/GGGG/BBBB ...`) into
+-- "dark" / "light" by perceived luminance — terminal-agnostic, replaces the
+-- previous Kitty-only path that read $TERM_BACKGROUND_CACHE.
+local function osc11_to_background(sequence)
+  local r, g, b = sequence:match("rgb:(%x+)/(%x+)/(%x+)")
+  if not (r and g and b) then
     return nil
   end
-
-  local file, _ = io.open(file_path, "r")
-  if not file then
-    -- Log error if needed: print("Error opening file: " .. err)
-    return nil
+  local function unit(hex)
+    return tonumber(hex, 16) / (16 ^ #hex - 1)
   end
+  local lum = 0.299 * unit(r) + 0.587 * unit(g) + 0.114 * unit(b)
+  return lum > 0.5 and "light" or "dark"
+end
 
-  -- Read the first line efficiently
-  local line = file:read("*l")
-  file:close()
-
-  if not line then
-    return nil
+-- Opt in to DEC mode 2031 so Ghostty / modern Kitty actively report theme
+-- changes via `CSI ?2031;1n` (dark) / `CSI ?2031;2n` (light). Written direct
+-- to /dev/tty because io.write inside Neovim goes to :messages, not the TTY.
+do
+  local tty = io.open("/dev/tty", "w")
+  if tty then
+    tty:write("\27[?2031h")
+    tty:close()
   end
+end
 
-  -- Extract the first word using pattern matching
-  local first_word = line:match("%S+")
-  return first_word
+local function apply_background(bg)
+  if not bg or bg == vim.o.background then
+    return
+  end
+  vim.schedule(function()
+    vim.o.background = bg
+    local cs = (vim.g.default_colorscheme or {})[bg]
+    if cs then
+      pcall(vim.cmd.colorscheme, cs)
+    end
+    pcall(function()
+      require("lualine").setup({})
+    end)
+  end)
 end
 
 vim.api.nvim_create_autocmd("TermResponse", {
   group = augroups.Background,
   callback = function(ev)
-    if ev.data and ev.data.sequence and ev.data.sequence:find("^%\27%]11;rgb") then
-      local term_background = fetch_terminal_background()
-      if not term_background or not vim.tbl_contains({ "dark", "light" }, term_background) then
-        return
-      end
-      local current_background = vim.api.nvim_get_option_value("background", { scope = "global" })
-      if term_background == current_background then
-        return
-      end
-      vim.schedule(function()
-        vim.api.nvim_set_option_value("background", term_background, { scope = "global" })
-        vim.cmd.colorscheme(vim.g.default_colorscheme[term_background])
-        require("lualine").setup({})
-      end)
+    local seq = ev.data and ev.data.sequence
+    if not seq then
+      return
+    end
+    if seq:find("^\27%]11;rgb") then
+      apply_background(osc11_to_background(seq))
+    elseif seq:find("^\27%[%?2031;[12]n") then
+      apply_background(seq:find(";1n", 1, true) and "dark" or "light")
     end
   end,
 })
