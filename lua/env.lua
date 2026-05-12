@@ -52,10 +52,10 @@ function M.launch_writing_room()
       end
     end
 
-    if ft and writing_ft[ft] then
-      vim.env.NVIM_BACKGROUND = "dark"
-      return
-    end
+    -- if ft and writing_ft[ft] then
+    --   vim.env.NVIM_BACKGROUND = "dark"
+    --   return
+    -- end
   end
 end
 
