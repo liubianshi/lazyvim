@@ -18,10 +18,12 @@ return {
   { -- "saghen/blink.cmp"
     "saghen/blink.cmp",
     dependencies = {
-      'saghen/blink.lib',
+      "saghen/blink.lib",
       "mikavilpas/blink-ripgrep.nvim",
     },
-    build = function() require('blink.cmp').build():wait(60000) end,
+    build = function()
+      require("blink.cmp").build():wait(60000)
+    end,
     opts = function()
       -- local border = require("util").border("▔", "bottom")
       local border = "none"
@@ -246,38 +248,38 @@ return {
               module = "orgmode.org.autocompletion.blink",
               fallbacks = { "buffer" },
             },
-            cmp_r = {
-              name = "cmp_r",
-              module = "blink.compat.source",
-              enabled = function()
-                return vim.tbl_contains({ "r", "rmd", "quarto", "rdoc" }, vim.bo.filetype)
-              end,
-              opts = {
-                trigger_characters = { " ", ":", "(", '"', "@", "$" },
-                keyword_pattern = "[-`\\._@\\$:_[:digit:][:lower:][:upper:]]*",
-              },
-              override = {
-                get_trigger_characters = function()
-                  return { ".", "$", ":" }
-                end,
-              },
-              async = true,
-            },
+            -- cmp_r = {
+            --   name = "cmp_r",
+            --   module = "blink.compat.source",
+            --   enabled = function()
+            --     return vim.tbl_contains({ "r", "rmd", "quarto", "rdoc" }, vim.bo.filetype)
+            --   end,
+            --   opts = {
+            --     trigger_characters = { " ", ":", "(", '"', "@", "$" },
+            --     keyword_pattern = "[-`\\._@\\$:_[:digit:][:lower:][:upper:]]*",
+            --   },
+            --   override = {
+            --     get_trigger_characters = function()
+            --       return { ".", "$", ":" }
+            --     end,
+            --   },
+            --   async = true,
+            -- },
             lsp = {
               enabled = true,
               transform_items = function(_, items)
                 local transformed_items = vim.tbl_filter(function(item)
                   return item.kind ~= require("blink.cmp.types").CompletionItemKind.Text
-                      or (item.source_id == "lsp" and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls")
+                    or (item.source_id == "lsp" and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls")
                 end, items)
                 -- the default transformer will do this
                 for _, item in ipairs(transformed_items) do
                   if item.kind == require("blink.cmp.types").CompletionItemKind.Snippet then
                     item.score_offset = item.score_offset - 3
                   elseif
-                      item.kind == require("blink.cmp.types").CompletionItemKind.Text
-                      and item.source_id == "lsp"
-                      and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls"
+                    item.kind == require("blink.cmp.types").CompletionItemKind.Text
+                    and item.source_id == "lsp"
+                    and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls"
                   then
                     item.score_offset = item.score_offset
                   end
@@ -321,11 +323,11 @@ return {
       require("blink.cmp").setup(opts)
     end,
   },
-  { -- "saghen/blink.compat"
-    "saghen/blink.compat",
-    lazy = true,
-    opts = {},
-  },
+  -- { -- "saghen/blink.compat"
+  --   "saghen/blink.compat",
+  --   lazy = true,
+  --   opts = {},
+  -- },
   { -- xzbdmw/colorful-menu.nvim
     "xzbdmw/colorful-menu.nvim",
     config = true,

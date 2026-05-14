@@ -92,7 +92,7 @@ return {
         listmethods = true,
         start_libs = vim.g.R_start_libs,
         quarto_preview_args = ', render = "html"',
-        quarto_chunk_hl = {
+        chunk_hl = {
           highlight = false,
           yaml_hl = true,
           virtual_title = true,
@@ -119,8 +119,8 @@ return {
       require("r.pdf.generic").open = vim.ui.open
     end,
   },
-  {
-    "liubianshi/cmp-r",
-    dev = true,
-  },
+  -- {
+  --   "liubianshi/cmp-r",
+  --   dev = true,
+  -- },
 }

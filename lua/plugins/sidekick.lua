@@ -21,9 +21,6 @@ end
 return {
   "folke/sidekick.nvim",
   opts = {
-    mux = {
-      enabled = true,
-    },
     -- NES configuration: enables and auto-fetches notes or sessions
     nes = {
       enabled = false,
@@ -42,6 +39,10 @@ return {
     },
     -- CLI configuration: defines prompts for interactions
     cli = {
+      mux = {
+        backend = "zellij",
+        enabled = true,
+      },
       prompts = {
         -- Prompt template for adding comments to functions or lines
         comment = "Add comment to {function|line}",
@@ -63,7 +64,15 @@ return {
     { "<leader>as", false },
     { "<leader>aa", false },
 
+    {
+      "<c-.>",
+      function() require("sidekick.cli").focus() end,
+      desc = "Sidekick Focus",
+      mode = { "n", "t", "i", "x" },
+    },
+
     -- Send the entire file to sidekick CLI
+    { "<leader>as", function() require("sidekick.cli").prompt() end, mode = { "n", "x" }, desc = "Sidekick Select Prompt", },
     { "<leader>af", function() require("sidekick.cli").send({ msg = "{file}" }) end,                   desc = "Sidekick: Send File", },
     -- Close the current CLI session
     { "<leader>ad", function() require("sidekick.cli").close() end,                                    desc = "Sidekick: Detach a CLI Session", },
@@ -85,18 +94,5 @@ return {
       mode = { "n" },
       desc = "Sidekick: open split window for prompts",
     },
-    -- Sidekick NES keybindings group
-    { "<leader>an",  "",                                               desc = "+Sidekick NES" },
-    -- Toggle NES on/off
-    { "<leader>ant", function() require("sidekick.nes").toggle() end,  desc = "Sidekick NES: Toggle" },
-    -- Clear NES content
-    { "<leader>anc", function() require("sidekick.nes").clear() end,   desc = "Sidekick NES: Clear" },
-    -- Enable NES
-    { "<leader>ane", function() require("sidekick.nes").enable() end,  desc = "Sidekick NES: Enable" },
-    -- Disable NES
-    { "<leader>and", function() require("sidekick.nes").disable() end, desc = "Sidekick NES: Disable" },
-    -- Update NES (likely fetch or refresh)
-    { "<leader>anu", function() require("sidekick.nes").update() end,  desc = "Sidekick NES: Update" },
-    -- stylua: ignore end
   },
 }
