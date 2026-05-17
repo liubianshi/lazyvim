@@ -86,12 +86,7 @@ return {
       default = {
         description = "Collection of common files for all projects",
         files = {
-          ".clinerules",
-          ".cursorrules",
-          ".goosehints",
           ".rules",
-          ".windsurfrules",
-          ".github/copilot-instructions.md",
           "AGENT.md",
           "AGENTS.md",
           { path = "CLAUDE.md", parser = "claude" },
