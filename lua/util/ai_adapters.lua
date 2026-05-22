@@ -29,12 +29,12 @@ local secret_cmd = "cmd:" .. home .. "/.private_info.sh "
 -- User configuration: Mapping intents (e.g., 'code', 'chat') to specific provider/model pairs
 -- stylua: ignore start
 M.use_models = {
-  background    = { name = "aihubmix_gemini", model = "gemini-3.1-flash-lite-preview"     },
-  code          = { name = "xai",             model = "grok-4.20-beta-0309-non-reasoning" },
-  advanced_code = { name = "aihubmix_claude", model = "claude-sonnet-4-6"                 },
-  chat          = { name = "aihubmix_openai", model = "gpt-5.4"                           },
-  write         = { name = "aihubmix_gemini", model = "gemini-3.1-flash-lite-preview"     },
-  academic      = { name = "aihubmix_gemini", model = "gemini-3.1-pro-preview"            },
+  background    = { name = "aihubmix_gemini", model = "gemini-3.1-flash-lite" },
+  code          = { name = "xai", model = "grok-4.3" },
+  advanced_code = { name = "aihubmix_claude", model = "claude-sonnet-4-6" },
+  chat          = { name = "aihubmix_openai", model = "gpt-5.4" },
+  write         = { name = "aihubmix_gemini", model = "gemini-3.1-flash-lite" },
+  academic      = { name = "aihubmix_gemini", model = "gemini-3.5-flash" },
 }
 -- stylua: ignore end
 
