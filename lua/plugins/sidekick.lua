@@ -35,13 +35,13 @@ return {
     tools = {
       claude = {
         cmd = { "claude", "--allow-dangerously-skip-permissions" },
-      }
+      },
     },
     -- CLI configuration: defines prompts for interactions
     cli = {
       mux = {
         backend = "zellij",
-        enabled = true,
+        enabled = false,
       },
       prompts = {
         -- Prompt template for adding comments to functions or lines
@@ -54,6 +54,7 @@ return {
         debug = "Debug and suggest fixes for this code: {this}",
         -- New: Prompt for generating tests
         test = "Generate unit tests for {function|this}",
+        polish = "/lbs:polish {this}",
       },
     },
   },
