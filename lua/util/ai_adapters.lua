@@ -30,7 +30,7 @@ local secret_cmd = "cmd:" .. home .. "/.private_info.sh "
 -- stylua: ignore start
 M.use_models = {
   background    = { name = "aihubmix_gemini", model = "gemini-3.1-flash-lite" },
-  code          = { name = "xai", model = "grok-4.3" },
+  code          = { name = "xai",             model = "grok-4.3" },
   advanced_code = { name = "aihubmix_claude", model = "claude-sonnet-4-6" },
   chat          = { name = "aihubmix_openai", model = "gpt-5.4" },
   write         = { name = "aihubmix_gemini", model = "gemini-3.1-flash-lite" },

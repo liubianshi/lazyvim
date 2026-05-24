@@ -609,7 +609,6 @@ M.roam = function()
         local row = row_col[1] - 1
         local col = row_col[2] + 1
         local cite = string.format("[[%s]][[%s]]", "id:" .. item.id, item.title)
-        dd(cite)
         vim.api.nvim_buf_set_text(buf, row, col, row, col, { cite })
         vim.cmd("normal! 3f]")
       end,

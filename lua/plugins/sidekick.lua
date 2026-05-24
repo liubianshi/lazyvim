@@ -20,6 +20,7 @@ end
 
 return {
   "folke/sidekick.nvim",
+  enabled = false,
   opts = {
     -- NES configuration: enables and auto-fetches notes or sessions
     nes = {

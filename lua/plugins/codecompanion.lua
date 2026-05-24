@@ -3,9 +3,9 @@
 
 local ai_adapters = require("util.ai_adapters")
 
--- 根据文件类型获取对应的优化提示
--- @param bufnr 缓冲区编号，默认为当前缓冲区
--- @return string 提示名称 (apolish/polish/optimize)
+-- 根据文件类型获取对应的代码优化提示词
+-- @param bufnr number 缓冲区编号，默认为当前缓冲区 (可选)
+-- @return string 提示词名称，可能的值: 'apolish' | 'polish' | 'optimize'
 local function get_prompt_by_filetype(bufnr)
   bufnr = bufnr or 0
   local filetype = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
@@ -17,6 +17,96 @@ local function get_prompt_by_filetype(bufnr)
   else
     return "optimize"
   end
+end
+
+-- 生成一个调用 CodeCompanion CLI 的闭包，便于在 keymap 表里复用
+-- @param prompt string|nil 上下文模板（如 "#{this}"），传 nil 仅传 opts
+-- @param opts   table|nil  CLI 调用选项: agent / focus / submit / prompt / width / height
+-- @return fun() 可直接挂在 keymap 上的函数
+local function cli_send(prompt, opts)
+  opts = opts or {}
+  return function()
+    if prompt == nil then
+      require("codecompanion").cli(opts)
+    else
+      require("codecompanion").cli(prompt, opts)
+    end
+  end
+end
+
+-- 用户预定义的快捷提示词模板
+-- key 为菜单标签，value 为发送到 CLI 的文本，#{this} 会被 CodeCompanion 展开为当前缓冲区/选区
+local user_prompts = {
+  comment = "Add comments to #{this}",
+  explain = "Explain the following code: #{this}",
+  refactor = "Refactor this code for better readability: #{this}",
+  debug = "Debug and suggest fixes for this code: #{this}",
+  test = "Generate unit tests for #{this}",
+  polish = "/lbs:polish #{this}",
+}
+
+-- 弹出选择器，让用户从 user_prompts 中挑一条发送到 CLI
+-- 使用 snacks.picker 渲染：编号 | preset key（等宽对齐）| prompt
+-- 其中 #{...} 占位符以 SnacksPickerDirectory 高亮，
+-- /cmd 形式的 CodeCompanion slash 命令以 SnacksPickerKeyword 高亮
+local function select_user_prompt()
+  local keys = vim.tbl_keys(user_prompts)
+  table.sort(keys)
+
+  local key_width = 0
+  for _, key in ipairs(keys) do
+    key_width = math.max(key_width, #key)
+  end
+
+  local items = {}
+  for i, key in ipairs(keys) do
+    table.insert(items, { idx = i, text = key, key = key, prompt = user_prompts[key] })
+  end
+
+  require("snacks.picker").pick({
+    items = items,
+    title = "CodeCompanion Preset",
+    layout = {
+      preset = "select",
+      preview = false,
+      layout = { height = #items + 2 },
+    },
+    format = function(item)
+      local ret = {}
+      local sep = { " ", virtual = true }
+      table.insert(ret, { string.format("%2d.", item.idx), "SnacksPickerIndex" })
+      table.insert(ret, sep)
+      table.insert(ret, { string.format("%-" .. key_width .. "s", item.key), "SnacksPickerSpecial" })
+      table.insert(ret, sep)
+      local prompt, pos = item.prompt, 1
+      while pos <= #prompt do
+        local ps, pe = prompt:find("#%b{}", pos)
+        local cs, ce = prompt:find("/[%w][%w:%-]*", pos)
+        local s, e, hl
+        if ps and (not cs or ps <= cs) then
+          s, e, hl = ps, pe, "SnacksPickerDirectory"
+        elseif cs then
+          s, e, hl = cs, ce, "SnacksPickerKeyword"
+        end
+        if not s then
+          table.insert(ret, { prompt:sub(pos), "SnacksPickerComment" })
+          break
+        end
+        if s > pos then
+          table.insert(ret, { prompt:sub(pos, s - 1), "SnacksPickerComment" })
+        end
+        table.insert(ret, { prompt:sub(s, e), hl })
+        pos = e + 1
+      end
+      return ret
+    end,
+    confirm = function(picker, item)
+      picker:close()
+      if item and item.prompt then
+        require("codecompanion").cli(item.prompt, { focus = false })
+      end
+    end,
+  })
 end
 
 -- 智能选择并优化文本
@@ -42,13 +132,24 @@ return {
   "olimorris/codecompanion.nvim",
   -- stylua: ignore start
   keys = {
-    { "<leader>al",      "<cmd>CodeCompanionActions<CR>",     desc = "CodeCompanion: Actions",                mode = { "n", "v", "x" } },
-    { "<leader><space>", "<cmd>CodeCompanionChat Toggle<CR>", desc = "CodeCompanion: Chat Toggle",            mode = { "n", "v"      } },
-    { "<A-l>",           "<cmd>CodeCompanionChat Add<CR>",    desc = "CodeCompanion: Chat Add Selection",     mode = { "v"           } },
-    { "<A-o>",           function() optimize_select() end,    desc = "CodeCompanion: Optimize selected text", mode = { "n", "v"      } },
+    { "<leader>al",      "<cmd>CodeCompanionActions<CR>",                      desc = "CodeCompanion: Actions",                mode = { "n",                       "v",          "x" } },
+    { "<leader><space>", "<cmd>CodeCompanionChat Toggle<CR>",                  desc = "CodeCompanion: Chat Toggle",            mode = { "n",                       "v"      } },
+    { "<A-l>",           "<cmd>CodeCompanionChat Add<CR>",                     desc = "CodeCompanion: Chat Add Selection",     mode = { "v"           } },
+    { "<A-o>",           function() optimize_select() end,                     desc = "CodeCompanion: Optimize selected text", mode = { "n",                       "v"      } },
+    { "<leader>ac",      function() require("codecompanion").toggle_cli() end, desc = "CLI: Toggle agent window",              mode = { "n"      } },
+    { "<leader>ap",      cli_send(nil,  { prompt = true }),                    desc = "CLI: Open prompt buffer",   mode = { "n", "v" } },
+    { "<leader>at",      cli_send("#{this}",  { focus = false }),              desc = "CLI: Add buffer/selection", mode = { "n", "v" } },
+    { "<leader>as",      select_user_prompt,                                   desc = "CLI: Select preset prompt",             mode = { "n",                       "v" } },
+
   },
   -- stylua: ignore end
-  cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions", "CodeCompanionHistory" },
+  cmd = {
+    "CodeCompanion",
+    "CodeCompanionCLI",
+    "CodeCompanionChat",
+    "CodeCompanionActions",
+    "CodeCompanionHistory",
+  },
   dependencies = {
     "nvim-lua/plenary.nvim",
     "nvim-treesitter/nvim-treesitter",
@@ -75,6 +176,11 @@ return {
             relativenumber = false,
             signcolumn = "yes:1",
           },
+        },
+      },
+      cli = {
+        window = {
+          width = 80, -- 固定列数：>= 1 为绝对列数；< 1 为编辑器宽度比例
         },
       },
       action_palette = {
@@ -104,6 +210,34 @@ return {
       background = { adapter = "background", chat = { opts = { enabled = true } } },
       chat = { adapter = "chat" },
       inline = { adapter = "code" },
+      cli = {
+        -- 默认 agent：可通过 :CodeCompanionCLI agent=codex 临时切换
+        agent = "claude_code",
+        agents = {
+          claude_code = {
+            cmd = "claude",
+            args = {},
+            description = "Claude Code CLI",
+            provider = "terminal",
+          },
+          codex = {
+            cmd = "codex",
+            args = {},
+            description = "OpenAI Codex CLI",
+            provider = "terminal",
+          },
+          gemini = {
+            cmd = "gemini",
+            args = {},
+            description = "Gemini CLI",
+            provider = "terminal",
+          },
+        },
+        opts = {
+          auto_insert = false, -- 切回 CLI 窗口时不自动进 insert
+          reload = true, -- 文件被 agent 改动后自动 :checktime
+        },
+      },
       cmd = { adapter = "code" },
     },
     -- AI 适配器配置（从 util.ai_adapters 加载）

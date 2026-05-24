@@ -1,5 +1,6 @@
 local M = {}
 
+
 -- Sets NVIM_BACKGROUND to "dark" when opening writing-focused filetypes.
 -- This is done early to influence downstream plugin/theme configuration.
 function M.launch_writing_room()
