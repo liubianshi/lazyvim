@@ -17,13 +17,7 @@ return {
   },
   { -- "saghen/blink.cmp"
     "saghen/blink.cmp",
-    dependencies = {
-      "saghen/blink.lib",
-      "mikavilpas/blink-ripgrep.nvim",
-    },
-    build = function()
-      require("blink.cmp").build():wait(60000)
-    end,
+    dependencies = { "saghen/blink.lib" },
     opts = function()
       -- local border = require("util").border("▔", "bottom")
       local border = "none"
@@ -146,7 +140,6 @@ return {
           },
         },
         cmdline = {
-          enabled = true,
           keymap = {
             preset = "cmdline",
             ["<cr>"] = {
@@ -158,7 +151,7 @@ return {
                     return cmp.accept()
                   end
                 end
-                if cmp.is_menu_visible then
+                if cmp.is_menu_visible() then
                   cmp.cancel()
                 end
               end,
@@ -207,15 +200,10 @@ return {
             snacks_input = { "lsp" },
             lua = { inherit_defaults = true, "lazydev" },
             markdown = {
+              inherit_defaults = true,
               "obsidian",
               "obsidian_new",
               "obsidian_tags",
-              -- "markdown",
-              "lsp",
-              "path",
-              "snippets",
-              "buffer",
-              --"ripgrep",
             },
           },
           default = { "lsp", "path", "snippets", "buffer" },
@@ -272,19 +260,11 @@ return {
                   return item.kind ~= require("blink.cmp.types").CompletionItemKind.Text
                     or (item.source_id == "lsp" and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls")
                 end, items)
-                -- the default transformer will do this
                 for _, item in ipairs(transformed_items) do
                   if item.kind == require("blink.cmp.types").CompletionItemKind.Snippet then
                     item.score_offset = item.score_offset - 3
-                  elseif
-                    item.kind == require("blink.cmp.types").CompletionItemKind.Text
-                    and item.source_id == "lsp"
-                    and vim.lsp.get_client_by_id(item.client_id).name == "rime_ls"
-                  then
-                    item.score_offset = item.score_offset
                   end
                 end
-                -- you can define your own filter for rime item
                 return transformed_items
               end,
             },
@@ -301,26 +281,10 @@ return {
                 end,
               },
             },
-            ripgrep = {
-              module = "blink-ripgrep",
-              name = "Ripgrep",
-              opts = {
-                project_root_marker = { ".git", "NAMESPACE", ".root", "_metadata.yml" },
-                backend = {
-                  ripgrep = {
-                    max_filesize = "200K",
-                    project_root_fallback = false,
-                  },
-                },
-              },
-            },
           },
         },
       }
       return config
-    end,
-    config = function(_, opts)
-      require("blink.cmp").setup(opts)
     end,
   },
   -- { -- "saghen/blink.compat"
