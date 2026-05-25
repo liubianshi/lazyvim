@@ -201,6 +201,9 @@ aucmd({ "FileType" }, {
   end,
 })
 
+-- Schola citation preview --------------------------------------------- {{{1
+require("schola").setup()
+
 -- Fasd Update ---------------------------------------------------------- {{{1
 aucmd({ "BufNew", "BufNewFile" }, {
   group = augroups.FASD,
