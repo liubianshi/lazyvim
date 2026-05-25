@@ -156,7 +156,7 @@ return {
     "ravitemer/codecompanion-history.nvim",
   },
   init = function()
-    vim.cmd([[cabbrev cc CodeCompanion]])
+    vim.keymap.set("ca", "cc", "CodeCompanion")
     require("util.spinner"):init()
     local has_fidget, _ = pcall(require, "fidget")
     if has_fidget then
