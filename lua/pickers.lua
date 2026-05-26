@@ -137,7 +137,7 @@ end
 
 M.fasd = function()
   pick({
-    finder = function(opts, ctx)
+    finder = function(_, ctx)
       return require("snacks.picker.source.proc").proc(
         ctx:opts({
           cmd = "fasd",
@@ -175,7 +175,7 @@ M.citation = function()
   local suffix = char_after_cursor ~= " " and " " or ""
 
   pick({
-    finder = function(opts, ctx)
+    finder = function(_, ctx)
       return require("snacks.picker.source.proc").proc(
         ctx:opts({
           cmd = "bibtex2csv",
@@ -281,7 +281,7 @@ end
 M.cheat = function()
   local command = vim.env.HOME .. "/useScript/bin/help"
   pick({
-    finder = function(opts, ctx)
+    finder = function(_, ctx)
       return require("snacks.picker.source.proc").proc(
         ctx:opts({
           cmd = command,
@@ -400,7 +400,7 @@ M.mylib = function()
   end
 
   pick({
-    finder = function(opts, ctx)
+    finder = function(_, ctx)
       return require("snacks.picker.source.proc").proc(
         ctx:opts({
           cmd = "mylib",
@@ -410,14 +410,28 @@ M.mylib = function()
       )
     end,
     transform = function(item)
-      local fields = vim.json.decode(item.text)
+      -- The proc finder yields raw JSON lines, but on refresh/re-entry snacks can
+      -- pass already-transformed items back through here. By then item.text holds
+      -- the formatted search string (not JSON), so keep the transform idempotent:
+      -- only decode genuine JSON lines, which always start with "{".
+      if type(item.text) ~= "string" or item.text:sub(1, 1) ~= "{" then
+        return
+      end
+      local ok, fields = pcall(vim.json.decode, item.text)
+      if not ok or type(fields) ~= "table" then
+        vim.notify("mylib: skipped malformed JSON line: " .. item.text:sub(1, 60), vim.log.levels.WARN)
+        return false
+      end
       for key, value in pairs(fields) do
         item[key] = value ~= vim.NIL and value or ""
       end
-      item.text = table.concat({ item.tag, item.year, item.author, item.title }, " ")
-      item.filelist = vim.deepcopy(item.file)
-      if item.filelist and item.filelist["file_for_preview"] ~= vim.NIL then
-        item.file = item.filelist["file_for_preview"]
+      item.text = table.concat({ item.tag or "", item.year or "", item.author or "", item.title or "" }, " ")
+      -- Read from the decoded `fields` (typed `any`) rather than `item.file`
+      -- (typed `string`) so vim.deepcopy's table-only signature is satisfied.
+      local filelist = type(fields.file) == "table" and vim.deepcopy(fields.file) or nil
+      item.filelist = filelist
+      if filelist and filelist["file_for_preview"] ~= vim.NIL then
+        item.file = filelist["file_for_preview"]
       else
         item.file = ""
       end
@@ -511,7 +525,7 @@ end
 
 M.cliphist = function()
   pick({
-    finder = function(opts, ctx)
+    finder = function(_, ctx)
       return require("snacks.picker.source.proc").proc(
         ctx:opts({
           cmd = "cliphist",
@@ -640,7 +654,7 @@ end
 
 M.stata_doc = function()
   pick({
-    finder = function(opts, ctx)
+    finder = function(_, ctx)
       return require("snacks.picker.source.proc").proc(
         ctx:opts({
           cmd = ",sh",
