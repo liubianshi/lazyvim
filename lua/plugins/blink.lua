@@ -199,12 +199,7 @@ return {
             snacks_picker_input = { "lsp" },
             snacks_input = { "lsp" },
             lua = { inherit_defaults = true, "lazydev" },
-            markdown = {
-              inherit_defaults = true,
-              "obsidian",
-              "obsidian_new",
-              "obsidian_tags",
-            },
+            markdown = { inherit_defaults = true },
           },
           default = { "lsp", "path", "snippets", "buffer" },
           providers = {

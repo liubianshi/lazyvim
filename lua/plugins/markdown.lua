@@ -1,20 +1,19 @@
 return {
   { -- obsidian-nvim/obsidian.nvim -------------------------------------------- {{{2
     "obsidian-nvim/obsidian.nvim",
-    ft = { "markdown" },
     cmd = { "Obsidian" },
     keys = {
       { "<leader>nl", "<cmd>Obsidian quick_switch<cr>", desc = "Obsidian: Switch Note" },
-      { "<leader>nn", "<cmd>Obsidian new<cr>", desc = "Obsidian: Create new note" },
-      { "<leader>nj", "<cmd>Obsidian today<cr>", desc = "Obsidian: open/create a new daily note" },
-      { "<leader>nf", "<cmd>Obsidian search<cr>", desc = "Obsidian: search for (or create) notes" },
+      { "<leader>nn", "<cmd>Obsidian new<cr>",          desc = "Obsidian: Create new note" },
+      { "<leader>nj", "<cmd>Obsidian today<cr>",        desc = "Obsidian: open/create a new daily note" },
+      { "<leader>nf", "<cmd>Obsidian search<cr>",       desc = "Obsidian: search for (or create) notes" },
     },
     opts = {
       legacy_commands = false,
 
       workspaces = {
         { name = "research", path = "~/Documents/Writing/vaults/research" },
-        { name = "bb", path = "~/Documents/Writing/vaults/bb" },
+        { name = "bb",       path = "~/Documents/Writing/vaults/bb" },
         { name = "organize", path = "~/Documents/Writing/vaults/organize" },
       },
 
@@ -39,12 +38,18 @@ return {
         enter_note = function(note) -- client, note
           local keymap = require("util").keymap
           -- stylua: ignore start
-          keymap({ "<localleader>b", "<cmd>Obsidian backlinks<cr>",          buffer = note.bufnr, desc = "Obsidian: get back references",             })
-          keymap({ "<localleader>o", "<cmd>Obsidian open<cr>",               buffer = note.bufnr, desc = "Obsidian: open note in APP",                })
-          keymap({ "<localleader>t", "<cmd>Obsidian tags<cr>",               buffer = note.bufnr, desc = "Obsidian: get note with tag",               })
-          keymap({ "<localleader>l", "<cmd>Obsidian link<cr>",               buffer = note.bufnr, desc = "Obsidian: get reference",                   })
-          keymap({ "gf",             "<cmd>Obsidian follow_link vsplit<cr>", buffer = note.bufnr, desc = "Obsidian: follow reference",                })
-          keymap({ "gf",             "<cmd>Obsidian link_new",               buffer = note.bufnr, desc = "Obsidian: create a new note",   mode = "v", })
+          keymap({
+            "<localleader>b",
+            "<cmd>Obsidian backlinks<cr>",
+            buffer = note.bufnr,
+            desc =
+            "Obsidian: get back references",
+          })
+          keymap({ "<localleader>o", "<cmd>Obsidian open<cr>", buffer = note.bufnr, desc = "Obsidian: open note in APP", })
+          keymap({ "<localleader>t", "<cmd>Obsidian tags<cr>", buffer = note.bufnr, desc = "Obsidian: get note with tag", })
+          keymap({ "<localleader>l", "<cmd>Obsidian link<cr>", buffer = note.bufnr, desc = "Obsidian: get reference", })
+          keymap({ "gf", "<cmd>Obsidian follow_link vsplit<cr>", buffer = note.bufnr, desc = "Obsidian: follow reference", })
+          keymap({ "gf", "<cmd>Obsidian link_new", buffer = note.bufnr, desc = "Obsidian: create a new note", mode = "v", })
         end,
         -- stylua: ignore end
       },
@@ -135,7 +140,7 @@ return {
       -- Optional, configure additional syntax highlighting / extmarks.
       -- This requires you have `conceallevel` set to 1 or 2. See `:help conceallevel` for more details.
       ui = {
-        enable = false, -- set to false to disable all additional syntax features
+        enable = false,        -- set to false to disable all additional syntax features
         update_debounce = 200, -- update delay after a text change (in milliseconds)
         -- Define how various check-boxes are displayed
         -- Use bullet marks for non-checkbox lists.
@@ -256,16 +261,16 @@ return {
     ft = "markdown",
     opts = {
       mappings = {
-        inline_surround_toggle = "gs", -- (string|boolean) toggle inline style
+        inline_surround_toggle = "gs",       -- (string|boolean) toggle inline style
         inline_surround_toggle_line = "gss", -- (string|boolean) line-wise toggle inline style
-        inline_surround_delete = "ds", -- (string|boolean) delete emphasis surrounding cursor
-        inline_surround_change = "cs", -- (string|boolean) change emphasis surrounding cursor
-        link_add = "gl", -- (string|boolean) add link
-        link_follow = "gx", -- (string|boolean) follow link
-        go_curr_heading = "]c", -- (string|boolean) set cursor to current section heading
-        go_parent_heading = "]p", -- (string|boolean) set cursor to parent section heading
-        go_next_heading = "]]", -- (string|boolean) set cursor to next section heading
-        go_prev_heading = "[[", -- (string|boolean) set cursor to previous section heading
+        inline_surround_delete = "ds",       -- (string|boolean) delete emphasis surrounding cursor
+        inline_surround_change = "cs",       -- (string|boolean) change emphasis surrounding cursor
+        link_add = "gl",                     -- (string|boolean) add link
+        link_follow = "gx",                  -- (string|boolean) follow link
+        go_curr_heading = "]c",              -- (string|boolean) set cursor to current section heading
+        go_parent_heading = "]p",            -- (string|boolean) set cursor to parent section heading
+        go_next_heading = "]]",              -- (string|boolean) set cursor to next section heading
+        go_prev_heading = "[[",              -- (string|boolean) set cursor to previous section heading
       },
       on_attach = function(bufnr)
         local map = require("util").keymap
