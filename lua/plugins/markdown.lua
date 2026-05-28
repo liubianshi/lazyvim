@@ -214,6 +214,11 @@ return {
       render_modes = { "n", "i", "c", ":", "no", "io", "co" },
       anti_conceal = {
         enabled = true,
+        disable_modes = "n",
+        ignore = {
+          "table_border",
+          "callout",
+        },
       },
       code = {
         disable_background = true,
@@ -221,6 +226,18 @@ return {
         style = "language",
         border = "hide",
         language = false,
+      },
+      pipe_table = {
+        enabled = true,
+        cell = 'trimmed',
+        border_enabled = true,
+        border_virtual = true,
+        border = {
+          ' ', '─', ' ',
+          ' ', ' ', ' ',
+          ' ', '─', ' ',
+          ' ', '─',
+        },
       },
       dash = {
         enabled = true,
