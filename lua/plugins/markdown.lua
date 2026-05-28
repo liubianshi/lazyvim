@@ -4,16 +4,16 @@ return {
     cmd = { "Obsidian" },
     keys = {
       { "<leader>nl", "<cmd>Obsidian quick_switch<cr>", desc = "Obsidian: Switch Note" },
-      { "<leader>nn", "<cmd>Obsidian new<cr>",          desc = "Obsidian: Create new note" },
-      { "<leader>nj", "<cmd>Obsidian today<cr>",        desc = "Obsidian: open/create a new daily note" },
-      { "<leader>nf", "<cmd>Obsidian search<cr>",       desc = "Obsidian: search for (or create) notes" },
+      { "<leader>nn", "<cmd>Obsidian new<cr>", desc = "Obsidian: Create new note" },
+      { "<leader>nj", "<cmd>Obsidian today<cr>", desc = "Obsidian: open/create a new daily note" },
+      { "<leader>nf", "<cmd>Obsidian search<cr>", desc = "Obsidian: search for (or create) notes" },
     },
     opts = {
       legacy_commands = false,
 
       workspaces = {
         { name = "research", path = "~/Documents/Writing/vaults/research" },
-        { name = "bb",       path = "~/Documents/Writing/vaults/bb" },
+        { name = "bb", path = "~/Documents/Writing/vaults/bb" },
         { name = "organize", path = "~/Documents/Writing/vaults/organize" },
       },
 
@@ -140,7 +140,7 @@ return {
       -- Optional, configure additional syntax highlighting / extmarks.
       -- This requires you have `conceallevel` set to 1 or 2. See `:help conceallevel` for more details.
       ui = {
-        enable = false,        -- set to false to disable all additional syntax features
+        enable = false, -- set to false to disable all additional syntax features
         update_debounce = 200, -- update delay after a text change (in milliseconds)
         -- Define how various check-boxes are displayed
         -- Use bullet marks for non-checkbox lists.
@@ -208,40 +208,47 @@ return {
   },
   { -- MeanderingProgrammer/render-markdown.nvim ------------------------ {{{2
     "MeanderingProgrammer/render-markdown.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.icons" },
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
     ft = { "markdown", "quarto", "rmd", "codecompanion", "Avante" },
     opts = {
-      render_modes = { "n", "i", "c", ":", "no", "io", "co" },
+      render_modes = true,
+      win_options = {
+        concealcursor = { rendered = "nvc" },
+      },
       anti_conceal = {
         enabled = true,
-        disable_modes = "n",
+        disable_modes = { "n", "c" },
         ignore = {
-          "table_border",
-          "callout",
+          table_border = true,
+          callout = true,
+          quote = true,
+          code_language = true,
+          virtual_lines = true,
         },
       },
       code = {
         disable_background = true,
         sign = true,
-        style = "language",
+        style = "none",
         border = "hide",
-        language = false,
       },
       pipe_table = {
         enabled = true,
-        cell = 'trimmed',
-        border_enabled = true,
+        cell = "padded",
+        border_enabled = false,
         border_virtual = true,
+        -- stylua: ignore start
         border = {
           ' ', '─', ' ',
           ' ', ' ', ' ',
           ' ', '─', ' ',
           ' ', '─',
         },
+        -- stylua: ignore end
       },
       dash = {
         enabled = true,
-        width = 76,
+        width = 0.9,
       },
       heading = {
         width = "block",
@@ -255,12 +262,7 @@ return {
       latex = {
         enabled = true,
       },
-      indent = {
-        enabled = false,
-        skip_heading = true,
-        skip_level = 2,
-        icon = "",
-      },
+      indent = { enabled = false },
       html = {
         comment = {
           conceal = false,
@@ -278,16 +280,12 @@ return {
     ft = "markdown",
     opts = {
       mappings = {
-        inline_surround_toggle = "gs",       -- (string|boolean) toggle inline style
-        inline_surround_toggle_line = "gss", -- (string|boolean) line-wise toggle inline style
-        inline_surround_delete = "ds",       -- (string|boolean) delete emphasis surrounding cursor
-        inline_surround_change = "cs",       -- (string|boolean) change emphasis surrounding cursor
-        link_add = "gl",                     -- (string|boolean) add link
-        link_follow = "gx",                  -- (string|boolean) follow link
-        go_curr_heading = "]c",              -- (string|boolean) set cursor to current section heading
-        go_parent_heading = "]p",            -- (string|boolean) set cursor to parent section heading
-        go_next_heading = "]]",              -- (string|boolean) set cursor to next section heading
-        go_prev_heading = "[[",              -- (string|boolean) set cursor to previous section heading
+        link_add = "gl", -- (string|boolean) add link
+        link_follow = "gx", -- (string|boolean) follow link
+        go_curr_heading = "]c", -- (string|boolean) set cursor to current section heading
+        go_parent_heading = "]p", -- (string|boolean) set cursor to parent section heading
+        go_next_heading = "]]", -- (string|boolean) set cursor to next section heading
+        go_prev_heading = "[[", -- (string|boolean) set cursor to previous section heading
       },
       on_attach = function(bufnr)
         local map = require("util").keymap

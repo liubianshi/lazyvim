@@ -17,7 +17,13 @@ return {
   },
   { -- "saghen/blink.cmp"
     "saghen/blink.cmp",
-    dependencies = { "saghen/blink.lib" },
+    dependencies = {
+      "saghen/blink.lib",
+      "rafamadriz/friendly-snippets",
+    },
+    build = function()
+      require("blink.cmp").build():wait(60000)
+    end,
     opts = function()
       -- local border = require("util").border("▔", "bottom")
       local border = "none"
