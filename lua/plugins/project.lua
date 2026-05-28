@@ -61,7 +61,7 @@ return {
         bashls = {
           cmd = { "bash-language-server", "start" },
           filetpyes = { "sh" },
-          root_dir = require("lspconfig.util").root_pattern(".git", ".root", ".project"),
+          root_markers = { ".git", ".root", ".project" },
           single_file_support = true,
         },
         r_language_server = {
@@ -118,7 +118,7 @@ return {
               or vim.env.HOME .. "/.cargo/bin/markdown-oxide",
           },
           filetype = { "markdown", "rmd", "rmarkdown", "quarto" },
-          root_dir = require("lspconfig.util").root_pattern(".obsidian", ".git"),
+          root_markers = { ".obsidian", ".git" },
           capabilities = {
             workspace = {
               didChangeWatchedFiles = {
