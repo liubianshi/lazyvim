@@ -9,8 +9,8 @@ return {
 
       local colorschemes = vim.g.default_colorscheme
         or {
-          dark = vim.env.NVIM_COLOR_SCHEME_DARK or "everforest",
-          light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "seoulbones",
+          dark = vim.env.NVIM_COLOR_SCHEME_DARK or "tokyonight-night",
+          light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "default",
         }
 
       vim.opt.background = background

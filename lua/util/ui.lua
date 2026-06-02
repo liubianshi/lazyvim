@@ -311,7 +311,7 @@ M.select = function(items, opts)
   })
 
   vim.schedule(function()
-    local choice = vim.fn.nr2char(vim.fn.getchar())
+    local choice = vim.fn.getchar()
     vim.cmd("redraw!")
     require("notify").dismiss({ silent = true, pending = true })
     if command[choice] then
@@ -472,8 +472,12 @@ function M.adjust_hi_group(palette)
   vim.api.nvim_set_hl(0, "MsgSeparator", { bg = normal_bg_color, fg = palette.strong })
 
   vim.api.nvim_set_hl(0, "ObsidianHighlightText", { fg = palette.strong })
-  vim.api.nvim_set_hl(0, "@markdown.strong", { underline = true })
-  vim.api.nvim_set_hl(0, "@markup.raw.markdown_inline", { bg = "NONE" })
+  vim.api.nvim_set_hl(0, "Title", { fg = palette.red })
+  vim.api.nvim_set_hl(0, "@markdown.strong", { bg = "NONE", fg = palette.blue, bold = true })
+  vim.api.nvim_set_hl(0, "markup.strong", { bg = "NONE", fg = palette.blue, bold = true })
+  vim.api.nvim_set_hl(0, "@markup.strong", { bg = "NONE", fg = palette.blue, bold = true })
+  vim.api.nvim_set_hl(0, "TSStrong", { bg = "NONE", fg = palette.blue, bold = true })
+  vim.api.nvim_set_hl(0, "@markup.raw.markdown_inline", { bg = "NONE", fg = palette.cyan })
 
   vim.api.nvim_set_hl(0, "IndentLine", { link = "LineNr" })
   vim.api.nvim_set_hl(0, "IndentLineCurrent", { fg = palette.orange })
