@@ -42,8 +42,8 @@ if exists("g:neovide")
     function! ChangeScaleFactor(delta)
         let g:neovide_scale_factor = g:neovide_scale_factor * a:delta
     endfunction
-    nnoremap <expr><D-=> ChangeScaleFactor(1.05)
-    nnoremap <expr><D--> ChangeScaleFactor(1/1.05)
+    nnoremap <expr><M-=> ChangeScaleFactor(1.05)
+    nnoremap <expr><M--> ChangeScaleFactor(1/1.05)
 elseif exists("g:fvim_loaded")
     if has('mac')
         let &guifont = "FiraCode Nerd Font Mono:h18"
