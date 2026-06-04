@@ -8,6 +8,8 @@ vim.keymap.set({ "n", "i" }, "<localleader>il", function()
   vim.fn["ref_link#add"]()
 end, { desc = "Add Link" })
 
+
+
 vim.keymap.set("n", "<localleader>rf", function()
   vim.api.nvim_set_option_value("filetype", "rmd", { scope = "local" })
   local cmp = require("cmp")
