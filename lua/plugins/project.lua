@@ -65,17 +65,27 @@ return {
           single_file_support = true,
         },
         r_language_server = {
-          root_markers = {
-            function(name)
-              return name:match("^R$")
-            end,
-            "taskfile.yml",
-            ".git",
-            "NAMESPACE",
-            "config.R",
-            ".root",
-            ".project",
-          },
+          -- nvim-lspconfig 自带的 r_language_server 把 `root_dir` 定义成函数
+          -- (`.git` 否则 homedir),它会覆盖 `root_markers`,导致下面的标记失效;
+          -- 更糟的是该函数若未被框架解析就会原样落进 `client.root_dir`,
+          -- 触发 LazyVim root 探测器 / lualine 崩溃。这里显式覆盖为一个
+          -- 同步把结果回填成字符串的 root_dir 函数,既消除函数泄漏,又让
+          -- 期望的标记真正生效。
+          root_dir = function(bufnr, on_dir)
+            local fname = vim.api.nvim_buf_get_name(bufnr)
+            local source = fname ~= "" and fname or bufnr
+            on_dir(
+              vim.fs.root(source, {
+                "R",
+                "taskfile.yml",
+                ".git",
+                "NAMESPACE",
+                "config.R",
+                ".root",
+                ".project",
+              }) or (fname ~= "" and vim.fs.dirname(fname) or vim.uv.cwd())
+            )
+          end,
           single_file_support = true,
         },
         vimls = {},
