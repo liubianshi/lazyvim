@@ -3,6 +3,9 @@
 
 local ai_adapters = require("util.ai_adapters")
 
+-- CLI 窗口固定列数：既用于窗口配置，也作为 resize 时判断是否压缩到不可读的阈值
+local CLI_WIDTH = 80
+
 -- 根据文件类型获取对应的代码优化提示词
 -- @param bufnr number 缓冲区编号，默认为当前缓冲区 (可选)
 -- @return string 提示词名称，可能的值: 'apolish' | 'polish' | 'optimize'
@@ -68,6 +71,8 @@ local function select_user_prompt()
     title = "CodeCompanion Preset",
     layout = {
       preset = "select",
+      -- snacks 注解把 preview 标为 "main"?，但运行时支持 false 以禁用预览窗口
+      ---@diagnostic disable-next-line: assign-type-mismatch
       preview = false,
       layout = { height = #items + 2 },
     },
@@ -162,6 +167,38 @@ return {
     if has_fidget then
       require("util.fidget"):init()
     end
+
+    -- nvim 外层尺寸变化时，nvim 会按比例压缩各窗口；CLI 历史记录按固定列宽渲染，
+    -- 一旦被压到 CLI_WIDTH 以下就会折行错乱、不再可读。此时直接隐藏窗口（终端进程保留），
+    -- 用户可用 <leader>ac 在尺寸恢复后重新唤出。
+    vim.api.nvim_create_autocmd("VimResized", {
+      group = vim.api.nvim_create_augroup("lbs_codecompanion_cli_resize", { clear = true }),
+      desc = "Hide CodeCompanion CLI window when compressed below CLI_WIDTH",
+      callback = function()
+        -- 仅在插件已加载时处理，避免在启动期意外触发 require
+        if not package.loaded["codecompanion"] then
+          return
+        end
+        local ok, cli = pcall(require, "codecompanion.interactions.cli")
+        if not ok or not cli.is_visible() then
+          return
+        end
+        local instance = cli.get_visible()
+        if not instance or not instance.ui then
+          return
+        end
+        -- 时序说明：resize 是原子的——SIGWINCH 一次性到达，nvim 在同一轮主循环里
+        -- 先重排窗口、再触发 VimResized，所以此处 win_get_width 拿到的已是压缩后的最终宽度。
+        -- 看似「窗口已被挤窄、再 hide 没意义」，但用户真正看到乱码取决于更晚的屏幕重绘：
+        -- nvim 把重绘 flush 推迟到 autocmd 执行完之后，CLI 子进程对 SIGWINCH 的重渲染更是异步。
+        -- 因此在 callback 里同步 hide()，会先于这次 flush 生效——折叠后的乱码根本没被画出来。
+        -- 这条竞速与 resize 幅度无关，再大的突变也成立，故无需拦截「resize 之前」的中间态。
+        local winnr = instance.ui.winnr
+        if winnr and vim.api.nvim_win_is_valid(winnr) and vim.api.nvim_win_get_width(winnr) < CLI_WIDTH then
+          instance.ui:hide()
+        end
+      end,
+    })
   end,
   opts = {
     -- 显示设置
@@ -180,7 +217,10 @@ return {
       },
       cli = {
         window = {
-          width = 80, -- 固定列数：>= 1 为绝对列数；< 1 为编辑器宽度比例
+          layout = "vertical", -- 垂直分屏（继承自 chat，此处显式声明便于阅读）
+          position = "left", -- 默认在左侧打开，避免 nvim resize 时优先压缩右侧窗口
+          full_height = true, -- 占满整列高度（topleft vsplit）
+          width = CLI_WIDTH, -- 固定列数：>= 1 为绝对列数；< 1 为编辑器宽度比例
         },
       },
       action_palette = {
