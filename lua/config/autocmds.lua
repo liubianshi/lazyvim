@@ -19,9 +19,11 @@ local function augroup(name)
   return vim.api.nvim_create_augroup(name, { clear = true })
 end
 
-local augroups = vim.tbl_map(function(name)
-  return augroup(name)
-end, {
+-- 以名字为键的 augroup 表：augroups.Buffer / augroups.SmartCR 等。
+-- 注意：不能用 vim.tbl_map(fn, {...})，它会保留输入列表的整数键，导致
+-- 按名字索引（augroups.Buffer）恒为 nil，使所有 autocmd 实际「无 group」。
+local augroups = {}
+for _, name in ipairs({
   "Buffer",
   "Cursor",
   "FASD",
@@ -41,7 +43,10 @@ end, {
   "HiGroup",
 
   "Background",
-})
+  "SmartCR",
+}) do
+  augroups[name] = augroup(name)
+end
 
 -- Buffer --------------------------------------------------------------- {{{1
 aucmd({ "BufWritePre" }, {
@@ -516,6 +521,22 @@ vim.api.nvim_create_autocmd("TermResponse", {
       apply_background(seq:find(";1n", 1, true) and "dark" or "light")
     end
   end,
+})
+
+-- SmartCR ------------------------------------------------------------- {{{1
+-- 在 markdown 类 buffer 注册「智能回车」悬挂缩进映射。
+--   FileType   : 覆盖有 filetype 的 buffer（含 codecompanion_input）。
+--   BufWinEnter: 兜底 TS 延迟解析，以及从不触发 FileType 的空 ft scratch buffer。
+aucmd({ "FileType", "BufWinEnter" }, {
+  group = augroups.SmartCR,
+  pattern = "*",
+  callback = function(ev)
+    local smart_cr = require("util.smart_cr")
+    if smart_cr.should_attach(ev.buf) then
+      smart_cr.attach(ev.buf)
+    end
+  end,
+  desc = "Attach Smart CR (markdown hanging indent) on eligible buffers",
 })
 
 -- external
