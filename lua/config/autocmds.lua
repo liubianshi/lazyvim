@@ -41,7 +41,6 @@ for _, name in ipairs({
   "ColorScheme",
   "Lsp",
   "HiGroup",
-
   "Background",
   "SmartCR",
 }) do
