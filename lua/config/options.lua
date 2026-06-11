@@ -237,7 +237,6 @@ opt.foldcolumn = "0"
 opt.foldlevel = 99
 opt.foldlevelstart = 99
 opt.foldmethod = "manual"
-opt.formatexpr = ""
 opt.formatlistpat = "\\v^\\s*(\\d{1,2}\\.|\\(\\d{1,2}\\)|\\[\\d{1,2}\\]|[-+*])\\s+"
 opt.formatoptions = "tcn,1mp],Bj,oq"
 opt.grepformat = "%f:%l:%c:%m"
