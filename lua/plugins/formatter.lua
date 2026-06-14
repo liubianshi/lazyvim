@@ -34,8 +34,17 @@ return {
         }
       end,
       ["mdwrap"] = {
-        command = "mdwrap",
-        args = { "--keep-origin-wrap", "--line-width=80" },
+        format = function(_, ctx, lines, callback)
+          local ok, out = pcall(require("mdwrap").format_lines, lines, {
+            bufnr = ctx.buf, -- 取窗口 conceallevel 等环境量
+            range = ctx.range, -- conform 选区 → mdwrap 块范围
+          })
+          if ok then
+            callback(nil, out)
+          else
+            callback(tostring(out))
+          end
+        end,
       },
       ["injected"] = {
         lang_to_ft = {

@@ -293,4 +293,14 @@ return {
       end,
     },
   },
+  {
+    "liubianshi/mdwrap.nvim",
+    dev = true,
+    ft = { "markdown", "quarto", "pandoc", "rmd" },
+    opts = {
+      width = 120,
+      keep_origin_wrap = false,
+      wrap_sentence = false,
+    },
+  },
 }
