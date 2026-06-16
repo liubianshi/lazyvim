@@ -184,11 +184,6 @@ function! utils#OpenUrl(url, in = "", type = "")
 endfunction
 
 
-" math equation preview ================================================== {{{1
-function! utils#Math_Preview() range
-    return
-endfunction
-
 " 在末尾添加符号 ======================================================== {{{1
 " Add a line of repeated symbols to create section separators or underlines.
 "
@@ -332,20 +327,6 @@ function! utils#AddFoldMark(symbol) abort
 endfunction
 
 
-" 代码格式化 ============================================================= {{{1
-function! utils#RFormat() range
-    if g:rplugin.nvimcom_port == 0
-        return
-    endif
-    let lns = getline(a:firstline, a:lastline)
-    call writefile(lns, g:rplugin.tmpdir . "/unformatted_code")
-    call AddForDeletion(g:rplugin.tmpdir . "/unformatted_code")
-    let cmd = "styler::style_text(readLines(\"" . g:rplugin.tmpdir . "/unformatted_code\"), transformers = styler::tidyverse_style(strict = FALSE, indent_by = 4))"
-    silent exe a:firstline . "," . a:lastline . "delete"
-    silent exe ':normal k'
-    call RInsert(cmd, "here")
-endfunction
-
 " insert org-mode roam node ============================================= {{{1
 function! utils#RoamInsertNode(title, method = "")
     let external_command = 'org-mode-roam-node "' . a:title . '"'
@@ -398,13 +379,6 @@ function! utils#RmdClipBoardImage()
     execute "normal! \<esc>g_\"iyi)VCknitr::include_graphics(\"\")\<esc>F\"\"iPo```\n"
 endfunction
 
-" RmarkdownPasteImage for md-img-paste
-function! utils#RmarkdownPasteImage(relpath)
-    execute "normal! i```{r, out.width = '70%', fig.pos = 'h', fig.show = 'hold'}\n" .
-          \ "knitr::include_graphics(\"" . a:relpath . "\")\r" .
-          \ "```\n"
-endfunction
-
 " insert org-mode style image =========================================== {{{1
 function! utils#OrgModeClipBoardImage()
     call mdip#MarkdownClipboardImage()
@@ -426,17 +400,6 @@ function! utils#VisualSelection(direction, extra_filter) range
     endif
     let @/ = l:pattern
     let @" = l:saved_reg
-endfunction
-
-" quickfix managing ====================================================== {{{1
-function! utils#QuickfixToggle()
-    if g:quickfix_is_open
-        cclose
-        let g:quickfix_is_open = 0
-    else
-        copen
-        let g:quickfix_is_open = 1
-    endif
 endfunction
 
 " shift specific line =================================================== {{{1
@@ -567,25 +530,6 @@ function! utils#R_view_srdm_var()
     return utils#R_view_df(dfname, row, method, max_width)
 endfunction
 
-" Stata dolines ========================================================== {{{1
-function! utils#RunDoLines()
-    let selectedLines = getbufline('%', line("'<"), line("'>"))
-    if col("'>") < strlen(getline(line("'>")))
-        let selectedLines[-1] = strpart(selectedLines[-1], 0, col("'>"))
-    endif
-    if col("'<") != 1
-        let selectedLines[0] = strpart(selectedLines[0], col("'<")-1)
-    endif
-    let temp = "/tmp/statacmd.do"
-    call writefile(selectedLines, temp)
-
-    if(has("mac"))
-        silent exec "!open /tmp/statacmd.do"
-    else
-        silent exec "! nohup bash ~/.config/nvim/runStata.sh >/dev/null 2>&1 &"
-    endif
-endfun
-
 " Status Line ============================================================ {{{1
 function! utils#Status()
     if &laststatus == 0
@@ -649,27 +593,6 @@ function! utils#Load_Plug(plugname)
     endif
 endfunction
 
-function! utils#Load_Plug_Confs(plugNames) abort
-    " load config file for loaded plug
-    for plugname in a:plugNames
-        if utils#PlugHasLoaded(plugname) == 1
-            call utils#Load_Plug_Conf(plugname)
-        endif
-    endfor
-endfunction
-
-" Input Method Toggle ==================================================== {{{1
-function! utils#LToggle()
-    if g:lbs_input_status == g:lbs_input_method_on
-        let g:input_toggle = 1
-        let l:a = system(g:lbs_input_method_inactivate)
-    elseif g:lbs_input_status != g:lbs_input_method_on && g:input_toggle == 1
-        let l:a = system(g:lbs_input_method_activate)
-        let g:input_toggle = 0
-    endif
-    return("")
-endfunction
-
 " View csv lines ========================================================= {{{1
 function! utils#ViewLines() range
     let selectedLines = getbufline('%', a:firstline, a:lastline)
@@ -699,36 +622,6 @@ function! utils#ViewLines() range
     exec "set nowrap"
     exec "wincmd h"
     "call writefile(selectedLines, tmpfile) exec "split " . tmpfile
-endfunction
-
-" Vim Auto List Completion =============================================== {{{1
-" From https://gist.github.com/sedm0784/dffda43bcfb4728f8e90
-" Auto lists: Automatically continue/end lists by adding markers if the
-" previous line is a list item, or removing them when they are empty
-function! utils#AutoFormatNewline()
-  if getline(".")[col("."):] =~ '\v^\s*\)+\s*$'
-    exec "normal ax\<left>\<enter>\<Esc>lxh"
-  else
-      let l:preceding_line = getline(line("."))
-      if l:preceding_line =~ '\v^\s*(\d+\.|[-+*])\s'
-        let l:space_before = matchstr(l:preceding_line, '\v^\zs\s*\ze(\d+\.|[-+*])\s+')
-        let l:symbol       = matchstr(l:preceding_line, '\v^\s*\zs(\d+\.|[-+*])\ze\s+')
-        let l:space_after  = matchstr(l:preceding_line, '\v^\s*(\d+\.|[-+*])\zs\s+\ze')
-        exec "normal a\<enter>"
-        if l:preceding_line =~ '\v^\s*\d+\.\s+[^ ]'
-            call setline(".", l:space_before . (l:symbol + 1) . "." . l:space_after)
-        elseif l:preceding_line =~ '\v^\s*\d+\.\s+$'
-            call setline(line(".") - 1, "")
-        elseif l:preceding_line =~ '\v^\s*[-+*]\s+[^ ]'
-            call setline(".", l:space_before . l:symbol . l:space_after)
-        elseif l:preceding_line =~ '\v^\s*[-+*]\s+$'
-          call setline(line(".") - 1, "")
-        endif
-        exec "normal $"
-      else
-          exec "normal \<enter>"
-      endif
-    endif
 endfunction
 
 " 翻译操作符 ============================================================= {{{1
@@ -777,47 +670,7 @@ function! utils#Trans2clip(type = '')
     endtry
 endfunction
 
-function! utils#Trans_Subs()
-    normal! vF=d
-    let string_ori = substitute(getreg('"'), '\v^\s*\=\s*', "", "")
-    let string_translated = trim(utils#Trans_string(string_ori))
-    echom string_translated
-    if string_translated == ""
-        let string_translated = "= " . string_ori
-    endif
-    call luaeval('vim.api.nvim_put({_A.str}, "c", true, true)', {'str': string_translated})
-endfunction
-
-
 " tab, window, buffer related ============================================ {{{1
-" 查找 bufnr 所在的标签序号 ---------------------------------------------- {{{2
-function! s:find_buftabnr(buffernr) abort
-    let l:tabnr = -1
-    for tnr in range(1, tabpagenr('$'))
-        for bnr in tabpagebuflist(tnr)
-            if bnr ==# a:buffernr
-                let l:tabnr = tnr
-                break
-            endif
-        endfo
-        if l:tabnr != -1
-            break
-        endif
-    endfor
-    return l:tabnr
-endfunction
-
-" 查找 bufnr 的标签 ------------------------------------------------------ {{{2
-function! utils#Find_bufwinnr(buffernr) abort
-    let l:tabnr = <sid>find_buftabnr(a:buffernr)
-    let l:winid = -1
-    if l:tabnr != -1
-        exe l:tabnr . "tabnext"
-        let l:winid = bufwinid(a:buffernr)
-    endif
-    return l:winid
-endfunction
-
 " open file in spec buffer
 function! utils#Preview_data(fname, globalvar, method = "tabnew", close = "n", filetype = "tsv")
     if !has_key(g:, a:globalvar)
@@ -894,21 +747,6 @@ function! utils#MdPreview(method = "infile") range  abort
   exec "PreviewImage! " . a:method . " " . outfile
 endfunction
 
-
-" Check the syntax group in the current cursor position, see ============= {{{1
-" https://stackoverflow.com/q/9464844/6064933 and
-" https://jordanelver.co.uk/blog/2015/05/27/working-with-vim-colorschemes/
-function! utils#SynGroup() abort
-  if !exists('*synstack')
-    return
-  endif
-  echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
-endfunction
-
-" Get highlight group color ============================================= {{{1
-function! utils#GetHlColor(hlg, element)
-    return synIDattr(synIDtrans(hlID(a:hlg)), a:element)
-endfun
 
 " Redirect command output to a register for later processing. ============ {{{1
 " Ref: https://stackoverflow.com/q/2573021/6064933 and https://unix.stackexchange.com/q/8101/221410 .
@@ -995,21 +833,6 @@ function! utils#GetNearestEmptyLine(linenr = -1)
     endfor
 
     return nearest_empty_line
-endfunction
-
-" 调整到特定的 Buffer
-function! utils#JumpToBuffer(bufname)
-    let windows = getwininfo()
-    for window in windows
-        " 检查每个窗口中的缓冲区名称
-        let win_bufname = bufname(window.bufnr)
-        " 如果缓冲区名称与给定名称匹配，则跳转到该窗口
-        if win_bufname == a:bufname
-            execute window.winnr . "wincmd w"
-            return
-        endif
-    endfor
-    echo "Buffer not found in current tab."
 endfunction
 
 " Insert line before or after
