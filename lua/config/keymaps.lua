@@ -95,7 +95,7 @@ keymap({
   desc = "Toggle Zen Mode (diy)"
 })
 keymap({
-  "<leader><enter>",
+  "<leader><bs>",
   "<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>",
   desc = "Redraw / Clear hlsearch / Diff Update"
 })
@@ -317,26 +317,16 @@ keymap({
   desc = "Translate (input)"
 })
 
--- Insert-mode: translate the current paragraph in place (toggles back to the
--- original on re-press). Only fires when no completion popup is visible; while
--- the pum is open, <C-l> is passed through so it never disrupts completion.
+-- Normal-mode: translate the paragraph under the cursor in place; re-pressing
+-- on a translated paragraph toggles it back to the original.
 keymap({
-  "<c-l>",
+  "<leader><enter>",
   function()
-    if vim.fn.pumvisible() == 1 then
-      return "<C-l>"
+    local trans = get_translate_module()
+    if trans then
+      trans.translate_paragraph_replace()
     end
-    -- expr mappings run under textlock; defer the buffer edit out of it.
-    vim.schedule(function()
-      local trans = get_translate_module()
-      if trans then
-        trans.translate_paragraph_replace()
-      end
-    end)
-    return ""
   end,
-  expr = true,
-  mode = "i",
   desc = "Translate paragraph in place (toggle)",
 })
 
