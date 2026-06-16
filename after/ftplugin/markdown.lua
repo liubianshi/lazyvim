@@ -5,7 +5,7 @@ vim.keymap.set("n", "<localleader>m", function()
 end, { desc = "Show action related bibkey" })
 
 vim.keymap.set({ "n", "i" }, "<localleader>il", function()
-  vim.fn["ref_link#add"]()
+  require("ref_link").add()
 end, { desc = "Add Link" })
 
 

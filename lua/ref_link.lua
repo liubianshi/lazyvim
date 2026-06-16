@@ -1,107 +1,99 @@
----@diagnostic disable: missing-fields
-
--- lua/ref_link.lua - A plugin to create reference-style links in Markdown.
+-- lua/ref_link.lua
+-- Markdown reference-style link helpers.
+--
+-- A faithful Lua port of the former `autoload/ref_link.vim`:
+--   * `M.get_id(url)` finds or creates a `[n]: url` definition under a
+--     `<!-- Links -->` section at the end of the buffer.
+--   * `M.add()` turns the text under the cursor (or a freshly fetched URL)
+--     into a reference link.
 
 local M = {}
 
--- The next available reference link ID.
-local next_id = 1
+-- Pattern matching `[123]: some-url`, capturing id and url (trailing space trimmed).
+local LINK_PATTERN = "^%[(%d+)%]:%s+(.-)%s*$"
 
 ---
--- Finds the last non-blank line in the current buffer.
--- This is much faster than iterating through lines in Lua as it uses
--- Vim's built-in search functionality.
+-- Finds an existing reference link for `url` or creates a new one.
 --
--- @return number The line number of the last non-blank line, or 0 if the buffer is empty.
+-- Searches for a `<!-- Links -->` section at the end of the buffer. If the
+-- section exists, it scans for the URL: when found, the existing ID is
+-- returned; otherwise a new definition with the next free ID is appended.
+-- If the section is missing, it is created together with the first link.
 --
-local function find_last_non_blank_line()
-  -- Search backwards ('b') for any non-whitespace character ('\S')
-  -- without moving the cursor ('n') or wrapping around the file ('W').
-  return vim.fn.search('\\S', 'bnW')
-end
+-- @param url string The URL to find or add.
+-- @return string The link ID (e.g. "1", "2").
+function M.get_id(url)
+  -- Search for the marker without moving the cursor and without wrapping.
+  local marker_line = vim.fn.search("^<!-- Links -->$", "nW")
 
----
--- Scans the buffer to find the highest existing reference ID and sets the next ID accordingly.
--- NOTE: This reads the entire buffer into memory, which may be slow for very large files.
---
-function M.initialize_id()
-  local highest_id = 0
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  for _, line in ipairs(lines) do
-    -- Match patterns like [^1]: http://... or [1]: http://...
-    for id_str in line:gmatch('^%[%^?(%d+)%]:') do
-      local id = tonumber(id_str)
-      if id and id > highest_id then
-        highest_id = id
+  -- No link section yet: create it and add the first link.
+  if marker_line == 0 then
+    vim.fn.append(vim.fn.line("$"), { "", "<!-- Links -->", "[1]: " .. url })
+    return "1"
+  end
+
+  -- Read every line after the marker for efficient scanning.
+  local link_lines = vim.fn.getbufline("%", marker_line + 1, "$")
+  local max_id = 0
+  local url_lower = url:lower()
+
+  for _, line in ipairs(link_lines) do
+    local id_str, current_url = line:match(LINK_PATTERN)
+    if id_str then
+      -- URL already present: reuse its ID (case-insensitive compare).
+      if current_url:lower() == url_lower then
+        return id_str
+      end
+
+      -- Track the highest ID to derive the next one.
+      local id = tonumber(id_str) or 0
+      if id > max_id then
+        max_id = id
       end
     end
   end
-  next_id = highest_id + 1
+
+  -- URL not found: append it with a fresh ID.
+  local new_id = max_id + 1
+  vim.fn.append(vim.fn.line("$"), "[" .. new_id .. "]: " .. url)
+  return tostring(new_id)
 end
 
 ---
--- Creates and inserts a Markdown reference-style link.
--- Appends the link definition to the end of the file and inserts the reference at the cursor.
+-- Adds a Markdown reference-style link at the cursor position.
 --
--- @param url string The URL for the reference.
---
-function M.create_reference_link(url)
-  if not url or url == '' then
-    vim.notify("URL cannot be empty.", vim.log.levels.WARN)
-    return
-  end
+-- The URL is taken from the system clipboard (`+` register); if it is not a
+-- URL, the user is prompted. When the cursor sits inside `[some text]`, the
+-- reference ID is appended -> `[some text][id]`. Otherwise a bare
+-- `[id][id]` placeholder is inserted.
+function M.add()
+  -- Attempt to read a URL from the system clipboard.
+  local url = vim.trim(vim.fn.getreg("+"))
 
-  local id = next_id
-  local link_def = string.format('[^%d]: %s', id, url)
-  local link_ref = string.format('[^%d]', id)
-
-  local last_line = find_last_non_blank_line()
-
-  if last_line > 0 then
-    -- Buffer has content, append the definition after the last non-blank line,
-    -- preceded by a blank line for separation.
-    vim.api.nvim_buf_set_lines(0, last_line, last_line, false, { '', link_def })
-  else
-    -- Buffer is empty or contains only whitespace, just add the definition at the start.
-    vim.api.nvim_buf_set_lines(0, 0, 0, false, { link_def })
-  end
-
-  -- Insert the link reference text at the cursor position.
-  vim.api.nvim_put({ link_ref }, 'c', true, true)
-
-  next_id = next_id + 1
-end
-
----
--- Prompts the user for a URL and then creates the reference link.
--- This function initializes the ID counter before prompting.
---
-function M.prompt_and_create_link()
-  M.initialize_id()
-  vim.ui.input({ prompt = 'URL: ' }, function(url)
-    -- Check if user provided a URL (i.e., didn't cancel the prompt)
-    if url then
-      M.create_reference_link(url)
+  -- Fall back to prompting when the clipboard is not a URL.
+  if not url:lower():match("^https?://") then
+    url = vim.trim(vim.fn.input("Input URL: "))
+    vim.cmd('echo ""') -- clear the command line
+    if url == "" then
+      return
     end
-  end)
-end
+  end
 
----
--- Sets up the plugin commands and keymaps.
---
-function M.setup()
-  -- Create a :RefLink user command that takes a URL as an argument.
-  vim.api.nvim_create_user_command('RefLink', function(opts)
-    M.initialize_id()
-    M.create_reference_link(opts.args)
-  end, { nargs = 1, desc = 'Create a Markdown reference link from a URL' })
+  local linkid = M.get_id(url)
 
-  -- Create a normal mode keymap to trigger the URL prompt.
-  vim.keymap.set('n', '<leader>rl', M.prompt_and_create_link, {
-    noremap = true,
-    silent = true,
-    desc = 'Create a Markdown reference link (prompts for URL)',
-  })
+  -- Detect surrounding `[...]` text via the existing Vimscript helper.
+  local title = vim.fn["utils#GetContentBetween"]("[", "]")
+
+  if title == "" then
+    -- No enclosing text: insert a `[id][id]` placeholder at the cursor.
+    local link_text = string.format("[%s][%s]", linkid, linkid)
+    vim.api.nvim_put({ link_text }, "c", true, true)
+  else
+    -- Text like `[some text]` exists: append the ID after the closing bracket.
+    if vim.fn.search("]", "W") ~= 0 then
+      vim.cmd("normal! a[" .. linkid .. "]")
+    end
+  end
 end
 
 return M

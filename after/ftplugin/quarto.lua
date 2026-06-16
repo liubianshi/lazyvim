@@ -133,7 +133,7 @@ vim.keymap.set("n", "<c-x>", function()
 end, { desc = "Show action related bibkey" })
 
 vim.keymap.set({ "n", "i" }, "<localleader>il", function()
-  vim.fn["ref_link#add"]()
+  require("ref_link").add()
 end, { desc = "Add Link" })
 
 vim.keymap.set({ "x", "o" }, "ic", function()
