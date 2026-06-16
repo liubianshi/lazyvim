@@ -388,3 +388,70 @@ keymap({
   end,
   desc = "Inspect current window properties"
 })
+
+-- GNU GLOBAL (gtags) lookups ------------------------------------------- {{{1
+-- Neovim removed built-in cscope (no :cscope / cscopeprg), so instead of a
+-- cscope bridge we query `global` directly and feed results into quickfix.
+-- GTAGSLABEL=native-pygments is set in config/options.lua. Build the database
+-- first with :GtagsUpdate (runs `gtags` in the current working directory).
+if vim.fn.executable("global") == 1 then
+  local gtags = {}
+
+  -- Run `global <flag> <pattern>` and populate the quickfix list.
+  -- flag: "-d" definitions, "-r" references, "-s" other symbols.
+  function gtags.query(flag, label, pattern)
+    pattern = (pattern ~= nil and pattern ~= "") and pattern or vim.fn.expand("<cword>")
+    if pattern == "" then
+      vim.notify("gtags: no symbol under cursor", vim.log.levels.WARN)
+      return
+    end
+    -- `--result=grep` prints `file:lineno:source line`, parsed below.
+    local out = vim.fn.systemlist({ "global", "--result=grep", flag, pattern })
+    if vim.v.shell_error ~= 0 then
+      vim.notify("gtags: " .. table.concat(out, "\n"), vim.log.levels.ERROR)
+      return
+    end
+    if vim.tbl_isempty(out) then
+      vim.notify(string.format("gtags: no %s for '%s'", label, pattern), vim.log.levels.INFO)
+      return
+    end
+    local items = {}
+    for _, line in ipairs(out) do
+      local file, lnum, text = line:match("^(.-):(%d+):(.*)$")
+      if file then
+        items[#items + 1] = { filename = file, lnum = tonumber(lnum), text = text }
+      end
+    end
+    vim.fn.setqflist({}, " ", { title = string.format("gtags %s: %s", label, pattern), items = items })
+    -- Jump straight to the sole match, otherwise open the quickfix list.
+    if #items == 1 then
+      vim.cmd("cfirst")
+    else
+      vim.cmd("botright copen")
+    end
+  end
+
+  -- (Re)build the gtags database in the current working directory.
+  function gtags.update()
+    vim.notify("gtags: building database ...", vim.log.levels.INFO)
+    local out = vim.fn.system({ "gtags" })
+    if vim.v.shell_error ~= 0 then
+      vim.notify("gtags update failed: " .. out, vim.log.levels.ERROR)
+    else
+      vim.notify("gtags: database updated", vim.log.levels.INFO)
+    end
+  end
+
+  vim.api.nvim_create_user_command("GtagsUpdate", gtags.update, { desc = "gtags: build/refresh database" })
+  vim.api.nvim_create_user_command("Gtags", function(o) gtags.query("-d", "definitions", o.args) end,
+    { nargs = "?", desc = "gtags: definitions" })
+  vim.api.nvim_create_user_command("GtagsRef", function(o) gtags.query("-r", "references", o.args) end,
+    { nargs = "?", desc = "gtags: references" })
+  vim.api.nvim_create_user_command("GtagsSym", function(o) gtags.query("-s", "symbols", o.args) end,
+    { nargs = "?", desc = "gtags: other symbols" })
+
+  keymap({ "<leader>cgu", gtags.update, desc = "Gtags: update database" })
+  keymap({ "<leader>cgd", function() gtags.query("-d", "definitions", "") end, desc = "Gtags: definition" })
+  keymap({ "<leader>cgr", function() gtags.query("-r", "references", "") end, desc = "Gtags: references" })
+  keymap({ "<leader>cgs", function() gtags.query("-s", "symbols", "") end, desc = "Gtags: other symbols" })
+end
