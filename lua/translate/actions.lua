@@ -5,9 +5,16 @@ local config = require("translate.config")
 local engine = require("translate.engine")
 local render = require("translate.render")
 local format = require("translate.format")
+local cache = require("translate.cache")
 local util = require("util")
 
 local M = {}
+
+-- In-buffer undo map for paragraph replace: bufnr -> { normalized_translation
+-- -> original_lines }. The primary, always-reliable restore path (works even
+-- when the SQLite cache is degraded). `cache.find_source` is the cross-session
+-- fallback when no in-memory entry matches.
+local undo_map = {}
 
 --- Resolve the target display width for a buffer, falling back to the narrowest
 --- line in `content` (capped at 78) when the buffer has no usable 'textwidth'.
@@ -313,6 +320,119 @@ function M.replace_line(opts)
       end
       local translated_content = table.concat(results, " ")
       vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, { (pre_content or "") .. translated_content })
+    end,
+  })
+end
+
+--- Return the 1-based [srow, erow] of the (blank-line delimited) paragraph the
+--- cursor sits in, or nil when the cursor is on a blank line.
+---@param buf integer
+---@param cursor_row integer 1-based
+---@return integer|nil srow
+---@return integer|nil erow
+local function current_paragraph_range(buf, cursor_row)
+  local total = vim.api.nvim_buf_line_count(buf)
+  local function is_blank(n)
+    local l = vim.api.nvim_buf_get_lines(buf, n - 1, n, false)[1]
+    return not l or not l:find("%S")
+  end
+  if cursor_row < 1 or cursor_row > total or is_blank(cursor_row) then
+    return nil
+  end
+  local s, e = cursor_row, cursor_row
+  while s > 1 and not is_blank(s - 1) do
+    s = s - 1
+  end
+  while e < total and not is_blank(e + 1) do
+    e = e + 1
+  end
+  return s, e
+end
+
+--- Try to restore a paragraph that is itself a known translation back to its
+--- original text. In-memory undo map first (exact), then the SQLite cache
+--- reverse lookup (cross-session). Returns true if a restore happened.
+---@param buf integer
+---@param srow integer 1-based
+---@param erow integer 1-based
+---@param para_join string the paragraph joined with "\n"
+---@return boolean restored
+local function restore_paragraph(buf, srow, erow, para_join)
+  local norm = cache.normalize(para_join)
+
+  local m = undo_map[buf]
+  if m and m[norm] then
+    vim.api.nvim_buf_set_lines(buf, srow - 1, erow, false, m[norm])
+    m[norm] = nil
+    return true
+  end
+
+  local source = cache.find_source(para_join)
+  if source then
+    vim.api.nvim_buf_set_lines(buf, srow - 1, erow, false, vim.split(source, "\n"))
+    return true
+  end
+
+  return false
+end
+
+--- Translate the paragraph under the cursor and replace it in place (CJK source
+--- => English, otherwise => Chinese; direction is auto-detected by the engine).
+--- If the paragraph is already a known translation, this restores the original
+--- instead (toggle), so repeated presses flip between source and translation.
+---@param opts? {force?: boolean}
+function M.translate_paragraph_replace(opts)
+  opts = opts or {}
+  local win = vim.api.nvim_get_current_win()
+  local buf = vim.api.nvim_win_get_buf(win)
+  local cursor_row = vim.api.nvim_win_get_cursor(win)[1]
+
+  local srow, erow = current_paragraph_range(buf, cursor_row)
+  if not srow then
+    return
+  end
+
+  local original_lines = vim.api.nvim_buf_get_lines(buf, srow - 1, erow, false)
+  if #original_lines == 0 then
+    return
+  end
+
+  -- Toggle: if this paragraph is a translation we produced, restore it.
+  local para_join = table.concat(vim.tbl_map(vim.trim, original_lines), "\n")
+  if not opts.force and restore_paragraph(buf, srow, erow, para_join) then
+    return
+  end
+
+  local indent_num = vim.api.nvim_buf_call(buf, function()
+    return math.max(vim.fn.indent(srow), 0)
+  end)
+  local textwidth = vim.bo[buf].textwidth
+  if not textwidth or textwidth <= 0 then
+    textwidth = 80
+  end
+
+  local grouped_content = util.join_strings_by_paragraph(original_lines)
+
+  engine.translate_paragraph(grouped_content, {
+    textwidth = textwidth,
+    indent = indent_num,
+    wrap = true,
+    force = opts.force,
+    callback = function(translated_lines)
+      if not translated_lines or #translated_lines == 0 then
+        return
+      end
+      local prepared = vim.tbl_map(function(l)
+        return string.rep(" ", indent_num) .. vim.trim(l or "")
+      end, translated_lines)
+
+      -- Record the undo mapping keyed by the normalized translation so the next
+      -- press on this (now translated) paragraph restores the original lines.
+      local norm = cache.normalize(table.concat(vim.tbl_map(vim.trim, prepared), "\n"))
+      undo_map[buf] = undo_map[buf] or {}
+      undo_map[buf][norm] = original_lines
+
+      vim.api.nvim_buf_set_lines(buf, srow - 1, erow, false, prepared)
     end,
   })
 end

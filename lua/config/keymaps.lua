@@ -317,6 +317,29 @@ keymap({
   desc = "Translate (input)"
 })
 
+-- Insert-mode: translate the current paragraph in place (toggles back to the
+-- original on re-press). Only fires when no completion popup is visible; while
+-- the pum is open, <C-l> is passed through so it never disrupts completion.
+keymap({
+  "<c-l>",
+  function()
+    if vim.fn.pumvisible() == 1 then
+      return "<C-l>"
+    end
+    -- expr mappings run under textlock; defer the buffer edit out of it.
+    vim.schedule(function()
+      local trans = get_translate_module()
+      if trans then
+        trans.translate_paragraph_replace()
+      end
+    end)
+    return ""
+  end,
+  expr = true,
+  mode = "i",
+  desc = "Translate paragraph in place (toggle)",
+})
+
 -- File manager --------------------------------------------------------- {{{1
 keymap({ "<leader>fs", "<cmd>write<cr>", desc = "Save File" })
 keymap({ "<leader>fS", "<cmd>write!<cr>", desc = "Save File (force)" })

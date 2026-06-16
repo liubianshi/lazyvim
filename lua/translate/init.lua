@@ -20,6 +20,8 @@ M.replace_line = actions.replace_line
 M.translate_content = actions.translate_content
 -- Also exposed for completeness (used internally by translate_content).
 M.translate_sentence = actions.translate_sentence
+-- Paragraph translate-and-replace (toggles back to the original on re-press).
+M.translate_paragraph_replace = actions.translate_paragraph_replace
 
 -- :Translate          translate current line (or range) using the cache.
 -- :Translate!         force a refresh: bypass the cache and overwrite it.

@@ -33,6 +33,15 @@ local function hash_key(engine, lang, source)
   return vim.fn.sha256(engine .. SEP .. (lang or "") .. SEP .. source)
 end
 
+--- Collapse all runs of whitespace to a single space and trim. Used to compare
+--- a (line-wrapped) buffer paragraph against an unwrapped cached `result` /
+--- `source`, since wrapping only changes where whitespace falls.
+---@param s string
+---@return string
+function M.normalize(s)
+  return (vim.trim(s or ""):gsub("%s+", " "))
+end
+
 --- Open the SQLite database on first use. Any failure flips `enabled = false`
 --- and we fall back to the in-memory table.
 local function ensure_init()
@@ -168,6 +177,32 @@ function M.clear()
     end)
   end
   state.mem = {}
+end
+
+--- Reverse lookup: given a translated text, find the original source that
+--- produced it (whitespace-insensitive match against cached `result`). Enables
+--- "undo translation" across sessions. Returns nil when degraded to memory
+--- (the in-memory fallback only stores result by hash, so source is lost).
+---@param result_text string the (possibly line-wrapped) translated text
+---@return string|nil source the original text, or nil if not found
+function M.find_source(result_text)
+  ensure_init()
+  if not (state.enabled and state.tbl) then
+    return nil
+  end
+  local target = M.normalize(result_text)
+  local ok, rows = pcall(function()
+    return state.tbl:get()
+  end)
+  if not ok or not rows then
+    return nil
+  end
+  for _, row in ipairs(rows) do
+    if row.result and M.normalize(row.result) == target then
+      return row.source
+    end
+  end
+  return nil
 end
 
 --- Number of cached rows (for diagnostics / verification).
