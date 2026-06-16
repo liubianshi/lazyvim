@@ -24,8 +24,13 @@ vim.g.default_colorscheme = {
 vim.cmd([[runtime plugin/man.lua]])
 
 -- Environment Variables ================================================ {{{1
+-- GNU GLOBAL (gtags) parser label. The `native-pygments` label is already
+-- defined in the system config (/usr/share/gtags/gtags.conf) and Pygments is
+-- installed, so we only set the label and let `global` fall back to that
+-- system config. Do NOT point GTAGSCONF at a non-existent file (e.g.
+-- ~/.globalrc): once GTAGSCONF is set, global stops falling back and errors
+-- out with "config file not found", which breaks tag generation entirely.
 vim.env.GTAGSLABEL = "native-pygments"
-vim.env.GTAGSCONF = vim.env.HOME .. "/.globalrc"
 
 -- Lua library ========================================================== {{{1
 -- Resolve LuaRocks paths and add them to Lua's package.path and package.cpath
