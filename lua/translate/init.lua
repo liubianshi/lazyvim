@@ -16,7 +16,7 @@ M.toggle = actions.toggle
 M.translate_line = actions.translate_line
 M.translate_selection = actions.translate_selection
 M.trans_op = actions.trans_op
-M.replace_line = actions.replace_line
+M.replace_line = actions.replace_line 
 M.translate_content = actions.translate_content
 -- Also exposed for completeness (used internally by translate_content).
 M.translate_sentence = actions.translate_sentence
