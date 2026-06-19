@@ -212,22 +212,23 @@ inoremap ;/ " ///<cr><tab>+ "<esc>
 " which key desc ============================================================= {{{1
 lua <<EOF
 local wk = require("which-key")
-wk.register({
-["<localleader><space>"] = { "Sync Element" },
-["<localleader>:"]       = { "Send Command"},
-["<localleader>H"]       = {"Help Document"},
-["<localleader>G"]       = {"Preview Graph"},
-["<localleader>b"]       = {name = "Block"},
-["<localleader>d"]       = {name = "describe"},
-["<localleader>f"]       = {name = "factor variable operator"},
-["<localleader>h"]       = {name = "stata help"},
-["<localleader>L"]       = {name = "log operator"},
-["<localleader>n"]       = {name = "numeric variable operator"},
-["<localleader>p"]       = {name = "Paragraph"},
-["<localleader>r"]       = {name = "run stata commmand"},
-["<localleader>s"]       = {name = "perserve or snapshot current data"},
-["<localleader>v"]       = {name = "view data, local, estimates et.al"},
-["<localleader>,"]       = {name = "+options set"},
-}, {buffer = 0} )
+local buf = vim.api.nvim_get_current_buf()
+wk.add({
+  { "<localleader>,", group = "options set", buffer = buf },
+  { "<localleader>:", desc = "Send Command", buffer = buf },
+  { "<localleader><space>", desc = "Sync Element", buffer = buf },
+  { "<localleader>G", desc = "Preview Graph", buffer = buf },
+  { "<localleader>H", desc = "Help Document", buffer = buf },
+  { "<localleader>L", group = "log operator", buffer = buf },
+  { "<localleader>b", group = "Block", buffer = buf },
+  { "<localleader>d", group = "describe", buffer = buf },
+  { "<localleader>f", group = "factor variable operator", buffer = buf },
+  { "<localleader>h", group = "stata help", buffer = buf },
+  { "<localleader>n", group = "numeric variable operator", buffer = buf },
+  { "<localleader>p", group = "Paragraph", buffer = buf },
+  { "<localleader>r", group = "run stata commmand", buffer = buf },
+  { "<localleader>s", group = "perserve or snapshot current data", buffer = buf },
+  { "<localleader>v", group = "view data, local, estimates et.al", buffer = buf },
+})
 EOF
 

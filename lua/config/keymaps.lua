@@ -68,8 +68,8 @@ for i = 1, 3 do
 end
 
 -- diff ----------------------------------------------------------------- {{{1
--- which-key group for diff commands
-keymap({ "<leader>d", group = "Diff", icon = { icon = "", hl = "WhichKeyIconOrange" } })
+-- The `<leader>d` group is defined once in lua/plugins/whichkey.lua to avoid a
+-- which-key duplicate-mapping warning.
 keymap({ "<leader>dl", "<cmd>diffget LOCAL<cr>:diffupdate<cr>", desc = "Diffget Local" })
 keymap({ "<leader>dr", "<cmd>diffget REMOTE<cr>:diffupdate<cr>", desc = "Diffget Remote", })
 
