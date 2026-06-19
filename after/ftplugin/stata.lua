@@ -1,4 +1,4 @@
-local config = require("hlterm").get_config()
+local config = require("hlterm.config").get_config()
 
 local function source_lines(lines)
   local f = config.tmp_dir .. "/lines.do"
@@ -6,7 +6,7 @@ local function source_lines(lines)
   require("hlterm").send_cmd("stata", "do " .. f)
 end
 
-require("hlterm").set_ft_opts("stata", {
+require("hlterm.config").set_ft_opts("stata", {
   nl = "\n",
   app = "stata-mp",
   quit_cmd = "exit, clear",
