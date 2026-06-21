@@ -443,6 +443,36 @@ vim.api.nvim_create_autocmd("BufFilePost", {
   desc = "Restart LSP clients on buffer rename.",
 })
 
+-- Guard: coerce any *function* `client.root_dir` into a resolved string.
+-- `vim.lsp.enable` resolves a function root_dir via `on_dir` before the client
+-- is created, but `vim.lsp.start` (lsp.lua:740) does NOT — it copies the
+-- function straight into `client.root_dir`. LazyVim's root detector / lualine
+-- then call `vim.fs.normalize` on it and crash with
+-- "attempt to index local 'path' (a function value)" on every statusline
+-- refresh. We re-run the function form (signature `fun(bufnr, on_dir)`),
+-- capturing the synchronous `on_dir` result, and fall back to nil so the
+-- string-expecting consumers always see a string or nil.
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = augroups.Lsp,
+  callback = function(ev)
+    local client = vim.lsp.get_client_by_id(ev.data.client_id)
+    if not client then
+      return
+    end
+    if type(client.root_dir) == "function" then
+      local resolved
+      pcall(client.root_dir, ev.buf, function(dir)
+        resolved = dir
+      end)
+      client.root_dir = type(resolved) == "string" and resolved or nil
+    end
+    if client.config and type(client.config.root_dir) == "function" then
+      client.config.root_dir = client.root_dir
+    end
+  end,
+  desc = "Resolve function root_dir to prevent LazyVim/lualine root crash.",
+})
+
 -- Roxygen2 highlight --------------------------------------------------- {{{2
 local r_higroup = require("rlib.higroup")
 vim.api.nvim_create_autocmd({ "BufEnter", "FileType" }, {

@@ -65,11 +65,15 @@ function M.get_root(path, root_patterns)
   if path then
     for _, client in pairs(vim.lsp.get_clients({ bufnr = 0 })) do
       local workspace = client.config.workspace_folders
+      -- Use the resolved `client.root_dir` (a string|nil), not
+      -- `client.config.root_dir` which may still hold a function for clients
+      -- started via `vim.lsp.start`; guard the type so a function never reaches
+      -- `vim.loop.fs_realpath` / `vim.fs.normalize`.
       local paths = workspace
           and vim.tbl_map(function(ws)
             return vim.uri_to_fname(ws.uri)
           end, workspace)
-        or client.config.root_dir and { client.config.root_dir }
+        or (type(client.root_dir) == "string" and { client.root_dir })
         or {}
       for _, p in ipairs(paths) do
         local r = vim.loop.fs_realpath(p) or ""
