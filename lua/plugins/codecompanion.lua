@@ -117,7 +117,7 @@ end
 -- 智能选择并优化文本
 -- 在普通模式下自动选择当前行，在可视模式下使用已选择的文本
 local function optimize_select()
-  local prompt_name = get_prompt_by_filetype()
+  local prompt_name = vim.b.cc_prompt or get_prompt_by_filetype()
   local current_mode = vim.fn.mode()
 
   -- 普通模式：自动选择当前行
