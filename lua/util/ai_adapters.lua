@@ -194,7 +194,13 @@ M.adapter_definitions = {
         env = { api_key = secret_cmd .. "aihubmix" },
         url = "https://aihubmix.com/v1/messages",
         schema = {
-          model = { default = "claude-sonnet-4-5" },
+          -- 显式给出静态 choices，覆盖基础 "anthropic" adapter 新增的动态拉取逻辑：
+          -- 后者会用当前 api_key 向官方 https://api.anthropic.com/v1/models 发请求，
+          -- 但这里的 key 是 aihubmix 代理密钥，官方接口必然拒绝（invalid x-api-key）。
+          model = {
+            default = "claude-sonnet-4-5",
+            choices = { "claude-sonnet-4-5", "claude-sonnet-4-6" },
+          },
         },
       },
     },
