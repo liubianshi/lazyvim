@@ -34,7 +34,7 @@ M.use_models = {
   chat          = { name = "aihubmix_claude", model = "claude-sonnet-4-6" },
   advanced_code = { name = "aihubmix_openai", model = "gpt-5.5-free" },
   write         = { name = "aihubmix_gemini", model = "gemini-3.1-flash-lite" },
-  academic      = { name = "aihubmix_gemini", model = "gemini-3.5-flash" },
+  academic      = { name = "aihubmix_claude", model = "claude-sonnet-5" },
 }
 -- stylua: ignore end
 
@@ -81,6 +81,31 @@ M.handlers = {
           },
         }
       end
+    end,
+  },
+  openai = {
+    ---Strip sampling knobs that OpenAI reasoning models reject.
+    ---o-series 与 gpt-5 系列均为 reasoning-only：发送 `temperature`/`top_p`
+    ---会得到 400「`temperature` is deprecated for this model」。而 schema 里
+    ---带默认值的字段会被 map_schema_to_params 无条件塞进请求体，所以只能在
+    ---这个组装后的钩子里删除。非推理模型（如 qwen3-max）保留其 schema 默认值。
+    ---@param self table The adapter instance
+    ---@param params table The request parameters assembled from the schema
+    ---@return table params
+    form_parameters = function(self, params)
+      local model = self.schema and self.schema.model and self.schema.model.default
+      if type(model) == "function" then
+        model = model(self)
+      end
+      model = tostring(model or ""):lower()
+
+      -- o1/o3/o4… 与 gpt-5* 既不收 temperature 也不收 top_p
+      if model:match("^o%d") or model:match("^gpt%-5") then
+        params.temperature = nil
+        params.top_p = nil
+      end
+
+      return params
     end,
   },
 }
@@ -155,6 +180,10 @@ M.adapter_definitions = {
       opts = {
         url = "https://aihubmix.com/v1/chat/completions",
         env = { api_key = secret_cmd .. "aihubmix" },
+        handlers = {
+          -- 剥离 gpt-5 / o 系列推理模型已弃用的 temperature/top_p
+          form_parameters = "M.handlers.openai.form_parameters",
+        },
         schema = {
           model = {
             default = "gpt-5.4",
@@ -198,8 +227,31 @@ M.adapter_definitions = {
           -- 后者会用当前 api_key 向官方 https://api.anthropic.com/v1/models 发请求，
           -- 但这里的 key 是 aihubmix 代理密钥，官方接口必然拒绝（invalid x-api-key）。
           model = {
-            default = "claude-sonnet-4-5",
-            choices = { "claude-sonnet-4-5", "claude-sonnet-4-6" },
+            default = "claude-sonnet-5",
+            choices = { "claude-sonnet-5", "claude-fable-5" },
+          },
+          -- 覆盖基础 anthropic adapter 的 temperature.enabled：其弃用名单
+          -- （opus-4-7/4-8、claude-fable*）漏掉了同属 Claude 5 家族的
+          -- claude-sonnet-5，对这些模型仍会发 temperature，aihubmix 后端
+          -- 回 400「temperature is deprecated for this model」。这里把判定
+          -- 扩展到整个 Claude 5 家族，4.x（如 sonnet-4-6）保持可用。
+          temperature = {
+            enabled = function(self)
+              local model = self.schema and self.schema.model and self.schema.model.default
+              if type(model) == "function" then
+                model = model(self)
+              end
+              model = tostring(model or "")
+              if
+                model:match("^claude%-%a+%-5") -- Claude 5 家族：sonnet-5 / opus-5 / haiku-5…
+                or model:match("^claude%-fable") -- fable 全系
+                or model == "claude-opus-4-7"
+                or model == "claude-opus-4-8"
+              then
+                return false
+              end
+              return true
+            end,
           },
         },
       },
@@ -207,12 +259,22 @@ M.adapter_definitions = {
   },
 }
 
----Resolves string references to functions in handler options
+---Resolves string references (e.g. "M.handlers.openai.form_parameters") to the
+---actual functions in M.handlers. Keeping the definitions as strings avoids
+---definition-order coupling inside the adapter_definitions literal.
 ---@param opts table The options table to resolve
 ---@return table opts The resolved options
 local function resolve_handlers(opts)
-  if opts.handlers and opts.handlers.chat_output == "M.handlers.gemini.chat_output" then
-    opts.handlers.chat_output = M.handlers.gemini.chat_output
+  if not opts.handlers then
+    return opts
+  end
+  for key, ref in pairs(opts.handlers) do
+    if type(ref) == "string" then
+      local group, method = ref:match("^M%.handlers%.([%w_]+)%.([%w_]+)$")
+      if group and M.handlers[group] and M.handlers[group][method] then
+        opts.handlers[key] = M.handlers[group][method]
+      end
+    end
   end
   return opts
 end
