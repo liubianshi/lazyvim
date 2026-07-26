@@ -102,20 +102,17 @@ function M.join_strings_by_paragraph(lines)
     end
   end
 
-  -- 将 list 写入缓冲区
-  local ft = vim.api.nvim_get_option_value("filetype", { buf = 0 })
-  -- vim.api.nvim_set_option_value("filetype", ft, { buf = temp_bufnr })
+  -- 将 list 写入缓冲区。临时 buffer 只是为了借 `:join`，段落扫描直接用入参 lines，
+  -- 不必写进去再读回来。
   vim.api.nvim_buf_set_lines(temp_bufnr, 0, -1, false, lines)
 
-  -- 扫描整个 buffer 的内容，读取每段的起始和结束行
+  -- 扫描内容，读取每段的起始和结束行
   local paragraph_ranges = {}
   local current_paragraph_start = 0
-  local line_count = vim.api.nvim_buf_line_count(temp_bufnr)
-  local buffer_lines = vim.api.nvim_buf_get_lines(temp_bufnr, 0, -1, false) -- Get lines once
+  local line_count = #lines
 
   for i = 1, line_count do
-    local line = buffer_lines[i]
-    local trimmed_line = vim.trim(line or "") -- Handle potential nil
+    local trimmed_line = vim.trim(lines[i] or "") -- Handle potential nil
 
     if #trimmed_line > 0 then -- Non-blank line
       if current_paragraph_start == 0 then
@@ -151,26 +148,14 @@ function M.join_strings_by_paragraph(lines)
   return final_lines, paragraph_ranges
 end
 
---- 取当前 visual 选区的整行内容。与 get_visual_selection 的区别是不按列截断，
---- 且必须处在 visual 模式中，否则返回 nil。
----@return string[]|nil
-function M.get_selected_lines()
-  local mode = vim.api.nvim_get_mode().mode
-  if mode ~= "v" and mode ~= "V" and mode ~= "\22" then
-    return
-  end
-
-  local buf = vim.api.nvim_get_current_buf()
-  local start_line = vim.fn.line("v") - 1
-  local end_line = vim.fn.line(".")
-  return vim.api.nvim_buf_get_lines(buf, start_line, end_line, false)
-end
-
 --- 把选中的 markdown 渲染成 html 交给 mdviewer。
 --- 唯一调用点在 autoload/utils.vim 的 utils#MdPreview()（surf 可用时的分支）。
 ---@param input? string[] 不传则取当前 visual 选区
 function M.md_preview(input)
-  input = input or M.get_selected_lines()
+  -- 用本文件既有的 get_visual_selection：它经 get_visual_coordinate 处理了反向选区、
+  -- 块选与多字节结尾，且退出 visual 模式后仍能靠 '< '> 取到选区——而 vimscript 侧
+  -- 的 utils#MdPreview() 正是在退出 visual 之后才被调用的。
+  input = input or M.get_visual_selection()
   if not input or #input == 0 then
     return
   end

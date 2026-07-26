@@ -1,18 +1,24 @@
 -- pickers 之间共用的小工具。
 local M = {}
 
+--- 列出 path 下的一级子目录名。
+--- 用 fs_scandir 一次遍历同时拿到名字与类型，避免 readdir 之后再逐项 isdirectory
+--- ——fabric 的 pattern 目录有一两百项，那样每次开 picker 就多出同样多次 stat。
 function M.get_folders(path)
   local folders = {}
-  local entries = vim.fn.readdir(path)
-
-  for _, entry in ipairs(entries) do
-    local full_path = path .. "/" .. entry
-    if vim.fn.isdirectory(full_path) == 1 then
-      table.insert(folders, entry)
+  local dir = vim.uv.fs_scandir(path)
+  if not dir then
+    return folders
+  end
+  while true do
+    local name, entry_type = vim.uv.fs_scandir_next(dir)
+    if not name then
+      return folders
+    end
+    if entry_type == "directory" then
+      folders[#folders + 1] = name
     end
   end
-
-  return folders
 end
 
 function M.get_reference(picker)

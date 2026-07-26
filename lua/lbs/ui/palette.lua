@@ -100,18 +100,9 @@ function M.adjust_hi_group(palette)
   -- 解决 vim 帮助文件的示例代码的不够突显的问题
   vim.api.nvim_set_hl(0, "helpExample", { link = "Special", default = true })
 
-  local normal_float_hl = vim.api.nvim_get_hl(0, { name = "NormalFloat" })
-  local bg_color = normal_float_hl.bg -- If NormalFloat or its bg is not set, bg_color will be nil
-  local orange_color = palette.orange
-
-  -- Only try to set MyBorder if bg_color is available, to avoid issues if NormalFloat.bg is nil
-  if bg_color then
-    if vim.fn.exists("g:neovide") == 1 then
-      vim.api.nvim_set_hl(0, "MyBorder", { fg = bg_color, bg = bg_color })
-    else
-      vim.api.nvim_set_hl(0, "MyBorder", { fg = orange_color, bg = bg_color })
-    end
-  end
+  -- MyBorder 统一由本文件的 setup_myborder_hl() 负责。这里原本还有一套按
+  -- NormalFloat.bg 取色的实现，但调用方（init.lua 的 ColorScheme/VimEnter 回调）
+  -- 总是紧接着调 setup_myborder_hl，结果每次都被覆盖，两套取色口径还不一致。
 
   vim.api.nvim_set_hl(0, "DiagnosticSignInfo", { bg = "NONE" })
   -- Setting the color scheme of the Complement window

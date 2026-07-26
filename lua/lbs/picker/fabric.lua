@@ -82,24 +82,19 @@ return function(opts)
           table.insert(cmd, translate_model)
         end
 
-        if item.text == "translate" and not opts.stdin then
-          table.insert(cmd, "-v=lang_code:zh_CN")
-          require("util.term").pipe(cmd, opts)
-        elseif item.text == "translate" then
-          opts.stdin = require("lbs.buf").join_strings_by_paragraph(opts.stdin)
-          local head_chars = vim.trim(opts.stdin[1]):sub(1, 20)
-          local is_cjk = false
-          for _, char in ipairs(vim.fn.split(head_chars, "\\zs")) do
-            if is_cjk_character(char) then
-              is_cjk = true
-              break
+        -- 单出口：早先这里的第一个分支自己调了一次 pipe，末尾又无条件调一次，
+        -- 「translate 且无 stdin」这条路会把 fabric 起两遍（含两次模型请求）。
+        if item.text == "translate" then
+          local target = "-v=lang_code:zh_CN"
+          if opts.stdin then
+            opts.stdin = require("lbs.buf").join_strings_by_paragraph(opts.stdin)
+            local head_chars = vim.trim(opts.stdin[1]):sub(1, 20)
+            -- 开头是中文就译成英文，否则译成中文
+            if vim.iter(vim.fn.split(head_chars, "\\zs")):any(is_cjk_character) then
+              target = "-v=lang_code:en_US"
             end
           end
-          if is_cjk then
-            table.insert(cmd, "-v=lang_code:en_US")
-          else
-            table.insert(cmd, "-v=lang_code:zh_CN")
-          end
+          table.insert(cmd, target)
         end
         require("util.term").pipe(cmd, opts)
       end,

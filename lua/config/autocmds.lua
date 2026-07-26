@@ -92,7 +92,6 @@ aucmd({ "BufWinEnter", "BufRead", "BufEnter" }, {
     if winid == -1 or vim.api.nvim_win_get_config(winid).zindex then
       return
     end
-    local win_attr = vim.api.nvim_win_get_config(winid)
 
     local zen_oriwin = vim.b[bufnr].zen_oriwin
     local is_zen_buffer = zen_oriwin and zen_oriwin.zenmode
@@ -144,7 +143,6 @@ local function show_document(ft)
     else
       vim.cmd.Rdoc(keyword)
     end
-  else
   end
 end
 aucmd({ "FileType" }, {

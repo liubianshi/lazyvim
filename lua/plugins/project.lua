@@ -22,8 +22,7 @@ return {
       silent_chdir = false,
       exclude_dirs = { "~", "/tmp", "~/Downloads" },
     },
-    config = function(_, opts)
-      require("project_nvim").setup(opts)
-    end,
+    -- 模块名与仓库名不同，指明后由 lazy.nvim 自己调 setup(opts)
+    main = "project_nvim",
   },
 }

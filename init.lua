@@ -4,12 +4,9 @@ require("config.lazy")
 require("global_functions")
 require("lbs.commands")
 
--- 绕过 Neovim _changetracking.lua 的 buf_state 竞态，实现与删除条件见 lbs/lsp.lua。
-require("lbs.lsp").patch_changetracking()
-
--- 浮窗边框高亮：启动时设一次，之后随 colorscheme 与 GUI 变化同步。
+-- 浮窗边框高亮：随 colorscheme 与 GUI 变化同步。VimEnter 必然触发，
+-- 启动期的首次设置由它承担，不必在这里再裸调一次。
 local palette = require("lbs.ui.palette")
-palette.setup_myborder_hl()
 vim.api.nvim_create_autocmd({ "ColorScheme", "VimEnter" }, {
   group = vim.api.nvim_create_augroup("MyBorderHL", { clear = true }),
   callback = function()

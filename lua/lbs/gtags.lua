@@ -28,16 +28,15 @@ function M.query(flag, label, pattern)
     vim.notify(string.format("gtags: no %s for '%s'", label, pattern), vim.log.levels.INFO)
     return
   end
-  local items = {}
-  for _, line in ipairs(out) do
-    local file, lnum, text = line:match("^(.-):(%d+):(.*)$")
-    if file then
-      items[#items + 1] = { filename = file, lnum = tonumber(lnum), text = text }
-    end
-  end
-  vim.fn.setqflist({}, " ", { title = string.format("gtags %s: %s", label, pattern), items = items })
+  -- 交给 errorformat 解析，别手写 `^(.-):(%d+):(.*)$`：那个正则会在含冒号的
+  -- 文件名上错拆，而 %f 知道怎么处理。
+  vim.fn.setqflist({}, " ", {
+    title = string.format("gtags %s: %s", label, pattern),
+    lines = out,
+    efm = "%f:%l:%m",
+  })
   -- Jump straight to the sole match, otherwise open the quickfix list.
-  if #items == 1 then
+  if #vim.fn.getqflist() == 1 then
     vim.cmd("cfirst")
   else
     vim.cmd("botright copen")

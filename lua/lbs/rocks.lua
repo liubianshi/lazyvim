@@ -5,99 +5,67 @@
 -- package.cpath 推断（so / dll / dylib）。重复加载不会产生重复条目。
 local M = {}
 
-function M.setup()
-  -- Resolve LuaRocks paths and add them to Lua's package.path and package.cpath
-  -- This version prefers XDG-compliant locations when available, falls back to ~/.luarocks,
-  -- and avoids adding duplicate entries. It also augments package.cpath for compiled modules.
-  
-  -- Pick libuv handle compatible with multiple Neovim versions
-  local uv = vim and (vim.uv or vim.loop)
-  
-  -- Helper: return first existing directory from a list of candidates
-  local function first_existing_dir(paths)
-    if not uv then
-      return nil
+--- 取候选目录中第一个真实存在的。
+local function first_existing_dir(paths)
+  for _, p in ipairs(paths) do
+    local stat = vim.uv.fs_stat(p)
+    if stat and stat.type == "directory" then
+      return p
     end
-    for _, p in ipairs(paths) do
-      local stat = uv.fs_stat(p)
-      if stat and stat.type == "directory" then
-        return p
-      end
-    end
-    return nil
   end
-  
-  -- Helper: append a path segment to a list string if not already present
-  local function append_unique(list, segment)
-    -- Ensure both sides are semicolon-delimited to avoid substring matches
-    local haystack = ";" .. (list or "") .. ";"
-    local needle = ";" .. segment .. ";"
-    if not haystack:find(needle, 1, true) then
-      if list and #list > 0 then
-        return list .. ";" .. segment
-      else
-        return segment
-      end
-    end
+end
+
+--- 往分号分隔的路径串追加一段，已存在则原样返回。
+--- 两侧都补分号再比对，避免命中子串（比如 /a/b 命中 /a/bc）。
+local function append_unique(list, segment)
+  local haystack = ";" .. (list or "") .. ";"
+  if haystack:find(";" .. segment .. ";", 1, true) then
     return list
   end
-  
-  -- Derive candidate LuaRocks roots (most-preferred first)
-  local home = (vim and vim.env and vim.env.HOME) or os.getenv("HOME") or ""
-  local xdg_data = (vim and vim.env and vim.env.XDG_DATA_HOME) or os.getenv("XDG_DATA_HOME")
-  local xdg_cfg = (vim and vim.env and vim.env.XDG_CONFIG_HOME) or os.getenv("XDG_CONFIG_HOME")
-  
+  return (list and #list > 0) and (list .. ";" .. segment) or segment
+end
+
+function M.setup()
+  local home = vim.env.HOME or ""
+  local xdg_data = vim.env.XDG_DATA_HOME
+  local xdg_cfg = vim.env.XDG_CONFIG_HOME
+
+  -- 候选根目录，按优先级排列
   local candidates = {}
   if xdg_data and #xdg_data > 0 then
-    table.insert(candidates, xdg_data .. "/luarocks")
+    candidates[#candidates + 1] = xdg_data .. "/luarocks"
   end
   if home ~= "" then
-    table.insert(candidates, home .. "/.local/share/luarocks")
-    table.insert(candidates, home .. "/.luarocks")
+    candidates[#candidates + 1] = home .. "/.local/share/luarocks"
+    candidates[#candidates + 1] = home .. "/.luarocks"
   end
   if xdg_cfg and #xdg_cfg > 0 then
-    table.insert(candidates, xdg_cfg .. "/luarocks")
+    candidates[#candidates + 1] = xdg_cfg .. "/luarocks"
   end
-  
-  local rocks_root = first_existing_dir(candidates)
-  -- Fallback if we couldn't stat anything (e.g., older Neovim without uv): use ~/.luarocks
-  if not rocks_root and home ~= "" then
-    rocks_root = home .. "/.luarocks"
+
+  -- 一个都不存在时仍按 ~/.luarocks 布好路径，将来装了 rock 不必改配置
+  local rocks_root = first_existing_dir(candidates) or (home ~= "" and home .. "/.luarocks")
+  if not rocks_root then
+    return
   end
-  
-  -- Determine Lua version directory (e.g., "5.1"). Neovim uses LuaJIT compatible with 5.1.
-  local lua_version = (_VERSION and _VERSION:match("(%d+%.%d+)")) or "5.1"
-  
-  -- Infer shared library extension from current package.cpath (so, dll, dylib)
-  local inferred_ext = (package.cpath or ""):match("%?%.([%a%d]+)") or "so"
-  
-  -- Build LuaRocks search patterns
-  local lua_paths = {
+
+  -- Neovim 的 LuaJIT 兼容 5.1
+  local lua_version = _VERSION:match("(%d+%.%d+)")
+  local ext = (package.cpath or ""):match("%?%.([%a%d]+)") or "so"
+
+  for _, p in ipairs({
     rocks_root .. "/share/lua/" .. lua_version .. "/?.lua",
     rocks_root .. "/share/lua/" .. lua_version .. "/?/init.lua",
-  }
-  
-  local c_paths = {
-    rocks_root .. "/lib/lua/" .. lua_version .. "/?." .. inferred_ext,
-    rocks_root .. "/lib/lua/" .. lua_version .. "/loadall." .. inferred_ext,
-  }
-  
-  -- Apply to package.path and package.cpath without duplicates
-  for _, p in ipairs(lua_paths) do
+  }) do
     package.path = append_unique(package.path, p)
   end
-  
-  for _, p in ipairs(c_paths) do
+
+  for _, p in ipairs({
+    rocks_root .. "/lib/lua/" .. lua_version .. "/?." .. ext,
+    rocks_root .. "/lib/lua/" .. lua_version .. "/loadall." .. ext,
+  }) do
     package.cpath = append_unique(package.cpath, p)
   end
-  
-  --[[
-  Summary:
-  - Prefers XDG_DATA_HOME/luarocks, then ~/.local/share/luarocks, ~/.luarocks, and XDG_CONFIG_HOME/luarocks.
-  - Adds both Lua module paths (?.lua, ?/init.lua) and C module paths (?.<ext>, loadall.<ext>).
-  - Avoids duplicating entries across repeated loads.
-  - Keeps compatibility with various Neovim versions by using vim.uv or vim.loop when available.
-  ]]
 end
 
 return M

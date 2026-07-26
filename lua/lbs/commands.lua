@@ -1,4 +1,5 @@
--- Define commands
+-- 用户命令定义。与 lbs/ 下其余模块不同，本模块 require 即注册、不返回模块表，
+-- 是 init.lua 直接拉起的入口。
 local cmd = vim.api.nvim_create_user_command
 
 cmd("Bclose", function(opts)

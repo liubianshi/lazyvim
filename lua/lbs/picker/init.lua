@@ -29,6 +29,9 @@ return setmetatable(M, {
       return nil
     end
     local fn = require("lbs.picker." .. key)
+    -- 契约靠断言守住：某个 picker 若改成返回模块表，调用方只会在按键那一刻
+    -- 得到一句「未找到」，指不到真正的原因。
+    assert(type(fn) == "function", "lbs.picker." .. key .. " 必须返回函数")
     rawset(M, key, fn) -- 缓存，后续取值直接命中，不再走 __index
     return fn
   end,

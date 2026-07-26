@@ -1,5 +1,6 @@
 -- Zen 模式下的窗口尺寸编排：按 buffer 类型决定各窗口宽度与 signcolumn/foldcolumn。
--- autocmd 注册留在 config/autocmds.lua，这里只放计算逻辑。
+-- autocmd 注册留在 config/autocmds.lua，这里放编排本身——注意它直接改写窗口选项、
+-- 也会执行 :vertical resize，不是可以随处复用的纯计算。
 local M = {}
 
 function M.process_win(win)
@@ -20,31 +21,19 @@ function M.process_win(win)
     return "break"
   end
 
-  if vim.g.lbs_zen_mode then
-    if ww <= 88 then
-      vim.wo[win].signcolumn = "auto:1"
-    elseif ww <= 100 then
-      vim.wo[win].signcolumn = "yes:4"
-    else
-      vim.wo[win].signcolumn = "yes:" .. math.min(math.floor((ww - 81) / 4), 6)
-    end
-  elseif zen_oriwin and type(zen_oriwin) == "table" and zen_oriwin.zenmode then
-    if ww <= 88 then
-      vim.wo[win].signcolumn = "auto:1"
-    elseif ww <= 100 then
-      vim.wo[win].signcolumn = "yes:4"
-    else
-      vim.wo[win].signcolumn = "yes:" .. math.min(math.floor((ww - 81) / 4), 9)
-    end
-  else
-    if ww <= 40 then
-      vim.wo[win].signcolumn = "no"
-      vim.wo[win].foldcolumn = "0"
-    else
-      vim.wo[win].signcolumn = "auto:1"
-      vim.wo[win].foldcolumn = vim.o.foldcolumn
-    end
+  -- 两条 zen 路径的阈值完全相同，只有 signcolumn 上限不同（全局 zen 收到 6，
+  -- 窗口自带 zen_oriwin.zenmode 的放到 9），合成一条，阈值只写一遍。
+  local cap = (vim.g.lbs_zen_mode and 6) or (type(zen_oriwin) == "table" and zen_oriwin.zenmode and 9)
+  if cap then
+    vim.wo[win].signcolumn = (ww <= 88 and "auto:1")
+      or (ww <= 100 and "yes:4")
+      or ("yes:" .. math.min(math.floor((ww - 81) / 4), cap))
+    return
   end
+
+  local narrow = ww <= 40
+  vim.wo[win].signcolumn = narrow and "no" or "auto:1"
+  vim.wo[win].foldcolumn = narrow and "0" or vim.o.foldcolumn
 end
 
 return M
