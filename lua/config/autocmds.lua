@@ -356,10 +356,6 @@ vim.api.nvim_create_autocmd({ "ColorScheme" }, {
   desc = "remove unnecessary background",
 })
 
--- adjust_hi_group 的 ColorScheme 注册已合并到 init.lua 的 MyBorderHL 组：
--- 那一处覆盖 {ColorScheme, VimEnter}，是本处（仅 ColorScheme）的超集，
--- 两处并存会让每次切换配色重复调用一遍。
-
 -- Untitled file -------------------------------------------------------- {{{1
 -- 退出 Neovim 时，忽略未保存的 Untitled buffer 对退出进程的干扰
 vim.api.nvim_create_autocmd({ "QuitPre" }, {
@@ -396,32 +392,13 @@ local function restart_lsp_on_rename(args)
     return
   end
 
-  -- codecompanion-history 的自动设置标题功能因调用 `vim.api.nvim_buf_set_name()`
-  -- 会导致 `rime_ls` 失效，需要先 detach 再 attach rime_ls。
-  -- 其实也会导致其他 lsp 失效，但由于 codecompanion 下启用的 lsp 通常只有
-  -- rime_ls，为了避免影响扩散，这里只处理 rime_ls。
-  --
-  -- 先筛选再通知：原实现在循环体内用 `return` 代替 `goto continue`，只要 buffer
-  -- 上还挂着别的 LSP（几乎总是如此），首个非 rime_ls 客户端就会终止整个循环，
-  -- rime_ls 永远得不到重启；同时 notify 在筛选之前无条件触发，没有 rime_ls 时
-  -- 也会弹提示。
-  local targets = vim.tbl_filter(function(client)
-    return client.name == "rime_ls"
-  end, vim.lsp.get_clients({ bufnr = bufnr }))
-
-  if #targets == 0 then
-    return
-  end
-
-  vim.notify("Buffer renamed, restarting rime_ls ...", vim.log.levels.INFO, {
-    title = "LSP",
-  })
-
-  -- Detach and then schedule a re-attachment for each client.
-  -- `vim.schedule` ensures re-attachment happens in the next event loop tick,
-  -- preventing potential race conditions.
-  for _, client in ipairs(targets) do
+  -- codecompanion-history 自动设置标题时调用 `nvim_buf_set_name()` 会让 rime_ls 失效，
+  -- 需要 detach 再 attach。其他 LSP 同样受影响，但 codecompanion 下通常只有 rime_ls，
+  -- 故只处理它，避免影响扩散。
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = "rime_ls" })) do
+    vim.notify("Buffer renamed, restarting rime_ls ...", vim.log.levels.INFO, { title = "LSP" })
     vim.lsp.buf_detach_client(bufnr, client.id)
+    -- 下一个事件循环再 attach，避免与 detach 竞争。
     vim.schedule(function()
       vim.lsp.buf_attach_client(bufnr, client.id)
     end)
