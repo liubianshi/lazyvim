@@ -20,7 +20,7 @@ vim.wo.breakindent = true
 vim.api.nvim_set_option_value("formatexpr", nil, { scope = "local" })
 vim.api.nvim_set_option_value("formatprg", "mdwrap", { scope = "local" })
 
-local keymap = require("util").keymap
+local keymap = require("lbs.keymap").keymap
 
 local fexport = function(oformat, ofile)
   local bufnr = vim.api.nvim_get_current_buf()
@@ -36,7 +36,7 @@ local fexport = function(oformat, ofile)
 
   local cmd = string.format('fexport --from=%s --to="%s" --outfile="%s" "%s"', vim.bo.filetype, oformat, ofile, fname)
   print(cmd)
-  require("util").execute_async(cmd)
+  require("lbs.proc").execute_async(cmd)
   return ofile
 end
 
@@ -129,7 +129,7 @@ vim.keymap.set("i", "<A-\\>", function()
   vim.api.nvim_put({ "%>%" }, "c", at_end_of_line(), true)
 end, { buffer = true, desc = "Pipe operator", silent = true })
 vim.keymap.set("n", "<c-x>", function()
-  require("util").bibkey_action(vim.fn.expand("<cword>"))
+  require("lbs.cite").bibkey_action(vim.fn.expand("<cword>"))
 end, { desc = "Show action related bibkey" })
 
 vim.keymap.set({ "n", "i" }, "<localleader>il", function()

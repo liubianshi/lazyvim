@@ -39,7 +39,7 @@ end, {
 })
 
 cmd("SR", function(opts)
-  require("util").execute_async(string.format("sr %s &>/dev/null &", opts.args), {
+  require("lbs.proc").execute_async(string.format("sr %s &>/dev/null &", opts.args), {
     on_stdout = function() end,
     on_exit = function()
       vim.notify("Opened in external browser", vim.log.levels.INFO, { title = "SurfRaw" })

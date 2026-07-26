@@ -404,7 +404,7 @@ return {
         ]],
         { output = false }
       )
-      require("util").wk_reg({
+      require("lbs.keymap").wk_reg({
         { "<localleader>t", group = "Table Mode .." },
       })
     end,

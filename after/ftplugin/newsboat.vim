@@ -34,7 +34,7 @@ function! s:get_link_citation_under_cursor(ft = "org")
         let image_path = system("linkhandler -t image -V '" . link['url'] . "'")
         let imagename = v:lua.vim.fs.basename(image_path)
         let subdir = v:lua.vim.fs.basename(v:lua.vim.fs.dirname(image_path))
-        " let rootdir = luaeval('require("util").get_root(vim.b.mylib_note)')
+        " let rootdir = luaeval('require("lbs.path").get_root(vim.b.mylib_note)')
         " if isdirectory(rootdir . "/.obsidian")
         "     let target_dir = rootdir . "/img/" . subdir
         " else

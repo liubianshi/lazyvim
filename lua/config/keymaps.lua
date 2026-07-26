@@ -1,6 +1,6 @@
 -- stylua: ignore start
 
-local keymap = require("util").keymap
+local keymap = require("lbs.keymap").keymap
 
 -- Register ------------------------------------------------------------- {{{1
 -- Change text without yanking it into a register.
@@ -189,7 +189,7 @@ keymap({
   "<leader>ew",
   function()
     -- Assumes a `util` module with `get_daily_filepath` function exists.
-    vim.cmd("edit " .. require("util").get_daily_filepath("md", "ReciteWords"))
+    vim.cmd("edit " .. require("lbs.path").get_daily_filepath("md", "ReciteWords"))
   end,
   desc = "Open Daily English Notes"
 })

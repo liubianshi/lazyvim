@@ -36,7 +36,7 @@ return {
       },
       callbacks = {
         enter_note = function(note) -- client, note
-          local keymap = require("util").keymap
+          local keymap = require("lbs.keymap").keymap
           -- 四条动作统一挂在 <localleader>n 下(n = note)，不再占用单字母。
           -- 单字母版本会在笔记里撞车：;t 与 vim-table-mode 的 ;t* 前缀
           -- (table_mode_map_prefix，ft 含 markdown) 叠在一起，查标签要等满
@@ -290,7 +290,7 @@ return {
         go_prev_heading = "[[", -- (string|boolean) set cursor to previous section heading
       },
       on_attach = function(bufnr)
-        local map = require("util").keymap
+        local map = require("lbs.keymap").keymap
         map({ "<s-enter>", "<Cmd>MDListItemBelow<CR>", mode = { "n", "i" } })
       end,
     },

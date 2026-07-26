@@ -86,7 +86,7 @@ return function(opts)
           table.insert(cmd, "-v=lang_code:zh_CN")
           require("util.term").pipe(cmd, opts)
         elseif item.text == "translate" then
-          opts.stdin = require("util").join_strings_by_paragraph(opts.stdin)
+          opts.stdin = require("lbs.buf").join_strings_by_paragraph(opts.stdin)
           local head_chars = vim.trim(opts.stdin[1]):sub(1, 20)
           local is_cjk = false
           for _, char in ipairs(vim.fn.split(head_chars, "\\zs")) do

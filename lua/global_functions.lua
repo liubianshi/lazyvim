@@ -23,7 +23,7 @@ function _G.LoadedPlugins()
 end
 
 function _G.PlugExist(plug)
-  return require("util").has(plug)
+  return require("lazy.core.config").plugins[plug] ~= nil
 end
 
 function _G.at_end_of_line()

@@ -6,7 +6,8 @@ local engine = require("translate.engine")
 local render = require("translate.render")
 local format = require("translate.format")
 local cache = require("translate.cache")
-local util = require("util")
+local buf = require("lbs.buf")
+local path = require("lbs.path")
 
 local M = {}
 
@@ -39,7 +40,7 @@ end
 ---@param srow integer 1-based start row of the source in the buffer
 ---@param opts {force?: boolean}
 local function render_paragraphs(buf, content, srow, opts)
-  local grouped_content, paragraph_range = util.join_strings_by_paragraph(content)
+  local grouped_content, paragraph_range = buf.join_strings_by_paragraph(content)
   table.insert(grouped_content, "")
 
   -- Buffer line (1-based) where each source paragraph ends.
@@ -129,8 +130,8 @@ end
 function M.translate_selection(opts)
   local winid = vim.api.nvim_get_current_win()
   local buf = vim.api.nvim_win_get_buf(winid)
-  local visual_coordiate = util.get_visual_coordinate()
-  local content = util.get_visual_selection()
+  local visual_coordiate = buf.get_visual_coordinate()
+  local content = buf.get_visual_selection()
   local mode = vim.api.nvim_get_mode()
   if not visual_coordiate or not content or #content == 0 then
     return
@@ -170,7 +171,7 @@ end
 ---@param opts? {force?: boolean}
 function M.translate_content(content, callback, opts)
   opts = opts or {}
-  content = content or util.get_visual_selection()
+  content = content or buf.get_visual_selection()
   if type(content) == "string" then
     if content:find("%S") then
       content = { content }
@@ -185,7 +186,7 @@ function M.translate_content(content, callback, opts)
     return
   end
 
-  local save_path = util.get_daily_filepath("md", "ReciteWords")
+  local save_path = path.get_daily_filepath("md", "ReciteWords")
   if #content == 1 and #vim.split(content[1], "%s+") <= 3 then
     require("kd").translate_word(content[1], save_path)
   else
@@ -223,7 +224,7 @@ end
 ---@param output_file_path? string
 ---@param opts? {force?: boolean}
 function M.translate_sentence(content, output_file_path, opts)
-  local grouped_content, _ = util.join_strings_by_paragraph(content)
+  local grouped_content, _ = buf.join_strings_by_paragraph(content)
 
   local textwidth = vim.bo.textwidth
   if not textwidth or textwidth == 0 then
@@ -243,7 +244,7 @@ function M.translate_sentence(content, output_file_path, opts)
       if not lines or #lines < 1 then
         return
       end
-      local grouped_lines, _ = util.join_strings_by_paragraph(lines)
+      local grouped_lines, _ = buf.join_strings_by_paragraph(lines)
 
       local output_lines, extmarks = {}, {}
       vim.list_extend(output_lines, { "<!-- start_anki trans -->", "---", "" })
@@ -411,7 +412,7 @@ function M.translate_paragraph_replace(opts)
     textwidth = 80
   end
 
-  local grouped_content = util.join_strings_by_paragraph(original_lines)
+  local grouped_content = buf.join_strings_by_paragraph(original_lines)
 
   engine.translate_paragraph(grouped_content, {
     textwidth = textwidth,

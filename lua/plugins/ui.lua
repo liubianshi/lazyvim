@@ -228,7 +228,7 @@ return {
       npairs.add_rules({
         Rule("`", "`", "-stata"),
         Rule("[", "]", "markdown"):replace_endpair(function(o)
-          if require("util").in_obsidian_vault(o.bufnr) then
+          if require("lbs.path").in_obsidian_vault(o.bufnr) then
             return ""
           else
             return "]"
