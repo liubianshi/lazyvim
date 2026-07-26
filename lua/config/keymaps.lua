@@ -135,27 +135,29 @@ keymap({
 })
 
 --- window manager ------------------------------------------------------ {{{1
-keymap({ "w0", "<cmd>88wincmd |<cr>", desc = "Window: Suitable Width" })
-keymap({ "wt", "<cmd>wincmd T<cr>", desc = "Move Current Window to a New Tab" })
-keymap({ "wo", "<cmd>only<cr>", desc = "Make current window the only one" })
-keymap({ "wv", "<c-w>v", desc = "Vertical Split Current Buffer" })
-keymap({ "ws", "<c-w>s", desc = "Split Current Buffer" })
-keymap({ "wF", "<cmd>fclose<cr>", desc = "Close Float Buffer" })
-keymap({ "wh", "<c-w>h", desc = "Move cursor to window left" })
-keymap({ "wj", "<c-w>j", desc = "Move cursor to window below" })
-keymap({ "wk", "<c-w>k", desc = "Move cursor to window above" })
-keymap({ "wl", "<c-w>l", desc = "Move cursor to window right" })
-keymap({ "wH", "<c-w>H", desc = "Move current window left" })
-keymap({ "wJ", "<c-w>J", desc = "Move current window below" })
-keymap({ "wK", "<c-w>K", desc = "Move current window above" })
-keymap({ "wL", "<c-w>L", desc = "Move current window right" })
-keymap({ "wx", "<c-w>x", desc = "Exchange window" })
-keymap({ "wq", "<c-w>q", desc = "Quit the current window" })
-keymap({ "w=", "<c-w>=", desc = "Make Window size equally" })
-keymap({ "<c-j>", "<cmd>resize -2<cr>", desc = "Decrease window height" })
-keymap({ "<c-k>", "<cmd>resize +2<cr>", desc = "Increase window height" })
-keymap({ "<c-h>", "<cmd>vertical resize -2<cr>", desc = "Decrease window width" })
-keymap({ "<c-l>", "<cmd>vertical resize +2<cr>", desc = "Increase window width" })
+-- 整组挂在 <leader>w 下而非裸 w：裸 w* 会把内置的逐词移动 w 变成前缀键，
+-- 每按一次 w 都要等满 timeoutlen 才落地（实测被本组 17 条映射阻塞）。
+-- <leader>w 下 LazyVim 已有 wd(Delete Window)、wm(Toggle Zoom)，与本组并存不冲突。
+keymap({ "<leader>w0", "<cmd>88wincmd |<cr>", desc = "Window: Suitable Width" })
+keymap({ "<leader>wt", "<cmd>wincmd T<cr>", desc = "Move Current Window to a New Tab" })
+keymap({ "<leader>wo", "<cmd>only<cr>", desc = "Make current window the only one" })
+keymap({ "<leader>wv", "<c-w>v", desc = "Vertical Split Current Buffer" })
+keymap({ "<leader>ws", "<c-w>s", desc = "Split Current Buffer" })
+keymap({ "<leader>wF", "<cmd>fclose<cr>", desc = "Close Float Buffer" })
+keymap({ "<leader>wh", "<c-w>h", desc = "Move cursor to window left" })
+keymap({ "<leader>wj", "<c-w>j", desc = "Move cursor to window below" })
+keymap({ "<leader>wk", "<c-w>k", desc = "Move cursor to window above" })
+keymap({ "<leader>wl", "<c-w>l", desc = "Move cursor to window right" })
+keymap({ "<leader>wH", "<c-w>H", desc = "Move current window left" })
+keymap({ "<leader>wJ", "<c-w>J", desc = "Move current window below" })
+keymap({ "<leader>wK", "<c-w>K", desc = "Move current window above" })
+keymap({ "<leader>wL", "<c-w>L", desc = "Move current window right" })
+keymap({ "<leader>wx", "<c-w>x", desc = "Exchange window" })
+keymap({ "<leader>wq", "<c-w>q", desc = "Quit the current window" })
+keymap({ "<leader>w=", "<c-w>=", desc = "Make Window size equally" })
+-- <c-hjkl> 的 resize 已删：LazyVim 把同样四个操作绑在 <C-Left/Down/Up/Right> 上，
+-- 这里是纯重复绑定。让出 <c-hjkl> 后 LazyVim 默认的窗口导航恢复，
+-- 于是 <leader>w 化并没有让窗口切换变成三键——它仍是两键的 <c-h/j/k/l>。
 keymap({
   "<c-w>f",
   function()
