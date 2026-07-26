@@ -369,8 +369,10 @@ keymap({
   safe_picker_call("citation"),
   desc = "Insert Citation Keys"
 })
+-- 用 ;c 而非 ;ic：<localleader>i 在 insert 模式是 icon-picker 的完整动作
+-- （plugins/editor.lua），压一条 ;ic 上去会让每次插入图标都先等满 timeoutlen。
 keymap({
-  "<localleader>ic",
+  "<localleader>c",
   safe_picker_call("citation"),
   desc = "Insert Citation Keys",
   mode = "i",
