@@ -627,7 +627,7 @@ endfunction
 " 翻译操作符 ============================================================= {{{1
 function! utils#Trans_string(str)
     let cmd = "deepl \"%s\" 2>/dev/null"
-    let daily_trans_file = luaeval('require"util".get_daily_filepath("md", "ReciteWords")')
+    let daily_trans_file = luaeval('require"lbs.path".get_daily_filepath("md", "ReciteWords")')
     if ! filereadable(daily_trans_file)
       call writefile(["# Daily translation ", ""], daily_trans_file, "a")
     endif
@@ -724,7 +724,7 @@ endfunction
 " Markdown Snippets Preview ============================================== {{{1
 function! utils#MdPreview(method = "infile") range  abort
   if executable('surf')
-    lua require('util').md_preview()
+    lua require('lbs.buf').md_preview()
     return
   endif
 

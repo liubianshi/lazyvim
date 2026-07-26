@@ -151,4 +151,32 @@ function M.join_strings_by_paragraph(lines)
   return final_lines, paragraph_ranges
 end
 
+--- 取当前 visual 选区的整行内容。与 get_visual_selection 的区别是不按列截断，
+--- 且必须处在 visual 模式中，否则返回 nil。
+---@return string[]|nil
+function M.get_selected_lines()
+  local mode = vim.api.nvim_get_mode().mode
+  if mode ~= "v" and mode ~= "V" and mode ~= "\22" then
+    return
+  end
+
+  local buf = vim.api.nvim_get_current_buf()
+  local start_line = vim.fn.line("v") - 1
+  local end_line = vim.fn.line(".")
+  return vim.api.nvim_buf_get_lines(buf, start_line, end_line, false)
+end
+
+--- 把选中的 markdown 渲染成 html 交给 mdviewer。
+--- 唯一调用点在 autoload/utils.vim 的 utils#MdPreview()（surf 可用时的分支）。
+---@param input? string[] 不传则取当前 visual 选区
+function M.md_preview(input)
+  input = input or M.get_selected_lines()
+  if not input or #input == 0 then
+    return
+  end
+
+  local outfile = vim.fn.stdpath("cache") .. "/vim_markdown_preview.html"
+  vim.system({ "mdviewer", "--to", "html", "--outfile", outfile }, { text = true, stdin = input }, function() end)
+end
+
 return M
