@@ -183,6 +183,9 @@ return {
   -- stylua: ignore
   keys = {
     { "<leader><space>", false },
+    -- 让位给 plugins/project.lua 的 DiffviewOpen。不关掉的话两条 spec 争同一
+    -- lhs,胜负随启动顺序变化(实测连续两次启动绑定不同)。
+    { "<leader>gd", false },
     { "<leader>fm",      function() Snacks.picker.recent() end, desc = "Smart", },
     {
       "<leader>fn",
