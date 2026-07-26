@@ -165,10 +165,8 @@ return {
     },
     quickfile = { enabled = true },
     terminal = { enabled = true },
-    -- statuscolumn 由 config/options.lua 的自建实现（util.ui.statuscolumn）承担，
-    -- snacks 这套整体关闭。原先关闭状态下仍保留的 folds 子配置是死配置，已删。
+    -- statuscolumn 由自建的 util.ui.statuscolumn 承担，snacks 这套整体关闭。
     statuscolumn = { enabled = false },
-    scroll = { enabled = true },
     words = { enabled = true },
     styles = {
       notification = {
@@ -179,9 +177,7 @@ return {
   -- stylua: ignore
   keys = {
     { "<leader><space>", false },
-    -- 让位给 plugins/project.lua 的 DiffviewOpen。不关掉的话两条 spec 争同一
-    -- lhs,胜负随启动顺序变化(实测连续两次启动绑定不同)。
-    { "<leader>gd", false },
+    { "<leader>gd",      false }, -- 让位给 plugins/project.lua 的 DiffviewOpen
     { "<leader>fm",      function() Snacks.picker.recent() end, desc = "Smart", },
     {
       "<leader>fn",
