@@ -12,22 +12,19 @@ diff <(cut -f1-3 base.tsv) <(cut -f1-3 new.tsv)      # 改动前后回归对比
 
 改键位前先导一份基线，改完再导一份 diff，确认只有预期变化。
 
-## 为什么不能用 headless
+## 为什么用伪终端而不是 headless
 
-`nvim --headless` 没有 UI，LazyVim 的 `VeryLazy` 永不触发。手动补一句
-`nvim_exec_autocmds("User", { pattern = "VeryLazy" })` 看似能救，实际会把加载顺序
-打乱：which-key 的 setup 跑到了 `config/keymaps.lua` 之前。
+`nvim --headless` 没有 UI，LazyVim 的 `VeryLazy` 永不触发，而 `config/keymaps.lua`
+正是挂在 `VeryLazy` 上加载的。裸跑 headless 时这个文件根本不执行，200 多条映射
+连同 `:Gtags*` 一类用户命令全部缺席——导出的表看着正常，实际上对这个文件全程是盲的。
 
-而 `which-key.add()` 只做一件事——`table.insert(M._queue, ...)`。这个队列仅在
-`which-key.config.setup()` 里 flush 一次，flush 完即清空。setup 之后再调用 `add()`
-的内容，没有任何代码会再去处理它，全部静默丢失。
+手动补一句 `nvim_exec_autocmds("User", { pattern = "VeryLazy" })` 能把文件拉起来，
+效果比想象的好：实测全局 normal 映射 549 条，对伪终端的 551 条只差 `[i` / `]i`
+两条 snacks scope 跳转。但差多少要靠每次实测才知道，改动一多就得反复论证「这次
+的缺口是否落在关心的范围内」。
 
-`config/keymaps.lua` 里的映射全部经由 `util.keymap` → `wk.add()` 注册，所以在那种
-测量方式下整个文件的 200 多条映射都不会出现在导出结果里——测出来的表看着正常，
-实际上对这个文件全程是盲的。
-
-`dump.sh` 因此用 `script -qec` 分配一个伪终端，让 nvim 以为自己有 UI，
-`VeryLazy` 按真实顺序自然触发。
+`dump.sh` 因此用 `script -qec` 分配一个伪终端，让 nvim 以为自己有 UI，`VeryLazy`
+按真实顺序自然触发，省掉那层论证。
 
 ## 输出格式
 

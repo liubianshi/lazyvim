@@ -1,5 +1,7 @@
--- 键位注册。经由 which-key 的 add()，因此必须在 which-key setup 之后调用
--- 才会真正落地——add() 只入队，队列仅在 setup 时 flush 一次。
+-- 键位注册，经由 which-key 的 add()。setup 前后调用都能落地：which-key 的
+-- init.lua 里那个只做 table.insert(M._queue, ...) 的 add() 是引导期占位实现，
+-- config.lua 在 setup 时用 `wk.add = M.add` 把它替换成真实实现（实测 setup
+-- 之后 add 的映射，maparg 立即可取，队列始终为空）。
 local M = {}
 
 function M.keymap(mapping)
