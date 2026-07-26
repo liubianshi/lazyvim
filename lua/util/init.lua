@@ -7,45 +7,6 @@ function M.has(plugin)
   return require("lazy.core.config").plugins[plugin] ~= nil
 end
 
-function M.fg(name)
-  ---@type {foreground?:number}?
-  local hl = vim.api.nvim_get_hl and vim.api.nvim_get_hl(0, { name = name })
-  local fg = hl and (hl["fg"] or hl.foreground)
-  return fg and { fg = string.format("#%06x", fg) }
-end
-
----@param name string
-function M.opts(name)
-  local plugin = require("lazy.core.config").plugins[name]
-  if not plugin then
-    return {}
-  end
-  local Plugin = require("lazy.core.plugin")
-  return Plugin.values(plugin, "opts", false)
-end
-
---- Gets the git root for a buffer or path.
---- Defaults to the current buffer.
---- Based on function from:
---- https://github.com/folke/snacks.nvim/blob/main/lua/snacks/git.lua
-function M.get_git_root(path)
-  path = path or 0
-  path = type(path) == "number" and vim.api.nvim_buf_get_name(path) or path --[[@as string]]
-  path = vim.fs.normalize(path)
-  path = path == "" and (vim.uv or vim.loop).cwd() or path
-  if vim.fn.isdirectory(path .. "/.git") == 1 then
-    return path
-  end
-  local git_root ---@type string?
-  for dir in vim.fs.parents(path) do
-    if vim.fn.isdirectory(dir .. "/.git") == 1 then
-      git_root = dir
-      break
-    end
-  end
-  return git_root and vim.fs.normalize(git_root) or nil
-end
-
 -- returns the root directory based on:
 -- * lsp workspace folders
 -- * lsp rootdir
@@ -96,90 +57,6 @@ function M.get_root(path, root_patterns)
   end
   ---@cast root string
   return root
-end
-
--- this will return a function that calls telescope.
--- cwd will default to lazyvim.util.get_root
--- for `files`, git_files or find_files will be chosen depending on .git
-function M.telescope(builtin, opts)
-  local params = { builtin = builtin, opts = opts }
-  return function()
-    builtin = params.builtin
-    opts = params.opts
-    opts = vim.tbl_deep_extend("force", { cwd = M.get_root() }, opts or {})
-    if builtin == "files" then
-      if vim.loop.fs_stat((opts.cwd or vim.loop.cwd()) .. "/.git") then
-        opts.show_untracked = true
-        builtin = "git_files"
-      else
-        builtin = "find_files"
-      end
-    end
-    if opts.cwd and opts.cwd ~= vim.loop.cwd() then
-      opts.attach_mappings = function(_, map)
-        map("i", "<a-c>", function()
-          local action_state = require("telescope.actions.state")
-          local line = action_state.get_current_line()
-          M.telescope(
-            params.builtin,
-            vim.tbl_deep_extend("force", {}, params.opts or {}, { cwd = false, default_text = line })
-          )()
-        end)
-        return true
-      end
-    end
-
-    require("telescope.builtin")[builtin](opts)
-  end
-end
-
--- Clearing images previewed with image.nvim
-function M.clear_previewed_images(win)
-  win = win or 0
-  local is_ok, api = pcall(require, "image")
-  if not is_ok then
-    return
-  end
-
-  local images = api.get_images()
-  if not next(images) then
-    return
-  end
-
-  local windows_in_current_tab = vim.api.nvim_tabpage_list_wins(win)
-  local windows_in_current_tab_map = {}
-  for _, current_window in ipairs(windows_in_current_tab) do
-    windows_in_current_tab_map[current_window] = true
-  end
-
-  for _, current_image in ipairs(images) do
-    if not current_image.window or not current_image.buffer then
-      goto continue
-    end
-
-    local window_ok, is_valid_window = pcall(vim.api.nvim_win_is_valid, current_image.window)
-    if not (window_ok and is_valid_window) then
-      goto continue
-    end
-
-    local buf_ok, is_valid_buffer = pcall(vim.api.nvim_buf_is_valid, current_image.buffer)
-    if not buf_ok or not is_valid_buffer then
-      goto continue
-    end
-
-    local is_window_in_current_tab = windows_in_current_tab_map[current_image.window]
-    if not is_window_in_current_tab then
-      goto continue
-    end
-
-    local is_buffer_in_window = vim.api.nvim_win_get_buf(current_image.window) == current_image.buffer
-    if not is_buffer_in_window then
-      goto continue
-    end
-
-    current_image:clear()
-  end
-  ::continue::
 end
 
 local get_item_info = function(b, field, command)
@@ -289,21 +166,6 @@ function M.execute_async(command, callback_funs)
   })
 
   return job_id
-end
-
-function M.in_project()
-  local cwd = vim.fn.getcwd()
-  local ok, project = pcall(require, "project_nvim")
-  if not ok then
-    return
-  end
-  local projects = project.get_recent_projects()
-  for _, proj in ipairs(projects) do
-    if cwd == proj then
-      return true
-    end
-  end
-  return false
 end
 
 function M.wk_reg(mapping, opts)
@@ -417,15 +279,6 @@ function M.get_visual_selection()
   return lines
 end
 
--- https://github.com/ibhagwan/nvim-lua/blob/main/lua/utils.lua
-M.win_is_float = function(winnr)
-  local wincfg = vim.api.nvim_win_get_config(winnr)
-  if wincfg and (wincfg.external or wincfg.relative and #wincfg.relative > 0) then
-    return true
-  end
-  return false
-end
-
 --- Generate file paths that meet a specific format based on today's date
 ---@param ext? string
 ---@param base? string|string[]
@@ -455,38 +308,6 @@ function M.in_obsidian_vault(buf)
   if root_dir and root_dir:match("/vaults/") then
     return root_dir
   end
-end
-
-function M.get_selected_lines()
-  local mode = vim.api.nvim_get_mode().mode
-  if mode ~= "v" and mode ~= "V" and mode ~= "\22" then
-    return
-  end
-
-  local buf = vim.api.nvim_get_current_buf()
-  local start_line = vim.fn.line("v") - 1
-  local end_line = vim.fn.line(".")
-  local lines = vim.api.nvim_buf_get_lines(buf, start_line, end_line, false)
-  return lines
-end
-
-function M.is_process_running(pid)
-  local success = pcall(function()
-    vim.uv.kill(pid, 0)
-  end)
-  return success
-end
-
-function M.md_preview(input)
-  if not input then
-    input = M.get_selected_lines()
-  end
-  if not input or #input == 0 then
-    return
-  end
-
-  local outfile = vim.fn.stdpath("cache") .. "/vim_markdown_preview.html"
-  vim.system({ "mdviewer", "--to", "html", "--outfile", outfile }, { text = true, stdin = input }, function() end)
 end
 
 function M.keymap(mapping)
