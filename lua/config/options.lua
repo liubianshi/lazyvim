@@ -3,7 +3,6 @@
 -- Add any additional options here
 local opt = vim.opt
 local cache_path = vim.fn.stdpath("cache")
--- local config_path = vim.fn.stdpath("config") -- Commented out: only used in disabled dictionary config
 local opt_get = function(name, scope)
   scope = scope or "global"
   return vim.api.nvim_get_option_value(name, { scope = scope })
@@ -160,7 +159,10 @@ vim.g.bigfile_size = 1024 * 1024 * 1.5 -- 1.5 MB
 -- Method of previewing images
 vim.g.method_previewing_images = "system"
 
--- Options for the LazyVim statuscolumn --------------------------------- {{{2
+-- statuscolumn 选项 ---------------------------------------------------- {{{2
+-- 注意：这个变量沿用了 LazyVim 的名字，但消费者不是 LazyVim——`opt.statuscolumn`
+-- 指向自建的 util.ui.statuscolumn，由它读取本表（见 util/ui.lua:71-72）。
+-- snacks 自带的 statuscolumn 已在 plugins/snacks.lua 整体关闭。
 vim.g.lazyvim_statuscolumn = {
   folds_open = true, -- show fold sign when fold is open
   folds_githl = true, -- highlight fold sign with git sign color
@@ -220,10 +222,6 @@ opt.completeopt = "menu,noinsert,menuone,noselect"
 opt.conceallevel = 2
 opt.confirm = true
 opt.cursorline = true
--- opt.dictionary:append({
---   config_path .. "/paper.dict",
---   config_path .. "/dict",
--- })
 opt.directory = cache_path .. "/.swap//"
 opt.encoding = "utf-8"
 opt.expandtab = true -- 将制表符扩展为空格

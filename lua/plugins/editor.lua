@@ -67,7 +67,7 @@ return {
             highlight = { matches = false },
           })
         end,
-        desc = "Flash: Jump to a line forard",
+        desc = "Flash: Jump to a line forward",
       },
       {
         "sk",
@@ -81,7 +81,7 @@ return {
             highlight = { matches = false },
           })
         end,
-        desc = "Flash: Jump to a line forard",
+        desc = "Flash: Jump to a line forward",
       },
       {
         "<M-h>",
@@ -214,10 +214,8 @@ return {
   { -- chrisgrieser/nvim-origami: Fold with relentless elegance --------- {{{3
     "chrisgrieser/nvim-origami",
     event = "BufReadPost",
-    init = function()
-      vim.opt.foldlevel = 99
-      vim.opt.foldlevelstart = 99
-    end,
+    -- foldlevel / foldlevelstart 已在 config/options.lua 设为 99，此处原有的
+    -- init 是同值重复设置，删除。
     opts = {
       useLspFoldsWithTreesitterFallback = {
         enabled = true,

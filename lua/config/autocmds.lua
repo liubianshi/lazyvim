@@ -36,8 +36,6 @@ for _, name in ipairs({
   "Zen",
   "Formatprg",
   "Quit",
-  "Snacks",
-  "Untitled",
   "ColorScheme",
   "Lsp",
   "HiGroup",
@@ -358,14 +356,9 @@ vim.api.nvim_create_autocmd({ "ColorScheme" }, {
   desc = "remove unnecessary background",
 })
 
-vim.api.nvim_create_autocmd({ "ColorScheme" }, {
-  pattern = "*",
-  group = augroups.ColorScheme,
-  callback = function()
-    require("util.ui").adjust_hi_group()
-  end,
-  desc = "Define personal highlight group",
-})
+-- adjust_hi_group 的 ColorScheme 注册已合并到 init.lua 的 MyBorderHL 组：
+-- 那一处覆盖 {ColorScheme, VimEnter}，是本处（仅 ColorScheme）的超集，
+-- 两处并存会让每次切换配色重复调用一遍。
 
 -- Untitled file -------------------------------------------------------- {{{1
 -- 退出 Neovim 时，忽略未保存的 Untitled buffer 对退出进程的干扰

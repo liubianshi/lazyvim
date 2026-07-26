@@ -57,22 +57,6 @@ function _G.extract_hl_group_link(buf, row, col)
   return hl_group_links
 end
 
-function Set_terminal_keymaps()
-  local opts = { buffer = 0 }
-  vim.keymap.set("t", ";j", [[<C-\><C-n>]], opts)
-  if vim.fn.has("mac") == 1 then
-    vim.keymap.set("t", "<c-space>", [[<C-\><C-n>]], opts)
-    vim.keymap.set("t", "<M-w>", [[<C-\><C-n><C-w>]], opts)
-  else
-    vim.keymap.set("t", "<A-space>", [[<C-\><C-n>]], opts)
-    vim.keymap.set("t", "<A-w>", [[<C-\><C-n><C-w>]], opts)
-  end
-  vim.keymap.set("t", "<C-/>h", [[<Cmd>wincmd h<CR>]], opts)
-  vim.keymap.set("t", "<C-/>j", [[<Cmd>wincmd j<CR>]], opts)
-  vim.keymap.set("t", "<C-/>k", [[<Cmd>wincmd k<CR>]], opts)
-  vim.keymap.set("t", "<C-/>l", [[<Cmd>wincmd l<CR>]], opts)
-end
-
 function _G.BufIsBig(bufnr)
   bufnr = bufnr or 0
   local max_filesize = 100 * 1024 -- 100 KB

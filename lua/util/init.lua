@@ -251,7 +251,7 @@ function M.bibkey_action(bibkey)
     { key = "s", text = "split note" },
     { key = "t", text = "tabnew note" },
     { key = "u", text = "open url" },
-    { key = "v", text = "vsplite note" },
+    { key = "v", text = "vsplit note" },
     { key = "", text = "---------------" },
     { key = "q", text = "Quit" },
   }

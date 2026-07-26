@@ -74,7 +74,6 @@ keymap({ "<leader>dl", "<cmd>diffget LOCAL<cr>:diffupdate<cr>", desc = "Diffget 
 keymap({ "<leader>dr", "<cmd>diffget REMOTE<cr>:diffupdate<cr>", desc = "Diffget Remote", })
 
 --- run ------------------------------------------------------------------ {{{1
-keymap({ "<leader>o:", "<cmd>ToggleTerm<cr>", desc = "Open Terminal" })
 keymap({ "<leader>ob", "<cmd>call utils#Status()<cr>", desc = "Toggle Status Line" })
 keymap({ "<leader>od", "<cmd>source $MYVIMRC<cr>", desc = "Source VIMRC" })
 keymap({
@@ -102,11 +101,12 @@ keymap({
 
 --- buffer --------------------------------------------------------------- {{{1
 keymap({ "<leader>bD", "<cmd>Bclose!<cr>", desc = "Delete Buffer (force)" })
-keymap({ "<leader>bb", function() Snacks.picker.buffers() end, desc = "Previous Buffer" })
+keymap({ "<leader>bb", function() Snacks.picker.buffers() end, desc = "List Buffers (picker)" })
 keymap({ "<leader>bp", "<cmd>bp<cr>", desc = "Previous Buffer" })
 keymap({ "<leader>bn", "<cmd>bn<cr>", desc = "Next Buffer" })
 keymap({ "<leader>bq", "<cmd>q<cr>", desc = "Quit Buffer" })
 keymap({ "<leader>bQ", "<cmd>q!<cr>", desc = "Quit Buffer (force)" })
+-- 覆盖 LazyVim 默认的 <leader>bl（BufferLineCloseLeft），刻意保留 Pick 语义。
 keymap({ "<leader>bl", "<cmd>BufferLinePick<cr>", desc = "Pick Buffer on BufferLine", })
 keymap({ "<leader>bF", "<cmd>fclose<cr>", desc = "Close Float buffer" })
 
@@ -233,7 +233,7 @@ keymap({ "<A-;>", "<esc>gqq}kA", desc = "Format Paragraph", mode = "i" })
 -- object --------------------------------------------------------------- {{{1
 -- which-key groups for text objects
 keymap({ "i", mode = { "x", "o" }, group = "Object: inner", icon = { icon = "", hl = "WhichKeyIconOrange" } })
-keymap({ "a", mode = { "x", "o" }, group = "Object: outter", icon = { icon = "", hl = "WhichKeyIconOrange" } })
+keymap({ "a", mode = { "x", "o" }, group = "Object: outer", icon = { icon = "", hl = "WhichKeyIconOrange" } })
 
 -- Custom text objects
 keymap({ "iB", "<cmd>call text_obj#Buffer()<cr>", desc = "Object: Buffer", mode = { "x", "o" } })
