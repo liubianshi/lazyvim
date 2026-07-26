@@ -338,7 +338,7 @@ keymap({ "<leader>fS", "<cmd>write!<cr>", desc = "Save File (force)" })
 -- Helper to safely require the picker module and create a lazy-loading wrapper
 local function safe_picker_call(picker_fn_name)
   return function(...)
-    local ok, picker = pcall(require, "pickers")
+    local ok, picker = pcall(require, "lbs.picker")
     if not ok then
       vim.notify("Picker module not available", vim.log.levels.WARN)
       return

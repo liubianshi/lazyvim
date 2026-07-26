@@ -129,7 +129,7 @@ cmd("Fabric", function(opts)
     fabric_opts.win = vim.tbl_deep_extend("force", fabric_opts.win, win_opts)
   end
 
-  require("pickers").fabric(fabric_opts)
+  require("lbs.picker").fabric(fabric_opts)
 end, {
   desc = "Fabric: Choose pattern",
   bang = true,
