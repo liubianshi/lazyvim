@@ -1,7 +1,7 @@
 -- CodeCompanion 插件配置
 -- 提供 AI 辅助编程功能，包括聊天、代码优化等
 
-local ai_adapters = require("util.ai_adapters")
+local ai_adapters = require("lbs.ai_adapters")
 
 -- CLI 窗口固定列数：既用于窗口配置，也作为 resize 时判断是否压缩到不可读的阈值
 local CLI_WIDTH = 80
@@ -162,10 +162,10 @@ return {
   },
   init = function()
     vim.keymap.set("ca", "cc", "CodeCompanion")
-    require("util.spinner"):init()
+    require("lbs.ui.spinner"):init()
     local has_fidget, _ = pcall(require, "fidget")
     if has_fidget then
-      require("util.fidget"):init()
+      require("lbs.ui.fidget"):init()
     end
 
     -- nvim 外层尺寸变化时，nvim 会按比例压缩各窗口；CLI 历史记录按固定列宽渲染，

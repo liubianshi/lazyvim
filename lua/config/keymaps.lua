@@ -129,7 +129,7 @@ keymap({ "<localleader>}", "<C-v>u201C <C-v>u201D<C-o>F <c-o>x", desc = "Chinese
 --- Triggers punctuation replacement when ';' followed by single quote is pressed
 keymap({
   "<M-space>",
-  require("util.chinese").replace_en_with_cn_punctuation,
+  require("lbs.chinese").replace_en_with_cn_punctuation,
   desc = 'Replace paired English punctuation with Chinese equivalents',
   mode = 'i',
 })
@@ -383,7 +383,7 @@ keymap({
 keymap({
   "<leader>wi",
   function()
-    local ok, inspector = pcall(require, "util.window_inspector")
+    local ok, inspector = pcall(require, "lbs.ui.window_inspector")
     if ok and inspector then
       inspector.show()
     end

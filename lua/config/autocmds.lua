@@ -56,7 +56,7 @@ aucmd({ "BufWritePre" }, {
 })
 
 -- Auto-save function
-require("util.autosave").setup()
+require("lbs.autosave").setup()
 
 ------------------------------------------------------------------------ }}}
 
@@ -195,7 +195,7 @@ aucmd({ "TermOpen" }, {
 -- IM Switch ------------------------------------------------------------- {{{1
 -- 延迟初始化输入法自动切换模块
 vim.schedule(function()
-  require("util.im_switch").setup()
+  require("lbs.im_switch").setup()
 end)
 
 -- Highlight on yank ---------------------------------------------------- {{{1
@@ -395,7 +395,7 @@ vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "CursorMoved" }, {
 })
 
 -- lightbulb ------------------------------------------------------------ {{{1
-require("util.lightbulb").setup()
+require("lbs.ui.lightbulb").setup()
 
 --- background ---------------------------------------------------------- {{{2
 lbs_theme.enable_dec2031()
@@ -423,7 +423,7 @@ aucmd({ "FileType", "BufWinEnter" }, {
   group = augroups.SmartCR,
   pattern = "*",
   callback = function(ev)
-    local smart_cr = require("util.smart_cr")
+    local smart_cr = require("lbs.smart_cr")
     if smart_cr.should_attach(ev.buf) then
       smart_cr.attach(ev.buf)
     end

@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # 检查全仓库对「本仓库自有模块」的 require 是否都能在 runtimepath 上解析。
 #
-# 存在的理由：模块搬家时，Lua 侧的 require("x") 容易一眼看全，但 autoload/*.vim
-# 里还有三种写法会漏网——luaeval('require"x".f()')、v:lua.require'x'.f()、
-# exec 'lua require("x").f()'。批次四就因为只扫 Lua 侧，把三个仍被 vimscript
-# 调用的导出当成零引用删掉了。这个脚本把两侧一起扫。
+# 存在的理由：模块搬家时，require("x") 这种写法容易一眼看全，漏网的都是变体。
+# 已经踩过两次：autoload/*.vim 里的 luaeval('require"x".f()')、v:lua.require'x'.f()、
+# exec 'lua require("x").f()'，以及 Lua 侧的 pcall(require, "x") —— 后者 require
+# 与引号之间隔着逗号，只认 `require(` 的正则一律匹配不上。下面的模式把
+# `(`、`,` 和空白都当作可选分隔符，四种形式一并覆盖。
 #
 # 用法：bash scripts/keymap-audit/check-requires.sh
 # 输出：不可解析的模块名，一行一个；全部正常则输出 ALL RESOLVABLE。
@@ -20,7 +21,7 @@ trap 'rm -rf "$TMP"' EXIT
 OWN='^(lbs|util|translate|config|overseer|global_functions)\b'
 
 find . -type d -name '.git' -prune -o -type f \( -name '*.lua' -o -name '*.vim' -o -name '*.md' \) -print |
-	xargs perl -ne 'while (/(?:v:lua\.)?require\s*\(?\s*["\x27]([A-Za-z0-9_.]+)["\x27]/g) { print "$1\n" }' 2>/dev/null |
+	xargs perl -ne 'while (/(?:v:lua\.)?require\s*[(,]?\s*["\x27]([A-Za-z0-9_.]+)["\x27]/g) { print "$1\n" }' 2>/dev/null |
 	perl -ne "print if /$OWN/" |
 	sort -u >"$TMP/mods.txt"
 

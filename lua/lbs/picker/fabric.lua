@@ -46,7 +46,7 @@ return function(opts)
         picker:close()
         opts = opts or {}
         if mode == "v" or mode == "V" or mode == "\22" then
-          opts.stdin = require("util.term").get_pipe_stdin({ mode = mode })
+          opts.stdin = require("lbs.term").get_pipe_stdin({ mode = mode })
         end
 
         local cmd = { "fabric", "--pattern", item.text, "--stream" }
@@ -96,7 +96,7 @@ return function(opts)
           end
           table.insert(cmd, target)
         end
-        require("util.term").pipe(cmd, opts)
+        require("lbs.term").pipe(cmd, opts)
       end,
     },
   })

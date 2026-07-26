@@ -85,7 +85,7 @@ return {
     {
       "<leader>ap",
       function()
-        require("util.float_prompt").toggle("Sidekick", {
+        require("lbs.ui.float_prompt").toggle("Sidekick", {
           filetype = "markdown",
           title_prefix = " 💬 ",
           pos = "split",

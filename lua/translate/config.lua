@@ -47,7 +47,7 @@ function M.setup(opts)
   M.options = vim.tbl_deep_extend("keep", opts or {}, default_opts)
   -- Namespace creation is idempotent: returns the existing id if present.
   M.ns_id = vim.api.nvim_create_namespace(M.options.ns_name)
-  M.extmark = require("util.extmark").new(M.options.ns_name)
+  M.extmark = require("lbs.extmark").new(M.options.ns_name)
   return M
 end
 
