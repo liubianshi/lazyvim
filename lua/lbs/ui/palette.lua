@@ -146,4 +146,18 @@ function M.adjust_hi_group(palette)
   vim.api.nvim_set_hl(0, "Bold", { underline = true })
 end
 
+-- 随 colorscheme 与 GUI 变化维护的浮窗边框高亮组。
+function M.setup_myborder_hl()
+  local function get_hl_bg(name)
+    return vim.api.nvim_get_hl(0, { name = name, link = false }).bg
+  end
+
+  local bg = get_hl_bg("Pmenu") or get_hl_bg("Normal") or "NONE"
+  local orange = vim.g.lbs_colors and vim.g.lbs_colors.orange
+  -- In Neovide, keep border seamless by matching bg; otherwise prefer orange.
+  local fg = (not vim.g.neovide and orange) or bg
+
+  vim.api.nvim_set_hl(0, "MyBorder", { fg = fg, bg = bg })
+end
+
 return M
