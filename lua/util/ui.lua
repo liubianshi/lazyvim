@@ -68,8 +68,8 @@ function M.statuscolumn()
 
   local components = { "", "", "" } -- left, middle, right
 
-  local show_open_folds = vim.g.lazyvim_statuscolumn and vim.g.lazyvim_statuscolumn.folds_open
-  local use_githl = vim.g.lazyvim_statuscolumn and vim.g.lazyvim_statuscolumn.folds_githl
+  local show_open_folds = vim.g.lbs_statuscolumn and vim.g.lbs_statuscolumn.folds_open
+  local use_githl = vim.g.lbs_statuscolumn and vim.g.lbs_statuscolumn.folds_githl
 
   if show_signs then
     local signs = M.get_signs(buf, vim.v.lnum)

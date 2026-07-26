@@ -160,10 +160,8 @@ vim.g.bigfile_size = 1024 * 1024 * 1.5 -- 1.5 MB
 vim.g.method_previewing_images = "system"
 
 -- statuscolumn 选项 ---------------------------------------------------- {{{2
--- 注意：这个变量沿用了 LazyVim 的名字，但消费者不是 LazyVim——`opt.statuscolumn`
--- 指向自建的 util.ui.statuscolumn，由它读取本表（见 util/ui.lua:71-72）。
--- snacks 自带的 statuscolumn 已在 plugins/snacks.lua 整体关闭。
-vim.g.lazyvim_statuscolumn = {
+-- 由自建的 util.ui.statuscolumn 读取（`opt.statuscolumn` 指向它）。
+vim.g.lbs_statuscolumn = {
   folds_open = true, -- show fold sign when fold is open
   folds_githl = true, -- highlight fold sign with git sign color
 }
