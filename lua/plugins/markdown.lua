@@ -49,7 +49,7 @@ return {
           keymap({ "<localleader>t", "<cmd>Obsidian tags<cr>", buffer = note.bufnr, desc = "Obsidian: get note with tag", })
           keymap({ "<localleader>l", "<cmd>Obsidian link<cr>", buffer = note.bufnr, desc = "Obsidian: get reference", })
           keymap({ "gf", "<cmd>Obsidian follow_link vsplit<cr>", buffer = note.bufnr, desc = "Obsidian: follow reference", })
-          keymap({ "gf", "<cmd>Obsidian link_new", buffer = note.bufnr, desc = "Obsidian: create a new note", mode = "v", })
+          keymap({ "gf", "<cmd>Obsidian link_new<cr>", buffer = note.bufnr, desc = "Obsidian: create a new note", mode = "v", })
         end,
         -- stylua: ignore end
       },
