@@ -39,14 +39,9 @@ return {
     "sindrets/diffview.nvim",
     cmd = { "DiffviewOpen", "DiffviewFileHistory" },
     keys = {
-      -- <leader>gd 同时被 LazyVim 的 snacks_picker extra 映射为 Git Diff (hunks)。
-      -- 两个 lazy keys spec 争同一 lhs 时胜负随加载顺序变化，实测连续两次启动
-      -- 得到的绑定不同。这里保留 diffview,并在 plugins/snacks.lua 用
-      -- `{ "<leader>gd", false }` 显式关掉 LazyVim 那条。
       { "<leader>gd", "<cmd>DiffviewOpen<cr>", desc = "Diffview: Open" },
-      -- 原本占用 <leader>gh,但那是 LazyVim gitsigns 的 hunks 组前缀(ghs/ghr/ghd
-      -- 等 10 条),把完整动作压在组前缀上会让 <leader>gh 每次等满 timeoutlen。
-      -- 迁到 <leader>gH(History),与 <leader>gd 构成一对 diffview 动作。
+      -- 不用 <leader>gh：那是 LazyVim gitsigns 的 hunks 组前缀，把完整动作压在
+      -- 组前缀上会让每条 hunk 命令都等满 timeoutlen。
       { "<leader>gH", "<cmd>DiffviewFileHistory<cr>", desc = "Diffview: File History" },
     },
   },
