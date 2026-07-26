@@ -484,7 +484,7 @@ return {
     "stevearc/aerial.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.icons" },
     opts = {
-      layout = { default_derection = "prefer_left" },
+      layout = { default_direction = "prefer_left" },
       highlight_on_hover = true,
       close_on_select = true,
       filter_kind = false,
