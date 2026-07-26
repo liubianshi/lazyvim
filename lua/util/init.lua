@@ -255,7 +255,7 @@ function M.bibkey_action(bibkey)
     { key = "", text = "---------------" },
     { key = "q", text = "Quit" },
   }
-  local select = require("util.ui").select
+  local select = require("lbs.ui.popup").select
   select(items, { title = "Choose an action:", callback = bibkey_action })
 end
 

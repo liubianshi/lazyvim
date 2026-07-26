@@ -160,7 +160,7 @@ vim.g.bigfile_size = 1024 * 1024 * 1.5 -- 1.5 MB
 vim.g.method_previewing_images = "system"
 
 -- statuscolumn 选项 ---------------------------------------------------- {{{2
--- 由自建的 util.ui.statuscolumn 读取（`opt.statuscolumn` 指向它）。
+-- 由自建的 lbs.ui.statuscolumn 读取（`opt.statuscolumn` 指向它）。
 vim.g.lbs_statuscolumn = {
   folds_open = true, -- show fold sign when fold is open
   folds_githl = true, -- highlight fold sign with git sign color
@@ -198,7 +198,7 @@ vim.g.R_start_libs = "base,stats,graphics,grDevices,utils,methods,"
   .. "fst,future,devtools,ggplot2,fixest"
 
 -- color ----------------------------------------------------------------
-vim.g.lbs_colors = require("util.ui").fetch_color_pallete()
+vim.g.lbs_colors = require("lbs.ui.palette").fetch_color_pallete()
 
 vim.o.exrc = true
 
@@ -290,7 +290,7 @@ opt.splitbelow = true
 opt.splitkeep = "screen"
 opt.splitright = true
 opt.startofline = false
-opt.statuscolumn = [[%!v:lua.require('util.ui').statuscolumn()]]
+opt.statuscolumn = [[%!v:lua.require('lbs.ui.statuscolumn').statuscolumn()]]
 opt.synmaxcol = 1000
 opt.swapfile = true
 opt.tabstop = 2 -- 设置编辑时制表符占用空格数

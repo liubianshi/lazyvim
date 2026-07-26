@@ -49,7 +49,7 @@ setup_myborder_hl()
 vim.api.nvim_create_autocmd({ "ColorScheme", "VimEnter" }, {
   group = vim.api.nvim_create_augroup("MyBorderHL", { clear = true }),
   callback = function()
-    require("util.ui").adjust_hi_group()
+    require("lbs.ui.palette").adjust_hi_group()
     setup_myborder_hl()
   end,
 })

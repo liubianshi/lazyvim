@@ -165,7 +165,7 @@ return {
     },
     quickfile = { enabled = true },
     terminal = { enabled = true },
-    -- statuscolumn 由自建的 util.ui.statuscolumn 承担，snacks 这套整体关闭。
+    -- statuscolumn 由自建的 lbs.ui.statuscolumn 承担，snacks 这套整体关闭。
     statuscolumn = { enabled = false },
     words = { enabled = true },
     styles = {

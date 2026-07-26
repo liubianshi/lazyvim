@@ -162,8 +162,8 @@ keymap({
   "<c-w>f",
   function()
     -- This requires a utility function to identify the highest z-index window (likely a float).
-    -- Assumes `require("util.ui").get_highest_zindex_win()` exists.
-    local popup_win_id = require("util.ui").get_highest_zindex_win()
+    -- Assumes `require("lbs.ui.popup").get_highest_zindex_win()` exists.
+    local popup_win_id = require("lbs.ui.popup").get_highest_zindex_win()
     if popup_win_id then
       vim.fn.win_gotoid(popup_win_id)
     end

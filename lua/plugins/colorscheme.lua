@@ -30,7 +30,7 @@ return {
         hl.FloatTitle = { bg = palette.none }
         hl.FloatBorder = { bg = palette.none }
         hl["@comment.warning"] = { bg = palette.none }
-        require("util.ui").adjust_hi_group(palette)
+        require("lbs.ui.palette").adjust_hi_group(palette)
       end,
     },
     config = function(_, opts)

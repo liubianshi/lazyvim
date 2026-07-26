@@ -259,7 +259,7 @@ return {
           window_width = "58%"
         end
 
-        local popup = require("util.ui").popup({
+        local popup = require("lbs.ui.popup").popup({
           relative = "win",
           position = { row = "100%", col = window_col },
           size = { width = window_width, height = "30%" },
