@@ -13,7 +13,7 @@ return {
           end, { nargs = "+" })
 
           -- Setting box-related shortcuts
-          require("r_box").set_keymap()
+          require("lbs.r.box").set_keymap()
 
           -- Send command to R terminal
           vim.keymap.set("n", "<M-;>", function()

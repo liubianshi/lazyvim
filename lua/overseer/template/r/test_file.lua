@@ -1,7 +1,7 @@
 return {
   name = "R: test current file",
   builder = function()
-    local test_file = require("rlib.test").source_to_test_filepath(vim.fn.expand("%"))
+    local test_file = require("lbs.r.test").source_to_test_filepath(vim.fn.expand("%"))
     local cwd = vim.fn.getcwd()
     return {
       cmd = { "Rscript" },

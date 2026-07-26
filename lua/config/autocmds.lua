@@ -379,7 +379,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 })
 
 -- Roxygen2 highlight --------------------------------------------------- {{{2
-local r_higroup = require("rlib.higroup")
+local r_higroup = require("lbs.r.higroup")
 vim.api.nvim_create_autocmd({ "BufEnter", "FileType" }, {
   pattern = "r",
   group = augroups.HiGroup,
