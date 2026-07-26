@@ -49,6 +49,12 @@ return {
     keys = {
       -- stylua: ignore start
       { "s",     mode = { "n", "x", "o" }, false },
+      -- LazyVim 默认把 S 绑到 Flash Treesitter(n/o/x)，与 nvim-surround 的
+      -- visual 模式 S(给选区加环绕符)争同一键，胜负随加载顺序变——实测连续
+      -- 两次 headless 启动得到的绑定不同。只禁 x 模式这一条：visual 的 S
+      -- 确定归 nvim-surround，normal/operator 的 S 仍是 Flash Treesitter
+      -- (本 spec 另有 st 提供同一功能)。
+      { "S",     mode = "x",               false },
       { "ss",    mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "Flash",                   },
       { "r",     mode = "o",               function() require("flash").remote() end,            desc = "Remote Flash",            },
       { "R",     mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "Flash Treesitter Search", },
