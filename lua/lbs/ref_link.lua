@@ -1,4 +1,4 @@
--- lua/ref_link.lua
+-- lua/lbs/ref_link.lua
 -- Markdown reference-style link helpers.
 --
 -- A faithful Lua port of the former `autoload/ref_link.vim`:

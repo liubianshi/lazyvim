@@ -435,4 +435,4 @@ aucmd({ "FileType", "BufWinEnter" }, {
 
 -- external
 -- region yank
-require("reg_yank")
+require("lbs.reg_yank")

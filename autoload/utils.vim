@@ -632,7 +632,7 @@ function! utils#Trans_string(str)
       call writefile(["# Daily translation ", ""], daily_trans_file, "a")
     endif
     if len(split(a:str, ' ')) <= 3 && a:str =~? '\v^[a-z]'
-        call v:lua.require'kd'.translate_word(a:str, daily_trans_file)
+        call v:lua.require'lbs.kd'.translate_word(a:str, daily_trans_file)
         return ""
     endif
     let cmd = printf(cmd, a:str)

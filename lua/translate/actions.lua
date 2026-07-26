@@ -188,7 +188,7 @@ function M.translate_content(content, callback, opts)
 
   local save_path = path.get_daily_filepath("md", "ReciteWords")
   if #content == 1 and #vim.split(content[1], "%s+") <= 3 then
-    require("kd").translate_word(content[1], save_path)
+    require("lbs.kd").translate_word(content[1], save_path)
   else
     M.translate_sentence(content, save_path, opts)
   end

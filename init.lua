@@ -1,8 +1,8 @@
 -- Neovim 启动引导
-require("env").launch_writing_room()
+require("lbs.env").launch_writing_room()
 require("config.lazy")
 require("global_functions")
-require("commands")
+require("lbs.commands")
 
 -- 绕过 Neovim _changetracking.lua 的 buf_state 竞态，实现与删除条件见 lbs/lsp.lua。
 require("lbs.lsp").patch_changetracking()
