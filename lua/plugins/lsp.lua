@@ -2,8 +2,9 @@ return {
   { "mason-org/mason.nvim", enabled = false },
   { "mason-org/mason-lspconfig.nvim", enabled = false },
   { -- rachartier/tiny-inline-diagnostic.nvim --------------------------- {{{2
+    -- 原生 virtual_text 由下面 nvim-lspconfig 的 opts.diagnostics 关闭，
+    -- 否则会与本插件的行内渲染重叠成两套诊断。
     "rachartier/tiny-inline-diagnostic.nvim",
-    init = vim.diagnostic.config({ virtual_text = false }),
     event = "VeryLazy",
     config = true,
   },
@@ -11,6 +12,10 @@ return {
     "neovim/nvim-lspconfig",
     ft = { "lua", "perl", "markdown", "bash", "r", "python", "vim", "rmd", "hyprlang" },
     opts = {
+      -- 关掉原生行内诊断，交给 tiny-inline-diagnostic 渲染。
+      -- 必须走这个通道：LazyVim 在本 spec 的 config 阶段用 opts.diagnostics
+      -- 调 vim.diagnostic.config()，任何更早的设置都会被它覆盖。
+      diagnostics = { virtual_text = false },
       servers = {
         ["*"] = {
           keys = {
