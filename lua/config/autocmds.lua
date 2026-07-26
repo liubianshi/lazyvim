@@ -396,30 +396,31 @@ local function restart_lsp_on_rename(args)
     return
   end
 
-  -- Get all active LSP clients attached to the buffer.
-  -- `get_active_clients` is the modern and recommended function.
-  local clients = vim.lsp.get_clients({ bufnr = bufnr })
+  -- codecompanion-history 的自动设置标题功能因调用 `vim.api.nvim_buf_set_name()`
+  -- 会导致 `rime_ls` 失效，需要先 detach 再 attach rime_ls。
+  -- 其实也会导致其他 lsp 失效，但由于 codecompanion 下启用的 lsp 通常只有
+  -- rime_ls，为了避免影响扩散，这里只处理 rime_ls。
+  --
+  -- 先筛选再通知：原实现在循环体内用 `return` 代替 `goto continue`，只要 buffer
+  -- 上还挂着别的 LSP（几乎总是如此），首个非 rime_ls 客户端就会终止整个循环，
+  -- rime_ls 永远得不到重启；同时 notify 在筛选之前无条件触发，没有 rime_ls 时
+  -- 也会弹提示。
+  local targets = vim.tbl_filter(function(client)
+    return client.name == "rime_ls"
+  end, vim.lsp.get_clients({ bufnr = bufnr }))
 
-  -- If there are no clients to restart, do nothing.
-  if #clients == 0 then
+  if #targets == 0 then
     return
   end
 
-  vim.notify("Buffer renamed, restarting LSP clients...", vim.log.levels.INFO, {
+  vim.notify("Buffer renamed, restarting rime_ls ...", vim.log.levels.INFO, {
     title = "LSP",
   })
 
   -- Detach and then schedule a re-attachment for each client.
   -- `vim.schedule` ensures re-attachment happens in the next event loop tick,
   -- preventing potential race conditions.
-  for _, client in ipairs(clients) do
-    -- codecompanion-history 的自动设置标题功能因调用 `vim.api.nvim_buf_set_name()`
-    -- 会导致 `rime_ls` 失效，需要先 detach 再 attach rime_ls
-    -- 其实也会导致其他 lsp 失效，但由于 codecompanion 下启用的 lsp 通常只有 rime_ls
-    -- 为了避免影响扩散，现在只处理 rime_ls
-    if client.name ~= "rime_ls" then
-      return
-    end
+  for _, client in ipairs(targets) do
     vim.lsp.buf_detach_client(bufnr, client.id)
     vim.schedule(function()
       vim.lsp.buf_attach_client(bufnr, client.id)
