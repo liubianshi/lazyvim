@@ -37,16 +37,14 @@ function M.get_visual_coordinate()
     ecol = -1
   end
 
-  -- handle unicode char
+  -- ecol 指向最后一个选中字符的首字节，推到它的末字节，否则按字节切会截断多字节序列。
+  -- 用 str_utf_end 而不是手写首字节范围表：旧实现给 4 字节序列（emoji、CJK 扩展 B
+  -- 的汉字）只补 2 而非 3，少一个字节，切出来是残缺的 UTF-8。中文是 3 字节，恰好
+  -- 落在写对了的那一档，所以这个错误一直没显形。
   if srow == erow and mode ~= "V" then
     local line = vim.fn.getline(srow)
-    local end_char_byte = ecol < line:len() and line:byte(ecol) or 0
-    if end_char_byte >= 192 and end_char_byte <= 223 then
-      ecol = ecol + 1
-    elseif end_char_byte >= 224 and end_char_byte <= 239 then
-      ecol = ecol + 2
-    elseif end_char_byte >= 240 and end_char_byte <= 247 then
-      ecol = ecol + 2
+    if ecol >= 1 and ecol <= #line then
+      ecol = ecol + vim.str_utf_end(line, ecol)
     end
   end
 
