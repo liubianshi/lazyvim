@@ -91,7 +91,7 @@ function M.create_float_win(opts)
 
   local start_line, start_col, end_line, end_col = current_win_line, current_win_col, current_win_line, current_win_col
   if mode == "v" or mode == "V" or mode == "\22" then
-    local coord = require("util").get_visual_coordinate()
+    local coord = require("lbs.buf").get_visual_coordinate()
     if not coord then
       return
     end

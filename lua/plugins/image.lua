@@ -72,7 +72,7 @@ return {
         },
         custom = {
           {
-            trigger = require("util").in_obsidian_vault,
+            trigger = require("lbs.path").in_obsidian_vault,
             template = "![[$FILE_PATH]]$CURSOR",
           },
           {
@@ -259,7 +259,7 @@ return {
           window_width = "58%"
         end
 
-        local popup = require("util.ui").popup({
+        local popup = require("lbs.ui.popup").popup({
           relative = "win",
           position = { row = "100%", col = window_col },
           size = { width = window_width, height = "30%" },
@@ -447,7 +447,7 @@ return {
           vim.keymap.set("n", "<S-CR>", function()
             local file = vim.fn.expand("<cfile>")
             -- sometimes, the image path may relative to the file path, rather than root
-            if require("util").in_obsidian_vault() then
+            if require("lbs.path").in_obsidian_vault() then
               local file_relative_file = vim.fn.expand("%:h") .. "/" .. file
               if vim.uv.fs_stat(file_relative_file) then
                 file = vim.fn.expand("%:h") .. "/" .. file

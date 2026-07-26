@@ -25,7 +25,7 @@ return {
       require("blink.cmp").build():wait(60000)
     end,
     opts = function()
-      -- local border = require("util").border("▔", "bottom")
+      -- local border = require("lbs.ui.border").border("▔", "bottom")
       local border = "none"
       local config = {
         enabled = function()

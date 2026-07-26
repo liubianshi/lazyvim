@@ -49,6 +49,9 @@ return {
     keys = {
       -- stylua: ignore start
       { "s",     mode = { "n", "x", "o" }, false },
+      -- visual 模式的 S 归 nvim-surround（给选区加环绕符），只禁 x 这一条；
+      -- normal/operator 的 S 仍是 Flash Treesitter，本 spec 另有 st 提供同一功能。
+      { "S",     mode = "x",               false },
       { "ss",    mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "Flash",                   },
       { "r",     mode = "o",               function() require("flash").remote() end,            desc = "Remote Flash",            },
       { "R",     mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "Flash Treesitter Search", },
@@ -67,7 +70,7 @@ return {
             highlight = { matches = false },
           })
         end,
-        desc = "Flash: Jump to a line forard",
+        desc = "Flash: Jump to a line forward",
       },
       {
         "sk",
@@ -81,7 +84,7 @@ return {
             highlight = { matches = false },
           })
         end,
-        desc = "Flash: Jump to a line forard",
+        desc = "Flash: Jump to a line forward",
       },
       {
         "<M-h>",
@@ -214,10 +217,6 @@ return {
   { -- chrisgrieser/nvim-origami: Fold with relentless elegance --------- {{{3
     "chrisgrieser/nvim-origami",
     event = "BufReadPost",
-    init = function()
-      vim.opt.foldlevel = 99
-      vim.opt.foldlevelstart = 99
-    end,
     opts = {
       useLspFoldsWithTreesitterFallback = {
         enabled = true,
@@ -245,6 +244,23 @@ return {
     "chrisgrieser/nvim-early-retirement",
     config = true,
     event = "VeryLazy",
+  },
+  { -- ThePrimeagen/harpoon ------------------------------------------- {{{3
+    "ThePrimeagen/harpoon",
+    -- <leader>h 被个人的 <leader>h* 组（messages / 通知 / cheatsheet /
+    -- stata help，共 6 条）变成了前缀，按下要等满 timeoutlen。个人组是习惯键，
+    -- 故把 quick menu 往下推一层；<leader>h 随之降为纯组前缀，弹面板不算卡顿。
+    keys = {
+      { "<leader>h", false },
+      {
+        "<leader>hh",
+        function()
+          local harpoon = require("harpoon")
+          harpoon.ui:toggle_quick_menu(harpoon:list())
+        end,
+        desc = "Harpoon Quick Menu",
+      },
+    },
   },
   { -- kylechui/nvim-surround: Surround selections, stylishly ----------- {{{3
     "kylechui/nvim-surround",
@@ -388,7 +404,7 @@ return {
         ]],
         { output = false }
       )
-      require("util").wk_reg({
+      require("lbs.keymap").wk_reg({
         { "<localleader>t", group = "Table Mode .." },
       })
     end,
@@ -480,7 +496,7 @@ return {
     "stevearc/aerial.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.icons" },
     opts = {
-      layout = { default_derection = "prefer_left" },
+      layout = { default_direction = "prefer_left" },
       highlight_on_hover = true,
       close_on_select = true,
       filter_kind = false,

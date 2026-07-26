@@ -1,4 +1,5 @@
--- Define commands
+-- 用户命令定义。与 lbs/ 下其余模块不同，本模块 require 即注册、不返回模块表，
+-- 是 init.lua 直接拉起的入口。
 local cmd = vim.api.nvim_create_user_command
 
 cmd("Bclose", function(opts)
@@ -39,7 +40,7 @@ end, {
 })
 
 cmd("SR", function(opts)
-  require("util").execute_async(string.format("sr %s &>/dev/null &", opts.args), {
+  require("lbs.proc").execute_async(string.format("sr %s &>/dev/null &", opts.args), {
     on_stdout = function() end,
     on_exit = function()
       vim.notify("Opened in external browser", vim.log.levels.INFO, { title = "SurfRaw" })
@@ -129,7 +130,7 @@ cmd("Fabric", function(opts)
     fabric_opts.win = vim.tbl_deep_extend("force", fabric_opts.win, win_opts)
   end
 
-  require("pickers").fabric(fabric_opts)
+  require("lbs.picker").fabric(fabric_opts)
 end, {
   desc = "Fabric: Choose pattern",
   bang = true,

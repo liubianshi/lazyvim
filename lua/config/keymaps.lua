@@ -1,6 +1,6 @@
 -- stylua: ignore start
 
-local keymap = require("util").keymap
+local keymap = require("lbs.keymap").keymap
 
 -- Register ------------------------------------------------------------- {{{1
 -- Change text without yanking it into a register.
@@ -74,7 +74,6 @@ keymap({ "<leader>dl", "<cmd>diffget LOCAL<cr>:diffupdate<cr>", desc = "Diffget 
 keymap({ "<leader>dr", "<cmd>diffget REMOTE<cr>:diffupdate<cr>", desc = "Diffget Remote", })
 
 --- run ------------------------------------------------------------------ {{{1
-keymap({ "<leader>o:", "<cmd>ToggleTerm<cr>", desc = "Open Terminal" })
 keymap({ "<leader>ob", "<cmd>call utils#Status()<cr>", desc = "Toggle Status Line" })
 keymap({ "<leader>od", "<cmd>source $MYVIMRC<cr>", desc = "Source VIMRC" })
 keymap({
@@ -102,11 +101,10 @@ keymap({
 
 --- buffer --------------------------------------------------------------- {{{1
 keymap({ "<leader>bD", "<cmd>Bclose!<cr>", desc = "Delete Buffer (force)" })
-keymap({ "<leader>bb", function() Snacks.picker.buffers() end, desc = "Previous Buffer" })
-keymap({ "<leader>bp", "<cmd>bp<cr>", desc = "Previous Buffer" })
-keymap({ "<leader>bn", "<cmd>bn<cr>", desc = "Next Buffer" })
+keymap({ "<leader>bb", function() Snacks.picker.buffers() end, desc = "List Buffers (picker)" })
 keymap({ "<leader>bq", "<cmd>q<cr>", desc = "Quit Buffer" })
 keymap({ "<leader>bQ", "<cmd>q!<cr>", desc = "Quit Buffer (force)" })
+-- 覆盖 LazyVim 默认的 <leader>bl（BufferLineCloseLeft），刻意保留 Pick 语义。
 keymap({ "<leader>bl", "<cmd>BufferLinePick<cr>", desc = "Pick Buffer on BufferLine", })
 keymap({ "<leader>bF", "<cmd>fclose<cr>", desc = "Close Float buffer" })
 
@@ -131,39 +129,41 @@ keymap({ "<localleader>}", "<C-v>u201C <C-v>u201D<C-o>F <c-o>x", desc = "Chinese
 --- Triggers punctuation replacement when ';' followed by single quote is pressed
 keymap({
   "<M-space>",
-  require("util.chinese").replace_en_with_cn_punctuation,
+  require("lbs.chinese").replace_en_with_cn_punctuation,
   desc = 'Replace paired English punctuation with Chinese equivalents',
   mode = 'i',
 })
 
 --- window manager ------------------------------------------------------ {{{1
-keymap({ "w0", "<cmd>88wincmd |<cr>", desc = "Window: Suitable Width" })
-keymap({ "wt", "<cmd>wincmd T<cr>", desc = "Move Current Window to a New Tab" })
-keymap({ "wo", "<cmd>only<cr>", desc = "Make current window the only one" })
-keymap({ "wv", "<c-w>v", desc = "Vertical Split Current Buffer" })
-keymap({ "ws", "<c-w>s", desc = "Split Current Buffer" })
-keymap({ "wF", "<cmd>fclose<cr>", desc = "Close Float Buffer" })
-keymap({ "wh", "<c-w>h", desc = "Move cursor to window left" })
-keymap({ "wj", "<c-w>j", desc = "Move cursor to window below" })
-keymap({ "wk", "<c-w>k", desc = "Move cursor to window above" })
-keymap({ "wl", "<c-w>l", desc = "Move cursor to window right" })
-keymap({ "wH", "<c-w>H", desc = "Move current window left" })
-keymap({ "wJ", "<c-w>J", desc = "Move current window below" })
-keymap({ "wK", "<c-w>K", desc = "Move current window above" })
-keymap({ "wL", "<c-w>L", desc = "Move current window right" })
-keymap({ "wx", "<c-w>x", desc = "Exchange window" })
-keymap({ "wq", "<c-w>q", desc = "Quit the current window" })
-keymap({ "w=", "<c-w>=", desc = "Make Window size equally" })
-keymap({ "<c-j>", "<cmd>resize -2<cr>", desc = "Decrease window height" })
-keymap({ "<c-k>", "<cmd>resize +2<cr>", desc = "Increase window height" })
-keymap({ "<c-h>", "<cmd>vertical resize -2<cr>", desc = "Decrease window width" })
-keymap({ "<c-l>", "<cmd>vertical resize +2<cr>", desc = "Increase window width" })
+-- 整组挂在 <leader>w 下而非裸 w：裸 w* 会把内置的逐词移动 w 变成前缀键，
+-- 每按一次 w 都要等满 timeoutlen 才落地（实测被本组 17 条映射阻塞）。
+-- <leader>w 下 LazyVim 已有 wd(Delete Window)、wm(Toggle Zoom)，与本组并存不冲突。
+keymap({ "<leader>w0", "<cmd>88wincmd |<cr>", desc = "Window: Suitable Width" })
+keymap({ "<leader>wt", "<cmd>wincmd T<cr>", desc = "Move Current Window to a New Tab" })
+keymap({ "<leader>wo", "<cmd>only<cr>", desc = "Make current window the only one" })
+keymap({ "<leader>wv", "<c-w>v", desc = "Vertical Split Current Buffer" })
+keymap({ "<leader>ws", "<c-w>s", desc = "Split Current Buffer" })
+keymap({ "<leader>wF", "<cmd>fclose<cr>", desc = "Close Float Buffer" })
+keymap({ "<leader>wh", "<c-w>h", desc = "Move cursor to window left" })
+keymap({ "<leader>wj", "<c-w>j", desc = "Move cursor to window below" })
+keymap({ "<leader>wk", "<c-w>k", desc = "Move cursor to window above" })
+keymap({ "<leader>wl", "<c-w>l", desc = "Move cursor to window right" })
+keymap({ "<leader>wH", "<c-w>H", desc = "Move current window left" })
+keymap({ "<leader>wJ", "<c-w>J", desc = "Move current window below" })
+keymap({ "<leader>wK", "<c-w>K", desc = "Move current window above" })
+keymap({ "<leader>wL", "<c-w>L", desc = "Move current window right" })
+keymap({ "<leader>wx", "<c-w>x", desc = "Exchange window" })
+keymap({ "<leader>wq", "<c-w>q", desc = "Quit the current window" })
+keymap({ "<leader>w=", "<c-w>=", desc = "Make Window size equally" })
+-- <c-hjkl> 的 resize 已删：LazyVim 把同样四个操作绑在 <C-Left/Down/Up/Right> 上，
+-- 这里是纯重复绑定。让出 <c-hjkl> 后 LazyVim 默认的窗口导航恢复，
+-- 于是 <leader>w 化并没有让窗口切换变成三键——它仍是两键的 <c-h/j/k/l>。
 keymap({
   "<c-w>f",
   function()
     -- This requires a utility function to identify the highest z-index window (likely a float).
-    -- Assumes `require("util.ui").get_highest_zindex_win()` exists.
-    local popup_win_id = require("util.ui").get_highest_zindex_win()
+    -- Assumes `require("lbs.ui.popup").get_highest_zindex_win()` exists.
+    local popup_win_id = require("lbs.ui.popup").get_highest_zindex_win()
     if popup_win_id then
       vim.fn.win_gotoid(popup_win_id)
     end
@@ -189,7 +189,7 @@ keymap({
   "<leader>ew",
   function()
     -- Assumes a `util` module with `get_daily_filepath` function exists.
-    vim.cmd("edit " .. require("util").get_daily_filepath("md", "ReciteWords"))
+    vim.cmd("edit " .. require("lbs.path").get_daily_filepath("md", "ReciteWords"))
   end,
   desc = "Open Daily English Notes"
 })
@@ -233,7 +233,7 @@ keymap({ "<A-;>", "<esc>gqq}kA", desc = "Format Paragraph", mode = "i" })
 -- object --------------------------------------------------------------- {{{1
 -- which-key groups for text objects
 keymap({ "i", mode = { "x", "o" }, group = "Object: inner", icon = { icon = "", hl = "WhichKeyIconOrange" } })
-keymap({ "a", mode = { "x", "o" }, group = "Object: outter", icon = { icon = "", hl = "WhichKeyIconOrange" } })
+keymap({ "a", mode = { "x", "o" }, group = "Object: outer", icon = { icon = "", hl = "WhichKeyIconOrange" } })
 
 -- Custom text objects
 keymap({ "iB", "<cmd>call text_obj#Buffer()<cr>", desc = "Object: Buffer", mode = { "x", "o" } })
@@ -338,7 +338,7 @@ keymap({ "<leader>fS", "<cmd>write!<cr>", desc = "Save File (force)" })
 -- Helper to safely require the picker module and create a lazy-loading wrapper
 local function safe_picker_call(picker_fn_name)
   return function(...)
-    local ok, picker = pcall(require, "pickers")
+    local ok, picker = pcall(require, "lbs.picker")
     if not ok then
       vim.notify("Picker module not available", vim.log.levels.WARN)
       return
@@ -369,8 +369,10 @@ keymap({
   safe_picker_call("citation"),
   desc = "Insert Citation Keys"
 })
+-- 用 ;c 而非 ;ic：<localleader>i 在 insert 模式是 icon-picker 的完整动作
+-- （plugins/editor.lua），压一条 ;ic 上去会让每次插入图标都先等满 timeoutlen。
 keymap({
-  "<localleader>ic",
+  "<localleader>c",
   safe_picker_call("citation"),
   desc = "Insert Citation Keys",
   mode = "i",
@@ -381,7 +383,7 @@ keymap({
 keymap({
   "<leader>wi",
   function()
-    local ok, inspector = pcall(require, "util.window_inspector")
+    local ok, inspector = pcall(require, "lbs.ui.window_inspector")
     if ok and inspector then
       inspector.show()
     end
@@ -390,66 +392,10 @@ keymap({
 })
 
 -- GNU GLOBAL (gtags) lookups ------------------------------------------- {{{1
--- Neovim removed built-in cscope (no :cscope / cscopeprg), so instead of a
--- cscope bridge we query `global` directly and feed results into quickfix.
--- GTAGSLABEL=native-pygments is set in config/options.lua. Build the database
--- first with :GtagsUpdate (runs `gtags` in the current working directory).
-if vim.fn.executable("global") == 1 then
-  local gtags = {}
-
-  -- Run `global <flag> <pattern>` and populate the quickfix list.
-  -- flag: "-d" definitions, "-r" references, "-s" other symbols.
-  function gtags.query(flag, label, pattern)
-    pattern = (pattern ~= nil and pattern ~= "") and pattern or vim.fn.expand("<cword>")
-    if pattern == "" then
-      vim.notify("gtags: no symbol under cursor", vim.log.levels.WARN)
-      return
-    end
-    -- `--result=grep` prints `file:lineno:source line`, parsed below.
-    local out = vim.fn.systemlist({ "global", "--result=grep", flag, pattern })
-    if vim.v.shell_error ~= 0 then
-      vim.notify("gtags: " .. table.concat(out, "\n"), vim.log.levels.ERROR)
-      return
-    end
-    if vim.tbl_isempty(out) then
-      vim.notify(string.format("gtags: no %s for '%s'", label, pattern), vim.log.levels.INFO)
-      return
-    end
-    local items = {}
-    for _, line in ipairs(out) do
-      local file, lnum, text = line:match("^(.-):(%d+):(.*)$")
-      if file then
-        items[#items + 1] = { filename = file, lnum = tonumber(lnum), text = text }
-      end
-    end
-    vim.fn.setqflist({}, " ", { title = string.format("gtags %s: %s", label, pattern), items = items })
-    -- Jump straight to the sole match, otherwise open the quickfix list.
-    if #items == 1 then
-      vim.cmd("cfirst")
-    else
-      vim.cmd("botright copen")
-    end
-  end
-
-  -- (Re)build the gtags database in the current working directory.
-  function gtags.update()
-    vim.notify("gtags: building database ...", vim.log.levels.INFO)
-    local out = vim.fn.system({ "gtags" })
-    if vim.v.shell_error ~= 0 then
-      vim.notify("gtags update failed: " .. out, vim.log.levels.ERROR)
-    else
-      vim.notify("gtags: database updated", vim.log.levels.INFO)
-    end
-  end
-
-  vim.api.nvim_create_user_command("GtagsUpdate", gtags.update, { desc = "gtags: build/refresh database" })
-  vim.api.nvim_create_user_command("Gtags", function(o) gtags.query("-d", "definitions", o.args) end,
-    { nargs = "?", desc = "gtags: definitions" })
-  vim.api.nvim_create_user_command("GtagsRef", function(o) gtags.query("-r", "references", o.args) end,
-    { nargs = "?", desc = "gtags: references" })
-  vim.api.nvim_create_user_command("GtagsSym", function(o) gtags.query("-s", "symbols", o.args) end,
-    { nargs = "?", desc = "gtags: other symbols" })
-
+-- 实现在 lbs/gtags.lua；`global` 不在 PATH 时整组跳过。
+local gtags = require("lbs.gtags")
+if gtags.available() then
+  gtags.setup_commands()
   keymap({ "<leader>cgu", gtags.update, desc = "Gtags: update database" })
   keymap({ "<leader>cgd", function() gtags.query("-d", "definitions", "") end, desc = "Gtags: definition" })
   keymap({ "<leader>cgr", function() gtags.query("-r", "references", "") end, desc = "Gtags: references" })

@@ -1,6 +1,6 @@
 local Popup = require("nui.popup")
 local event = require("nui.utils.autocmd").event
-local rtest = require("rlib.test")
+local rtest = require("lbs.r.test")
 local r_popup = function()
   local opts = {
     enter = true,

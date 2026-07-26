@@ -165,14 +165,8 @@ return {
     },
     quickfile = { enabled = true },
     terminal = { enabled = true },
-    statuscolumn = {
-      enabled = false,
-      folds = {
-        open = true,
-        git_hl = true,
-      },
-    },
-    scoll = { enabled = true },
+    -- statuscolumn 由自建的 lbs.ui.statuscolumn 承担，snacks 这套整体关闭。
+    statuscolumn = { enabled = false },
     words = { enabled = true },
     styles = {
       notification = {
@@ -183,6 +177,17 @@ return {
   -- stylua: ignore
   keys = {
     { "<leader><space>", false },
+    { "<leader>gd",      false }, -- 让位给 plugins/project.lua 的 DiffviewOpen
+    -- <leader>e / <leader>n 各被个人的 <leader>e* (14 条) 与 <leader>n* (4 条)
+    -- 变成了前缀，按下后要等满 timeoutlen 才落地。个人组是多年习惯键，
+    -- 因此让 LazyVim 这两条各往下推一层；推完 <leader>e / <leader>n 降为纯组
+    -- 前缀，弹 which-key 面板本就该等 timeout，不再算卡顿。
+    { "<leader>e",       false },
+    { "<leader>ee",      "<leader>fe", desc = "Explorer Snacks (root dir)", remap = true },
+    { "<leader>n",       false },
+    -- 落在 <leader>h 组而非 <leader>n：n 组是 Obsidian 笔记，而 h 组已聚了
+    -- hm(messages) / hn(noice 通知) / hN(重定向通知)，通知历史与它们同族。
+    { "<leader>hi",      function() Snacks.picker.notifications() end, desc = "Notification History" },
     { "<leader>fm",      function() Snacks.picker.recent() end, desc = "Smart", },
     {
       "<leader>fn",

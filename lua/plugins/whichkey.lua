@@ -7,7 +7,7 @@ return { -- folke/which-key.nvim: displays a popup with possible keybindings - {
     },
     win = {
       no_overlap = false,
-      border = require("util").border("═", "top", true, "Orange"),
+      border = require("lbs.ui.border").border("═", "top", true, "Orange"),
     },
     triggers = {
       { "<auto>", mode = "nixsoc" },

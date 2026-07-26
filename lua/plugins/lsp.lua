@@ -1,0 +1,189 @@
+return {
+  { "mason-org/mason.nvim", enabled = false },
+  { "mason-org/mason-lspconfig.nvim", enabled = false },
+  { -- rachartier/tiny-inline-diagnostic.nvim --------------------------- {{{2
+    -- 原生 virtual_text 由下面 nvim-lspconfig 的 opts.diagnostics 关闭，
+    -- 否则会与本插件的行内渲染重叠成两套诊断。
+    "rachartier/tiny-inline-diagnostic.nvim",
+    event = "VeryLazy",
+    config = true,
+  },
+  { -- neovim/nvim-lspconfig -------------------------------------------- {{{2
+    "neovim/nvim-lspconfig",
+    ft = { "lua", "perl", "markdown", "bash", "r", "python", "vim", "rmd", "hyprlang" },
+    opts = {
+      -- 关掉原生行内诊断，交给 tiny-inline-diagnostic 渲染。
+      -- 必须走这个通道：LazyVim 在本 spec 的 config 阶段用 opts.diagnostics
+      -- 调 vim.diagnostic.config()，任何更早的设置都会被它覆盖。
+      diagnostics = { virtual_text = false },
+      servers = {
+        ["*"] = {
+          keys = {
+            { "K", false },
+          },
+        },
+        hyprls = {
+          root_markers = { "hyprland.conf", "hyprland.d", ".git" },
+        },
+        bashls = {
+          cmd = { "bash-language-server", "start" },
+          filetpyes = { "sh" },
+          root_markers = { ".git", ".root", ".project" },
+          single_file_support = true,
+        },
+        r_language_server = {
+          -- nvim-lspconfig 自带的 r_language_server 把 `root_dir` 定义成函数
+          -- (`.git` 否则 homedir),它会覆盖 `root_markers`,导致下面的标记失效;
+          -- 更糟的是该函数若未被框架解析就会原样落进 `client.root_dir`,
+          -- 触发 LazyVim root 探测器 / lualine 崩溃。这里显式覆盖为一个
+          -- 同步把结果回填成字符串的 root_dir 函数,既消除函数泄漏,又让
+          -- 期望的标记真正生效。
+          root_dir = function(bufnr, on_dir)
+            local fname = vim.api.nvim_buf_get_name(bufnr)
+            local source = fname ~= "" and fname or bufnr
+            on_dir(
+              vim.fs.root(source, {
+                "R",
+                "taskfile.yml",
+                ".git",
+                "NAMESPACE",
+                "config.R",
+                ".root",
+                ".project",
+              }) or (fname ~= "" and vim.fs.dirname(fname) or vim.uv.cwd())
+            )
+          end,
+          single_file_support = true,
+        },
+        vimls = {},
+        copilot = {
+          name = "copilot",
+          cmd = { "copilot-language-server", "--stdio" },
+        },
+        perlnavigator = {
+          cmd = { "perlnavigator" },
+          single_file_support = true,
+          settings = {
+            perlnavigator = {
+              perlPath = "perl",
+              enableWarnings = true,
+              perltidyProfile = "",
+              perlcriticProfile = "",
+              perlcriticEnabled = true,
+            },
+          },
+        },
+        lua_ls = {
+          single_file_support = true,
+          settings = {
+            Lua = {
+              workspace = {
+                checkThirdParty = false,
+              },
+              codeLens = {
+                enable = true,
+              },
+              completion = {
+                callSnippet = "Replace",
+              },
+            },
+          },
+        },
+        markdown_oxide = {
+          cmd = {
+            vim.fn.executable("markdown-oxide") == 1 and "markdown-oxide"
+              or vim.env.HOME .. "/.cargo/bin/markdown-oxide",
+          },
+          filetype = { "markdown", "rmd", "rmarkdown", "quarto" },
+          root_markers = { ".obsidian", ".git" },
+          capabilities = {
+            workspace = {
+              didChangeWatchedFiles = {
+                dynamicRegistration = true,
+              },
+            },
+          },
+          single_file_support = false,
+          on_attach = function(client, _) -- _ bufnr
+            client.handlers["textDocument/publishDiagnostics"] = function() end
+          end,
+        },
+      },
+    },
+  },
+  { -- Wansmer/symbol-usage.nvim ---------------------------------------- {{{2
+    "Wansmer/symbol-usage.nvim",
+    event = "BufReadPre", -- need run before LspAttach if you use nvim 0.9. On 0.10 use 'LspAttach'
+    config = function()
+      local function h(name)
+        return vim.api.nvim_get_hl(0, { name = name })
+      end
+
+      -- hl-groups can have any name
+      -- stylua: ignore start
+      vim.api.nvim_set_hl(0, "SymbolUsageRounding", { fg = h("CursorLine").bg,                          italic = true })
+      vim.api.nvim_set_hl(0, "SymbolUsageContent",  { fg = h("Comment").fg,    bg = h("CursorLine").bg, italic = true })
+      vim.api.nvim_set_hl(0, "SymbolUsageRef",      { fg = h("Function").fg,   bg = h("CursorLine").bg, italic = true })
+      vim.api.nvim_set_hl(0, "SymbolUsageDef",      { fg = h("Type").fg,       bg = h("CursorLine").bg, italic = true })
+      vim.api.nvim_set_hl(0, "SymbolUsageImpl",     { fg = h("@keyword").fg,   bg = h("CursorLine").bg, italic = true })
+      -- stylua: ignore end
+
+      local function text_format(symbol)
+        local res = {}
+
+        local round_start = { "", "SymbolUsageRounding" }
+        local round_end = { "", "SymbolUsageRounding" }
+
+        -- Indicator that shows if there are any other symbols in the same line
+        local stacked_functions_content = symbol.stacked_count > 0 and ("+%s"):format(symbol.stacked_count) or ""
+
+        if symbol.references then
+          local usage = symbol.references <= 1 and "usage" or "usages"
+          local num = symbol.references == 0 and "no" or symbol.references
+          table.insert(res, round_start)
+          table.insert(res, { "󰌹 ", "SymbolUsageRef" })
+          table.insert(res, { ("%s %s"):format(num, usage), "SymbolUsageContent" })
+          table.insert(res, round_end)
+        end
+
+        if symbol.definition then
+          if #res > 0 then
+            table.insert(res, { " ", "NonText" })
+          end
+          table.insert(res, round_start)
+          table.insert(res, { "󰳽 ", "SymbolUsageDef" })
+          table.insert(res, { symbol.definition .. " defs", "SymbolUsageContent" })
+          table.insert(res, round_end)
+        end
+
+        if symbol.implementation then
+          if #res > 0 then
+            table.insert(res, { " ", "NonText" })
+          end
+          table.insert(res, round_start)
+          table.insert(res, { "󰡱 ", "SymbolUsageImpl" })
+          table.insert(res, { symbol.implementation .. " impls", "SymbolUsageContent" })
+          table.insert(res, round_end)
+        end
+
+        if stacked_functions_content ~= "" then
+          if #res > 0 then
+            table.insert(res, { " ", "NonText" })
+          end
+          table.insert(res, round_start)
+          table.insert(res, { " ", "SymbolUsageImpl" })
+          table.insert(res, { stacked_functions_content, "SymbolUsageContent" })
+          table.insert(res, round_end)
+        end
+
+        return res
+      end
+
+      --- @diagnostic disable: missing-fields
+      require("symbol-usage").setup({
+        text_format = text_format,
+        vt_position = "end_of_line",
+      })
+    end,
+  },
+}

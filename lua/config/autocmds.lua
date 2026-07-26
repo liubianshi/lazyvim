@@ -12,6 +12,9 @@ vim.api.nvim_del_augroup_by_name("lazyvim_resize_splits")
 vim.api.nvim_del_augroup_by_name("lazyvim_highlight_yank")
 -- vim.api.nvim_del_augroup_by_name("lazyvim_last_loc")
 
+local lbs_zen = require("lbs.zen")
+local lbs_theme = require("lbs.theme")
+local lbs_lsp = require("lbs.lsp")
 local aucmd = vim.api.nvim_create_autocmd
 
 local function augroup(name)
@@ -36,8 +39,6 @@ for _, name in ipairs({
   "Zen",
   "Formatprg",
   "Quit",
-  "Snacks",
-  "Untitled",
   "ColorScheme",
   "Lsp",
   "HiGroup",
@@ -55,56 +56,11 @@ aucmd({ "BufWritePre" }, {
 })
 
 -- Auto-save function
-require("util.autosave").setup()
+require("lbs.autosave").setup()
 
 ------------------------------------------------------------------------ }}}
 
 -- Zen mode related ----------------------------------------------------- {{{1
-local function process_win(win)
-  local winnr = vim.fn.win_id2win(win)
-  if winnr == 0 then
-    return
-  end
-
-  local ww = vim.api.nvim_win_get_width(win)
-  local bufnr = vim.api.nvim_win_get_buf(win)
-  local _, zen_oriwin = pcall(vim.api.nvim_buf_get_var, bufnr, "zen_oriwin")
-
-  if vim.bo[bufnr].syntax == "rbrowser" then
-    if ww <= 30 then
-      return
-    end
-    vim.cmd("vertical " .. winnr .. "resize 30")
-    return "break"
-  end
-
-  if vim.g.lbs_zen_mode then
-    if ww <= 88 then
-      vim.wo[win].signcolumn = "auto:1"
-    elseif ww <= 100 then
-      vim.wo[win].signcolumn = "yes:4"
-    else
-      vim.wo[win].signcolumn = "yes:" .. math.min(math.floor((ww - 81) / 4), 6)
-    end
-  elseif zen_oriwin and type(zen_oriwin) == "table" and zen_oriwin.zenmode then
-    if ww <= 88 then
-      vim.wo[win].signcolumn = "auto:1"
-    elseif ww <= 100 then
-      vim.wo[win].signcolumn = "yes:4"
-    else
-      vim.wo[win].signcolumn = "yes:" .. math.min(math.floor((ww - 81) / 4), 9)
-    end
-  else
-    if ww <= 40 then
-      vim.wo[win].signcolumn = "no"
-      vim.wo[win].foldcolumn = "0"
-    else
-      vim.wo[win].signcolumn = "auto:1"
-      vim.wo[win].foldcolumn = vim.o.foldcolumn
-    end
-  end
-end
-
 aucmd({ "WinResized" }, {
   group = augroups.Zen,
   callback = function(_)
@@ -120,7 +76,7 @@ aucmd({ "WinResized" }, {
         )
     end, event_related_windows)
     for _, win in ipairs(windows) do
-      local rc = process_win(win)
+      local rc = lbs_zen.process_win(win)
       if rc == "break" then
         return
       end
@@ -136,7 +92,6 @@ aucmd({ "BufWinEnter", "BufRead", "BufEnter" }, {
     if winid == -1 or vim.api.nvim_win_get_config(winid).zindex then
       return
     end
-    local win_attr = vim.api.nvim_win_get_config(winid)
 
     local zen_oriwin = vim.b[bufnr].zen_oriwin
     local is_zen_buffer = zen_oriwin and zen_oriwin.zenmode
@@ -188,7 +143,6 @@ local function show_document(ft)
     else
       vim.cmd.Rdoc(keyword)
     end
-  else
   end
 end
 aucmd({ "FileType" }, {
@@ -241,7 +195,7 @@ aucmd({ "TermOpen" }, {
 -- IM Switch ------------------------------------------------------------- {{{1
 -- 延迟初始化输入法自动切换模块
 vim.schedule(function()
-  require("util.im_switch").setup()
+  require("lbs.im_switch").setup()
 end)
 
 -- Highlight on yank ---------------------------------------------------- {{{1
@@ -358,15 +312,6 @@ vim.api.nvim_create_autocmd({ "ColorScheme" }, {
   desc = "remove unnecessary background",
 })
 
-vim.api.nvim_create_autocmd({ "ColorScheme" }, {
-  pattern = "*",
-  group = augroups.ColorScheme,
-  callback = function()
-    require("util.ui").adjust_hi_group()
-  end,
-  desc = "Define personal highlight group",
-})
-
 -- Untitled file -------------------------------------------------------- {{{1
 -- 退出 Neovim 时，忽略未保存的 Untitled buffer 对退出进程的干扰
 vim.api.nvim_create_autocmd({ "QuitPre" }, {
@@ -392,54 +337,12 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 })
 
 -- Lsp ------------------------------------------------------------------ {{{1
---- Restarts LSP clients for a buffer after it has been renamed.
--- This is useful after commands like `:saveas` or `:file new_name`, which
--- can confuse LSP servers that track files by their path.
-local function restart_lsp_on_rename(args)
-  local bufnr = args.buf
-
-  -- Ensure the buffer is still valid before proceeding.
-  if not vim.api.nvim_buf_is_valid(bufnr) then
-    return
-  end
-
-  -- Get all active LSP clients attached to the buffer.
-  -- `get_active_clients` is the modern and recommended function.
-  local clients = vim.lsp.get_clients({ bufnr = bufnr })
-
-  -- If there are no clients to restart, do nothing.
-  if #clients == 0 then
-    return
-  end
-
-  vim.notify("Buffer renamed, restarting LSP clients...", vim.log.levels.INFO, {
-    title = "LSP",
-  })
-
-  -- Detach and then schedule a re-attachment for each client.
-  -- `vim.schedule` ensures re-attachment happens in the next event loop tick,
-  -- preventing potential race conditions.
-  for _, client in ipairs(clients) do
-    -- codecompanion-history 的自动设置标题功能因调用 `vim.api.nvim_buf_set_name()`
-    -- 会导致 `rime_ls` 失效，需要先 detach 再 attach rime_ls
-    -- 其实也会导致其他 lsp 失效，但由于 codecompanion 下启用的 lsp 通常只有 rime_ls
-    -- 为了避免影响扩散，现在只处理 rime_ls
-    if client.name ~= "rime_ls" then
-      return
-    end
-    vim.lsp.buf_detach_client(bufnr, client.id)
-    vim.schedule(function()
-      vim.lsp.buf_attach_client(bufnr, client.id)
-    end)
-  end
-end
-
 -- Create an autocommand that triggers on buffer rename events.
 -- This assumes `augroups.Lsp` is an augroup created elsewhere in your config.
 vim.api.nvim_create_autocmd("BufFilePost", {
   group = augroups.Lsp,
   pattern = "*",
-  callback = restart_lsp_on_rename,
+  callback = lbs_lsp.restart_on_rename,
   desc = "Restart LSP clients on buffer rename.",
 })
 
@@ -474,7 +377,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 })
 
 -- Roxygen2 highlight --------------------------------------------------- {{{2
-local r_higroup = require("rlib.higroup")
+local r_higroup = require("lbs.r.higroup")
 vim.api.nvim_create_autocmd({ "BufEnter", "FileType" }, {
   pattern = "r",
   group = augroups.HiGroup,
@@ -492,50 +395,10 @@ vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "CursorMoved" }, {
 })
 
 -- lightbulb ------------------------------------------------------------ {{{1
-require("util.lightbulb").setup()
+require("lbs.ui.lightbulb").setup()
 
 --- background ---------------------------------------------------------- {{{2
--- Translate an OSC 11 reply (`ESC ] 11 ; rgb:RRRR/GGGG/BBBB ...`) into
--- "dark" / "light" by perceived luminance — terminal-agnostic, replaces the
--- previous Kitty-only path that read $TERM_BACKGROUND_CACHE.
-local function osc11_to_background(sequence)
-  local r, g, b = sequence:match("rgb:(%x+)/(%x+)/(%x+)")
-  if not (r and g and b) then
-    return nil
-  end
-  local function unit(hex)
-    return tonumber(hex, 16) / (16 ^ #hex - 1)
-  end
-  local lum = 0.299 * unit(r) + 0.587 * unit(g) + 0.114 * unit(b)
-  return lum > 0.5 and "light" or "dark"
-end
-
--- Opt in to DEC mode 2031 so Ghostty / modern Kitty actively report theme
--- changes via `CSI ?2031;1n` (dark) / `CSI ?2031;2n` (light). Written direct
--- to /dev/tty because io.write inside Neovim goes to :messages, not the TTY.
-do
-  local tty = io.open("/dev/tty", "w")
-  if tty then
-    tty:write("\27[?2031h")
-    tty:close()
-  end
-end
-
-local function apply_background(bg)
-  if not bg or bg == vim.o.background then
-    return
-  end
-  vim.schedule(function()
-    vim.o.background = bg
-    local cs = (vim.g.default_colorscheme or {})[bg]
-    if cs then
-      pcall(vim.cmd.colorscheme, cs)
-    end
-    pcall(function()
-      require("lualine").setup({})
-    end)
-  end)
-end
+lbs_theme.enable_dec2031()
 
 vim.api.nvim_create_autocmd("TermResponse", {
   group = augroups.Background,
@@ -545,9 +408,9 @@ vim.api.nvim_create_autocmd("TermResponse", {
       return
     end
     if seq:find("^\27%]11;rgb") then
-      apply_background(osc11_to_background(seq))
+      lbs_theme.apply_background(lbs_theme.osc11_to_background(seq))
     elseif seq:find("^\27%[%?2031;[12]n") then
-      apply_background(seq:find(";1n", 1, true) and "dark" or "light")
+      lbs_theme.apply_background(seq:find(";1n", 1, true) and "dark" or "light")
     end
   end,
 })
@@ -560,7 +423,7 @@ aucmd({ "FileType", "BufWinEnter" }, {
   group = augroups.SmartCR,
   pattern = "*",
   callback = function(ev)
-    local smart_cr = require("util.smart_cr")
+    local smart_cr = require("lbs.smart_cr")
     if smart_cr.should_attach(ev.buf) then
       smart_cr.attach(ev.buf)
     end
@@ -570,4 +433,4 @@ aucmd({ "FileType", "BufWinEnter" }, {
 
 -- external
 -- region yank
-require("reg_yank")
+require("lbs.reg_yank")

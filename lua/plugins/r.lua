@@ -13,7 +13,7 @@ return {
           end, { nargs = "+" })
 
           -- Setting box-related shortcuts
-          require("r_box").set_keymap()
+          require("lbs.r.box").set_keymap()
 
           -- Send command to R terminal
           vim.keymap.set("n", "<M-;>", function()
@@ -83,7 +83,9 @@ return {
         objbr_openlist = true,
         objbr_place = "console,left",
         objbr_opendf = true,
-        bracketed_paste = vim.fn.has("mac") and false or true,
+        -- 直接取比较结果,不要写成 `... and false or true`:该惯用法在 then 分支
+        -- 取值为 false 时恒返回 true,与条件无关。
+        bracketed_paste = vim.fn.has("mac") == 0,
         setwd = "nvim",
         open_pdf = "no",
         open_html = "no",

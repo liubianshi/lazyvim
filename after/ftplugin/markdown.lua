@@ -1,11 +1,11 @@
 vim.keymap.set("n", "<localleader>m", function()
   vim.cmd.normal("EvT@")
-  local text = require("util").get_visual_selection()
-  require("util").bibkey_action(text)
+  local text = require("lbs.buf").get_visual_selection()
+  require("lbs.cite").bibkey_action(text)
 end, { desc = "Show action related bibkey" })
 
 vim.keymap.set({ "n", "i" }, "<localleader>il", function()
-  require("ref_link").add()
+  require("lbs.ref_link").add()
 end, { desc = "Add Link" })
 
 

@@ -3,7 +3,6 @@
 -- Add any additional options here
 local opt = vim.opt
 local cache_path = vim.fn.stdpath("cache")
--- local config_path = vim.fn.stdpath("config") -- Commented out: only used in disabled dictionary config
 local opt_get = function(name, scope)
   scope = scope or "global"
   return vim.api.nvim_get_option_value(name, { scope = scope })
@@ -33,98 +32,8 @@ vim.cmd([[runtime plugin/man.lua]])
 vim.env.GTAGSLABEL = "native-pygments"
 
 -- Lua library ========================================================== {{{1
--- Resolve LuaRocks paths and add them to Lua's package.path and package.cpath
--- This version prefers XDG-compliant locations when available, falls back to ~/.luarocks,
--- and avoids adding duplicate entries. It also augments package.cpath for compiled modules.
-
--- Pick libuv handle compatible with multiple Neovim versions
-local uv = vim and (vim.uv or vim.loop)
-
--- Helper: return first existing directory from a list of candidates
-local function first_existing_dir(paths)
-  if not uv then
-    return nil
-  end
-  for _, p in ipairs(paths) do
-    local stat = uv.fs_stat(p)
-    if stat and stat.type == "directory" then
-      return p
-    end
-  end
-  return nil
-end
-
--- Helper: append a path segment to a list string if not already present
-local function append_unique(list, segment)
-  -- Ensure both sides are semicolon-delimited to avoid substring matches
-  local haystack = ";" .. (list or "") .. ";"
-  local needle = ";" .. segment .. ";"
-  if not haystack:find(needle, 1, true) then
-    if list and #list > 0 then
-      return list .. ";" .. segment
-    else
-      return segment
-    end
-  end
-  return list
-end
-
--- Derive candidate LuaRocks roots (most-preferred first)
-local home = (vim and vim.env and vim.env.HOME) or os.getenv("HOME") or ""
-local xdg_data = (vim and vim.env and vim.env.XDG_DATA_HOME) or os.getenv("XDG_DATA_HOME")
-local xdg_cfg = (vim and vim.env and vim.env.XDG_CONFIG_HOME) or os.getenv("XDG_CONFIG_HOME")
-
-local candidates = {}
-if xdg_data and #xdg_data > 0 then
-  table.insert(candidates, xdg_data .. "/luarocks")
-end
-if home ~= "" then
-  table.insert(candidates, home .. "/.local/share/luarocks")
-  table.insert(candidates, home .. "/.luarocks")
-end
-if xdg_cfg and #xdg_cfg > 0 then
-  table.insert(candidates, xdg_cfg .. "/luarocks")
-end
-
-local rocks_root = first_existing_dir(candidates)
--- Fallback if we couldn't stat anything (e.g., older Neovim without uv): use ~/.luarocks
-if not rocks_root and home ~= "" then
-  rocks_root = home .. "/.luarocks"
-end
-
--- Determine Lua version directory (e.g., "5.1"). Neovim uses LuaJIT compatible with 5.1.
-local lua_version = (_VERSION and _VERSION:match("(%d+%.%d+)")) or "5.1"
-
--- Infer shared library extension from current package.cpath (so, dll, dylib)
-local inferred_ext = (package.cpath or ""):match("%?%.([%a%d]+)") or "so"
-
--- Build LuaRocks search patterns
-local lua_paths = {
-  rocks_root .. "/share/lua/" .. lua_version .. "/?.lua",
-  rocks_root .. "/share/lua/" .. lua_version .. "/?/init.lua",
-}
-
-local c_paths = {
-  rocks_root .. "/lib/lua/" .. lua_version .. "/?." .. inferred_ext,
-  rocks_root .. "/lib/lua/" .. lua_version .. "/loadall." .. inferred_ext,
-}
-
--- Apply to package.path and package.cpath without duplicates
-for _, p in ipairs(lua_paths) do
-  package.path = append_unique(package.path, p)
-end
-
-for _, p in ipairs(c_paths) do
-  package.cpath = append_unique(package.cpath, p)
-end
-
---[[
-Summary:
-- Prefers XDG_DATA_HOME/luarocks, then ~/.local/share/luarocks, ~/.luarocks, and XDG_CONFIG_HOME/luarocks.
-- Adds both Lua module paths (?.lua, ?/init.lua) and C module paths (?.<ext>, loadall.<ext>).
-- Avoids duplicating entries across repeated loads.
-- Keeps compatibility with various Neovim versions by using vim.uv or vim.loop when available.
-]]
+-- LuaRocks 模块路径接入 package.path / package.cpath，实现见 lbs/rocks.lua。
+require("lbs.rocks").setup()
 
 -- Global variables ===================================================== {{{1
 vim.g.mapleader = " "
@@ -160,8 +69,9 @@ vim.g.bigfile_size = 1024 * 1024 * 1.5 -- 1.5 MB
 -- Method of previewing images
 vim.g.method_previewing_images = "system"
 
--- Options for the LazyVim statuscolumn --------------------------------- {{{2
-vim.g.lazyvim_statuscolumn = {
+-- statuscolumn 选项 ---------------------------------------------------- {{{2
+-- 由自建的 lbs.ui.statuscolumn 读取（`opt.statuscolumn` 指向它）。
+vim.g.lbs_statuscolumn = {
   folds_open = true, -- show fold sign when fold is open
   folds_githl = true, -- highlight fold sign with git sign color
 }
@@ -198,7 +108,7 @@ vim.g.R_start_libs = "base,stats,graphics,grDevices,utils,methods,"
   .. "fst,future,devtools,ggplot2,fixest"
 
 -- color ----------------------------------------------------------------
-vim.g.lbs_colors = require("util.ui").fetch_color_pallete()
+vim.g.lbs_colors = require("lbs.ui.palette").fetch_color_pallete()
 
 vim.o.exrc = true
 
@@ -220,10 +130,6 @@ opt.completeopt = "menu,noinsert,menuone,noselect"
 opt.conceallevel = 2
 opt.confirm = true
 opt.cursorline = true
--- opt.dictionary:append({
---   config_path .. "/paper.dict",
---   config_path .. "/dict",
--- })
 opt.directory = cache_path .. "/.swap//"
 opt.encoding = "utf-8"
 opt.expandtab = true -- 将制表符扩展为空格
@@ -294,7 +200,7 @@ opt.splitbelow = true
 opt.splitkeep = "screen"
 opt.splitright = true
 opt.startofline = false
-opt.statuscolumn = [[%!v:lua.require('util.ui').statuscolumn()]]
+opt.statuscolumn = [[%!v:lua.require('lbs.ui.statuscolumn').statuscolumn()]]
 opt.synmaxcol = 1000
 opt.swapfile = true
 opt.tabstop = 2 -- 设置编辑时制表符占用空格数

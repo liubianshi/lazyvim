@@ -36,20 +36,22 @@ return {
       },
       callbacks = {
         enter_note = function(note) -- client, note
-          local keymap = require("util").keymap
+          local keymap = require("lbs.keymap").keymap
+          -- 四条动作统一挂在 <localleader>n 下(n = note)，不再占用单字母。
+          -- 单字母版本会在笔记里撞车：;t 与 vim-table-mode 的 ;t* 前缀
+          -- (table_mode_map_prefix，ft 含 markdown) 叠在一起，查标签要等满
+          -- timeoutlen；;o 则以 buffer-local 身份盖住 FeMaco 的同名全局映射，
+          -- 让笔记里编不了代码块。
           -- stylua: ignore start
-          keymap({
-            "<localleader>b",
-            "<cmd>Obsidian backlinks<cr>",
-            buffer = note.bufnr,
-            desc =
-            "Obsidian: get back references",
-          })
-          keymap({ "<localleader>o", "<cmd>Obsidian open<cr>", buffer = note.bufnr, desc = "Obsidian: open note in APP", })
-          keymap({ "<localleader>t", "<cmd>Obsidian tags<cr>", buffer = note.bufnr, desc = "Obsidian: get note with tag", })
-          keymap({ "<localleader>l", "<cmd>Obsidian link<cr>", buffer = note.bufnr, desc = "Obsidian: get reference", })
+          -- 组名取 note 而非 obsidian：after/ftplugin/markdown.vim 的
+          -- ;nh / ;nH（HTML 剪贴板互转）也落在这个前缀下。
+          keymap({ "<localleader>n",  group = "note", buffer = note.bufnr, })
+          keymap({ "<localleader>nb", "<cmd>Obsidian backlinks<cr>", buffer = note.bufnr, desc = "Obsidian: get back references", })
+          keymap({ "<localleader>no", "<cmd>Obsidian open<cr>",      buffer = note.bufnr, desc = "Obsidian: open note in APP", })
+          keymap({ "<localleader>nt", "<cmd>Obsidian tags<cr>",      buffer = note.bufnr, desc = "Obsidian: get note with tag", })
+          keymap({ "<localleader>nl", "<cmd>Obsidian link<cr>",      buffer = note.bufnr, desc = "Obsidian: get reference", })
           keymap({ "gf", "<cmd>Obsidian follow_link vsplit<cr>", buffer = note.bufnr, desc = "Obsidian: follow reference", })
-          keymap({ "gf", "<cmd>Obsidian link_new", buffer = note.bufnr, desc = "Obsidian: create a new note", mode = "v", })
+          keymap({ "gf", "<cmd>Obsidian link_new<cr>", buffer = note.bufnr, desc = "Obsidian: create a new note", mode = "v", })
         end,
         -- stylua: ignore end
       },
@@ -288,7 +290,7 @@ return {
         go_prev_heading = "[[", -- (string|boolean) set cursor to previous section heading
       },
       on_attach = function(bufnr)
-        local map = require("util").keymap
+        local map = require("lbs.keymap").keymap
         map({ "<s-enter>", "<Cmd>MDListItemBelow<CR>", mode = { "n", "i" } })
       end,
     },

@@ -49,7 +49,7 @@ function M.get_pipe_stdin(opts)
   --    Determine mode only if needed
   local mode = opts.mode or vim.api.nvim_get_mode().mode
   if mode == "v" or mode == "V" or mode == "\22" then -- \22 is Ctrl-V (blockwise visual)
-    return require("util").get_visual_selection()
+    return require("lbs.buf").get_visual_selection()
   end
 
   -- 4. Default to system clipboard content
