@@ -168,7 +168,7 @@ return {
     -- statuscolumn 由 config/options.lua 的自建实现（util.ui.statuscolumn）承担，
     -- snacks 这套整体关闭。原先关闭状态下仍保留的 folds 子配置是死配置，已删。
     statuscolumn = { enabled = false },
-    scoll = { enabled = true },
+    scroll = { enabled = true },
     words = { enabled = true },
     styles = {
       notification = {
