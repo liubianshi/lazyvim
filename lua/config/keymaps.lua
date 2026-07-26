@@ -102,8 +102,8 @@ keymap({
 --- buffer --------------------------------------------------------------- {{{1
 keymap({ "<leader>bD", "<cmd>Bclose!<cr>", desc = "Delete Buffer (force)" })
 keymap({ "<leader>bb", function() Snacks.picker.buffers() end, desc = "List Buffers (picker)" })
-keymap({ "<leader>bp", "<cmd>bp<cr>", desc = "Previous Buffer" })
-keymap({ "<leader>bn", "<cmd>bn<cr>", desc = "Next Buffer" })
+-- 前后 buffer 切换统一走 [b / ]b（本文件上方，unimpaired 惯例，与 [B/]B、
+-- [t/]t 成体系）。原先并存的 <leader>bp / <leader>bn 与之完全同功能，已删。
 keymap({ "<leader>bq", "<cmd>q<cr>", desc = "Quit Buffer" })
 keymap({ "<leader>bQ", "<cmd>q!<cr>", desc = "Quit Buffer (force)" })
 -- 覆盖 LazyVim 默认的 <leader>bl（BufferLineCloseLeft），刻意保留 Pick 语义。
