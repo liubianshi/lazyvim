@@ -245,6 +245,23 @@ return {
     config = true,
     event = "VeryLazy",
   },
+  { -- ThePrimeagen/harpoon ------------------------------------------- {{{3
+    "ThePrimeagen/harpoon",
+    -- <leader>h 被个人的 <leader>h* 组（messages / 通知 / cheatsheet /
+    -- stata help，共 6 条）变成了前缀，按下要等满 timeoutlen。个人组是习惯键，
+    -- 故把 quick menu 往下推一层；<leader>h 随之降为纯组前缀，弹面板不算卡顿。
+    keys = {
+      { "<leader>h", false },
+      {
+        "<leader>hh",
+        function()
+          local harpoon = require("harpoon")
+          harpoon.ui:toggle_quick_menu(harpoon:list())
+        end,
+        desc = "Harpoon Quick Menu",
+      },
+    },
+  },
   { -- kylechui/nvim-surround: Surround selections, stylishly ----------- {{{3
     "kylechui/nvim-surround",
     version = "*",
