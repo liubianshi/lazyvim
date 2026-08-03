@@ -39,6 +39,10 @@ function! s:StataCommandFactory(command = '', type = '') abort
     let cmd = a:command
     let reg_save = @"
     let visual_marks_save = [getpos("'<"), getpos("'>")]
+    " clipboard 与 selection 都是全局选项，必须在 finally 中还原，
+    " 否则一次 motion 就会让整个会话的 unnamedplus 永久失效。
+    let clipboard_save = &clipboard
+    let selection_save = &selection
     try
         set clipboard= selection=inclusive
         let commands = #{line: "'[V']y", char: "`[v`]y", block: "`[\<c-v>`]y", v: "`<v`>y"}
@@ -52,6 +56,8 @@ function! s:StataCommandFactory(command = '', type = '') abort
         call setreg('"', reg_save)
         call setpos("'<", visual_marks_save[0])
         call setpos("'>", visual_marks_save[1])
+        let &clipboard = clipboard_save
+        let &selection = selection_save
      endtry
 endfunction
 function! s:Stata_des(type = '')

@@ -10,9 +10,4 @@ return {
     event = "VeryLazy",
     config = true,
   },
-  { -- ojroques/vim-oscyank: copy text through SSH with OSC52 ----------- {{{3
-    "ojroques/vim-oscyank",
-    cmd = { "OSCYankVisual" },
-    config = true,
-  },
 }

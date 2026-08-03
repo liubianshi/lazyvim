@@ -112,9 +112,8 @@ vim.g.lbs_colors = require("lbs.ui.palette").fetch_color_pallete()
 
 vim.o.exrc = true
 
--- only set clipboard if not in ssh, to make sure the OSC 52
--- integration works automatically. Requires Neovim >= 0.10.0
-opt.clipboard = vim.env.SSH_TTY and "" or "unnamedplus" -- Sync with system clipboard
+-- Decide the clipboard provider (OSC 52 under SSH, native probe locally)
+require("lbs.clipboard").setup()
 
 -- Options ============================================================== {{{1
 opt.autoindent = true -- 自动缩进
@@ -126,6 +125,7 @@ opt.backupdir = cache_path .. "/.backup//"
 opt.backupskip = opt_get("wildignore")
 opt.breakindent = true -- 回绕行保持视觉上的缩进
 opt.cmdheight = 1
+opt.clipboard = "unnamedplus" -- Sync with system clipboard
 opt.completeopt = "menu,noinsert,menuone,noselect"
 opt.conceallevel = 2
 opt.confirm = true
