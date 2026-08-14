@@ -145,7 +145,15 @@ return {
     { "<leader>ap",      cli_send(nil,  { prompt = true }),                    desc = "CLI: Open prompt buffer",   mode = { "n", "v" } },
     { "<leader>at",      cli_send("#{this}",  { focus = false }),              desc = "CLI: Add buffer/selection", mode = { "n", "v" } },
     { "<leader>as",      select_user_prompt,                                   desc = "CLI: Select preset prompt",             mode = { "n",                       "v" } },
-
+    -- Code Review：<leader>ar 子组。arc 拆 normal/visual 两条，visual 走 :<C-u>'<,'> 让命令 range > 0，
+    -- 命中 utils/context.lua 的显式 range 分支，从而按整段选区留评论（lazy.nvim 以 lhs+mode 为键，不冲突）
+    { "<leader>arr",     "<cmd>CodeCompanionCodeReview<CR>",                   desc = "Review: Open hunks in quickfix",        mode = { "n" } },
+    { "<leader>arA",     "<cmd>CodeCompanionCodeReview All<CR>",               desc = "Review: All changes since baseline",    mode = { "n" } },
+    { "<leader>arc",     "<cmd>CodeCompanionCodeReview Comment<CR>",           desc = "Review: Comment on line",               mode = { "n" } },
+    { "<leader>arc",     ":<C-u>'<,'>CodeCompanionCodeReview Comment<CR>",     desc = "Review: Comment on selection",          mode = { "v" } },
+    { "<leader>are",     "<cmd>CodeCompanionCodeReview Comments<CR>",          desc = "Review: Edit pending comments",         mode = { "n" } },
+    { "<leader>ara",     "<cmd>CodeCompanionCodeReview Approve<CR>",           desc = "Review: Approve, advance baseline",     mode = { "n" } },
+    { "<leader>ars",     "<cmd>CodeCompanionCodeReview Share<CR>",             desc = "Review: Share review.md to agent",      mode = { "n" } },
   },
   -- stylua: ignore end
   cmd = {
@@ -154,6 +162,7 @@ return {
     "CodeCompanionChat",
     "CodeCompanionActions",
     "CodeCompanionHistory",
+    "CodeCompanionCodeReview",
   },
   dependencies = {
     "nvim-lua/plenary.nvim",
@@ -279,6 +288,28 @@ return {
         },
       },
       cmd = { adapter = "code" },
+      -- 代码审查：以 refs/worktree/codecompanion/baselines/<branch> 为基线，逐 hunk 审阅并留评论，
+      -- 再经 #{code_review} 或 Share 导出的 review.md 一次性回传给 agent
+      code_review = {
+        enabled = true,
+        display = {
+          diff = {
+            enabled = true, -- 关掉则改用自带 diff 插件指向 baseline ref
+            layout = "vertical", -- vertical|horizontal
+            provider = "native", -- 原生 diff 双窗，支持 `do` 从基线侧取回旧内容以「拒绝」某处改动
+          },
+          virtual_text = {
+            enabled = true, -- 未发送的评论以虚拟行显示在对应代码上方
+            icon = "💬 ",
+            overflow = "trunc",
+          },
+        },
+        opts = {
+          storage_dir = vim.fs.joinpath(vim.fn.stdpath("data"), "codecompanion", "code_review"),
+        },
+        -- keymaps（quickfix 内的 a/c/d/x）保持默认：它们由 keymaps.set() 绑成 buffer-local，
+        -- 仅在 CodeCompanion 自己的那张 quickfix 列表当前时生效，并有 restore() 复原
+      },
     },
     -- AI 适配器配置（从 util.ai_adapters 加载）
     adapters = ai_adapters.codecompanion_adapters(),

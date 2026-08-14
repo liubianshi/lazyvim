@@ -33,6 +33,7 @@ return { -- folke/which-key.nvim: displays a popup with possible keybindings - {
     },
     disable = {},
     spec = {
+      { "<leader>ar", group = "Code Review ...", icon = { icon = "󰄬", hl = "WhichKeyIconGreen" } },
       { "<leader>b", group = "buffer ..." },
       { "<leader>bB", desc = "List all Buffers" },
       { "<leader>c", group = "Code Operater ..." },
