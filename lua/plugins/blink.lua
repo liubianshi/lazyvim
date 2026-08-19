@@ -205,7 +205,7 @@ return {
             snacks_picker_input = { "lsp" },
             snacks_input = { "lsp" },
             lua = { inherit_defaults = true, "lazydev" },
-            markdown = { inherit_defaults = true },
+            markdown = { inherit_defaults = true, "claude" },
           },
           default = { "lsp", "path", "snippets", "buffer" },
           providers = {
@@ -273,6 +273,12 @@ return {
               name = "RenderMarkdown",
               module = "render-markdown.integ.blink",
               fallbacks = { "lsp" },
+            },
+            claude = {
+              name = "Claude",
+              module = "lbs.blink.claude",
+              async = true,
+              score_offset = 15,
             },
             path = {
               opts = {

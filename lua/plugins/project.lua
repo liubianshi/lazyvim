@@ -20,7 +20,7 @@ return {
         ".exercism",
       },
       silent_chdir = false,
-      exclude_dirs = { "~", "/tmp", "~/Downloads" },
+      exclude_dirs = { "~", "/tmp", "/tmp/*", "~/Downloads" },
     },
     -- 模块名与仓库名不同，指明后由 lazy.nvim 自己调 setup(opts)
     main = "project_nvim",
