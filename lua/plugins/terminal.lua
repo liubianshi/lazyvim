@@ -126,8 +126,8 @@ return {
     },
     -- stylua: ignore start
     keys = {
-      { "<leader>fo", "<cmd>Yazi<cr>",     mode = { "n", "v" }, desc = "Open yazi at the current file" },
-      { "<leader>fO", "<cmd>Yazi cwd<cr>", mode = { "n", "v" }, desc = "Open yazi in working directory" },
+      { "<leader>fO", "<cmd>Yazi<cr>",     mode = { "n", "v" }, desc = "Open yazi at the current file" },
+      { "<leader>fo", "<cmd>Yazi cwd<cr>", mode = { "n", "v" }, desc = "Open yazi in working directory" },
     },
     -- stylua: ignore end
     opts = {
