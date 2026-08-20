@@ -108,10 +108,36 @@ local function select_user_prompt()
     confirm = function(picker, item)
       picker:close()
       if item and item.prompt then
-        require("codecompanion").cli(item.prompt, { focus = false })
+        -- submit = true：预设提示词是完整指令，发送后直接回车提交，
+        -- 无需把光标切到 CLI 窗口手动确认
+        require("codecompanion").cli(item.prompt, { focus = false, submit = true })
       end
     end,
   })
+end
+
+-- prompt buffer（<leader>ap 浮窗）内「发送并直接提交」，随后跳回进入浮窗前的窗口。
+-- 上游 display.input.keymaps 的 send 动作固定以 bang=false 调用（仅发送，随后聚焦 CLI
+-- 等待手动确认）；「提交」语义唯一的公开入口是 :write!（BufWriteCmd 以 v:cmdbang 区分），
+-- 故借道它触发，顺带保留上游的 prompt 历史记录（<Up>/<Down> 可翻）。
+local function input_submit_and_return()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local text = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
+  -- 与上游 _buf_send 一致：空内容不提交、浮窗保持打开，此时也不应跳窗
+  if vim.trim(text) == "" then
+    return
+  end
+
+  -- 浮窗总是从原窗口 enter 进来，窗口本地的 previous window 即原窗口
+  local origin_win = vim.fn.win_getid(vim.fn.winnr("#"))
+
+  vim.cmd.stopinsert()
+  vim.cmd("silent write!")
+
+  -- bang 提交时上游不聚焦 CLI，但若 CLI 窗口此刻才被 vsplit 打开，焦点会被它带走
+  if origin_win ~= 0 and vim.api.nvim_win_is_valid(origin_win) and vim.api.nvim_get_current_win() ~= origin_win then
+    vim.api.nvim_set_current_win(origin_win)
+  end
 end
 
 -- 智能选择并优化文本
@@ -137,14 +163,14 @@ return {
   "olimorris/codecompanion.nvim",
   -- stylua: ignore start
   keys = {
-    { "<leader>al",      "<cmd>CodeCompanionActions<CR>",                      desc = "CodeCompanion: Actions",                mode = { "n",                       "v",          "x" } },
-    { "<leader><space>", "<cmd>CodeCompanionChat Toggle<CR>",                  desc = "CodeCompanion: Chat Toggle",            mode = { "n",                       "v"      } },
-    { "<A-l>",           "<cmd>CodeCompanionChat Add<CR>",                     desc = "CodeCompanion: Chat Add Selection",     mode = { "v"           } },
-    { "<A-o>",           function() optimize_select() end,                     desc = "CodeCompanion: Optimize selected text", mode = { "n",                       "v"      } },
-    { "<leader>ac",      function() require("codecompanion").toggle_cli() end, desc = "CLI: Toggle agent window",              mode = { "n"      } },
-    { "<leader>ap",      cli_send(nil,  { prompt = true }),                    desc = "CLI: Open prompt buffer",   mode = { "n", "v" } },
-    { "<leader>at",      cli_send("#{this}",  { focus = false }),              desc = "CLI: Add buffer/selection", mode = { "n", "v" } },
-    { "<leader>as",      select_user_prompt,                                   desc = "CLI: Select preset prompt",             mode = { "n",                       "v" } },
+    { "<leader>al",      "<cmd>CodeCompanionActions<CR>",                      desc = "CodeCompanion: Actions",                mode = { "n", "v", "x" } },
+    { "<leader><space>", "<cmd>CodeCompanionChat Toggle<CR>",                  desc = "CodeCompanion: Chat Toggle",            mode = { "n", "v" } },
+    { "<A-l>",           "<cmd>CodeCompanionChat Add<CR>",                     desc = "CodeCompanion: Chat Add Selection",     mode = { "v" } },
+    { "<A-o>",           function() optimize_select() end,                     desc = "CodeCompanion: Optimize selected text", mode = { "n", "v" } },
+    { "<leader>ac",      function() require("codecompanion").toggle_cli() end, desc = "CLI: Toggle agent window",              mode = { "n" } },
+    { "<leader>ap",      cli_send(nil, { prompt = true }),                     desc = "CLI: Open prompt buffer",               mode = { "n", "v" } },
+    { "<leader>at",      cli_send("#{this}", { focus = false }),               desc = "CLI: Add buffer/selection",             mode = { "n", "v" } },
+    { "<leader>as",      select_user_prompt,                                   desc = "CLI: Select preset prompt",             mode = { "n", "v" } },
     -- Code Review：<leader>ar 子组。arc 拆 normal/visual 两条，visual 走 :<C-u>'<,'> 让命令 range > 0，
     -- 命中 utils/context.lua 的显式 range 分支，从而按整段选区留评论（lazy.nvim 以 lhs+mode 为键，不冲突）
     { "<leader>arr",     "<cmd>CodeCompanionCodeReview<CR>",                   desc = "Review: Open hunks in quickfix",        mode = { "n" } },
@@ -227,10 +253,16 @@ return {
       cli = {
         window = {
           layout = "vertical", -- 垂直分屏（继承自 chat，此处显式声明便于阅读）
-          position = "left", -- 默认在左侧打开，避免 nvim resize 时优先压缩右侧窗口
-          full_height = true, -- 占满整列高度（topleft vsplit）
-          width = CLI_WIDTH, -- 固定列数：>= 1 为绝对列数；< 1 为编辑器宽度比例
+          position = "left",   -- 默认在左侧打开，避免 nvim resize 时优先压缩右侧窗口
+          full_height = true,  -- 占满整列高度（topleft vsplit）
+          width = CLI_WIDTH,   -- 固定列数：>= 1 为绝对列数；< 1 为编辑器宽度比例
         },
+      },
+      input = {
+        -- 上游默认给 prompt buffer 挂 <CR>/<C-s> 的 send 映射（固定 bang=false，无提交语义），
+        -- 与 config 中自定义的提交键竞争同一按键；置 false 整体移除，避免注册时序竞速。
+        -- 只能整体 false：部分覆写会被 deep-merge 保留默认的 insert 模式 <C-s>。
+        keymaps = { send = false },
       },
       action_palette = {
         provider = "default",
@@ -244,8 +276,8 @@ return {
           ".rules",
           "AGENT.md",
           "AGENTS.md",
-          { path = "CLAUDE.md", parser = "claude" },
-          { path = "CLAUDE.local.md", parser = "claude" },
+          { path = "CLAUDE.md",           parser = "claude" },
+          { path = "CLAUDE.local.md",     parser = "claude" },
           { path = "~/.claude/CLAUDE.md", parser = "claude" },
         },
         is_preset = true,
@@ -284,7 +316,6 @@ return {
         },
         opts = {
           auto_insert = false, -- 切回 CLI 窗口时不自动进 insert
-          reload = true, -- 文件被 agent 改动后自动 :checktime
         },
       },
       cmd = { adapter = "code" },
@@ -309,6 +340,14 @@ return {
         },
         -- keymaps（quickfix 内的 a/c/d/x）保持默认：它们由 keymaps.set() 绑成 buffer-local，
         -- 仅在 CodeCompanion 自己的那张 quickfix 列表当前时生效，并有 restore() 复原
+      },
+      shared = {
+        editor_context = {
+          -- CLI 下选区只发 @file + 行号引用，不复制内容（见 lbs/codecompanion/editor_context/）。
+          -- this 也要换：上游 this.lua 硬编码 require 内置 selection，只改 selection.path 影响不到它。
+          selection = { path = "lbs.codecompanion.editor_context.selection" },
+          this = { path = "lbs.codecompanion.editor_context.this" },
+        },
       },
     },
     -- AI 适配器配置（从 util.ai_adapters 加载）
@@ -338,4 +377,47 @@ return {
     ignore_warnings = true,
     language = "Chinese",
   },
+  config = function(_, opts)
+    require("codecompanion").setup(opts)
+
+    -- 可视模式下发送无标签自由文本（如 <leader>ap 的 prompt buffer）时，
+    -- interactions/cli/init.lua 的 resolve_editor_context 会硬编码把选区内容
+    -- 整块拼进 prompt，且没有配置口子，只能覆写模块表上的静态函数。
+    -- 逻辑与上游保持一致，仅在选区可安全引用时改发 @file + 行号；
+    -- 缓冲区有未保存修改或无对应文件时仍走上游（完整发送内容）。
+    -- 注意：插件更新若重构该函数（现签名 resolve_editor_context(prompt, buffer_context)），此处需同步。
+    local CLI = require("codecompanion.interactions.cli")
+    local base_resolve = CLI.resolve_editor_context
+    local Selection = require("lbs.codecompanion.editor_context.selection")
+    function CLI.resolve_editor_context(prompt, buffer_context)
+      -- 带 #{...} 标签走上游展开；选区不可安全引用时也走上游（完整发送内容）
+      if prompt:find("#{") or not Selection.can_reference(buffer_context) then
+        return base_resolve(prompt, buffer_context)
+      end
+      -- 无标签分支上游只做 vim.trim，引用格式统一收在 Selection.reference
+      return string.format("- Selected code: %s\n\n%s", Selection.reference(buffer_context), vim.trim(prompt))
+    end
+
+    -- prompt buffer 按键：<S-CR>/<C-s> 发送并直接提交，光标回到原窗口；
+    -- <CR>（normal）补回被上面 send = false 移除的「仅发送、聚焦 CLI 确认」行为。
+    -- 上游 keymap 动作表封闭（仅 send/close/history），自定义动作只能自行挂 buffer-local 映射；
+    -- filetype 在每次浮窗打开时都会重设，本回调重复执行，映射幂等无妨。
+    vim.api.nvim_create_autocmd("FileType", {
+      group = vim.api.nvim_create_augroup("lbs_codecompanion_input_submit", { clear = true }),
+      pattern = "codecompanion_input",
+      desc = "Prompt buffer: <S-CR>/<C-s> submit, <CR> send",
+      callback = function(ev)
+        for _, lhs in ipairs({ "<S-CR>", "<C-s>" }) do
+          vim.keymap.set({ "n", "i" }, lhs, input_submit_and_return, {
+            buffer = ev.buf,
+            desc = "CLI: Submit prompt, return to previous window",
+          })
+        end
+        vim.keymap.set("n", "<CR>", "<Cmd>silent write<CR>", {
+          buffer = ev.buf,
+          desc = "CLI: Send prompt, focus CLI to confirm",
+        })
+      end,
+    })
+  end,
 }
