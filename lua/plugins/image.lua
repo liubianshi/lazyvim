@@ -53,8 +53,11 @@ return {
           prompt_for_file_name = true,
           show_dir_path_in_prompt = true,
           copy_images = true,
+          -- img-clip 加载后会全局覆写 vim.paste；drag_and_drop 关闭时其拦截
+          -- 分支直接透传，终端 Ctrl-Shift-V 恢复纯文本粘贴（URL 不再弹
+          -- 「not an image」、不再同步 curl 探测）。显式贴图走 <leader>ip。
           drag_and_drop = {
-            insert_mode = true,
+            enabled = false,
           },
         },
         filetypes = {
