@@ -6,6 +6,7 @@ local keymap = require("lbs.keymap").keymap
 -- Change text without yanking it into a register.
 keymap({ "c", '"_c', mode = { "n", "x" }, desc = "Change text without putting it into register" })
 keymap({ "d", '"_d', mode = { "n", "x" }, desc = "Delete text without putting it into register" })
+keymap({ "<leader>y", function() require("lbs.selection_reference").copy() end, mode = "x", desc = "Copy selection file reference" })
 
 -- Navigation ----------------------------------------------------------- {{{1
 -- Use display lines for vertical movement, which is more intuitive with wrapped lines.

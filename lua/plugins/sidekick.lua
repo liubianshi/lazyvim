@@ -20,7 +20,7 @@ end
 
 return {
   "folke/sidekick.nvim",
-  enabled = false,
+  enabled = true,
   opts = {
     -- NES configuration: enables and auto-fetches notes or sessions
     nes = {
@@ -80,7 +80,7 @@ return {
     { "<leader>ad", function() require("sidekick.cli").close() end,                                    desc = "Sidekick: Detach a CLI Session", },
     { "<leader>at", function() require("sidekick.cli").send({ msg = "{this}" }) end,                   mode = { "x", "n" },                     desc = "Sidekick: Send This", },
     { "<leader>ag", function() require("sidekick.cli").toggle({ name = "gemini", focus = false }) end, desc = "Sidekick: Toggle Gemini", },
-    { "<leader>ac", function() require("sidekick.cli").toggle({ name = "claude", focus = false }) end, desc = "Sidekick: Toggle Gemini", },
+    { "<leader>ax", function() require("sidekick.cli").toggle({ name = "claude", focus = false }) end, desc = "Sidekick: Toggle Gemini", },
     -- Open split buffer (anchored under sidekick CLI terminal) to write prompt
     {
       "<leader>ap",

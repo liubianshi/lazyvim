@@ -300,7 +300,7 @@ return {
     dev = true,
     ft = { "markdown", "quarto", "pandoc", "rmd" },
     opts = {
-      width = 100,
+      width = 80,
       keep_origin_wrap = false,
       wrap_sentence = false,
     },
