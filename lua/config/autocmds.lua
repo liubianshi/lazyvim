@@ -398,8 +398,6 @@ vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "CursorMoved" }, {
 require("lbs.ui.lightbulb").setup()
 
 --- background ---------------------------------------------------------- {{{2
-lbs_theme.enable_dec2031()
-
 vim.api.nvim_create_autocmd("TermResponse", {
   group = augroups.Background,
   callback = function(ev)
@@ -409,11 +407,10 @@ vim.api.nvim_create_autocmd("TermResponse", {
     end
     if seq:find("^\27%]11;rgb") then
       lbs_theme.apply_background(lbs_theme.osc11_to_background(seq))
-    elseif seq:find("^\27%[%?2031;[12]n") then
-      lbs_theme.apply_background(seq:find(";1n", 1, true) and "dark" or "light")
     end
   end,
 })
+lbs_theme.enable_dec2031()
 
 -- SmartCR ------------------------------------------------------------- {{{1
 -- 在 markdown 类 buffer 注册「智能回车」悬挂缩进映射。

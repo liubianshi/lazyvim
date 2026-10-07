@@ -1,5 +1,5 @@
--- 终端背景色探测：把 OSC 11 回复换算成 dark/light，并开启 DEC 2031 主题变更上报。
--- autocmd 注册留在 config/autocmds.lua。
+-- Detect terminal background changes through OSC 11 replies.
+-- Autocommands are registered in config/autocmds.lua.
 local M = {}
 
 --- background ---------------------------------------------------------- {{{2
@@ -18,24 +18,25 @@ function M.osc11_to_background(sequence)
   return lum > 0.5 and "light" or "dark"
 end
 
--- Opt in to DEC mode 2031 so Ghostty / modern Kitty actively report theme
--- changes via `CSI ?2031;1n` (dark) / `CSI ?2031;2n` (light). Written direct
--- to /dev/tty because io.write inside Neovim goes to :messages, not the TTY.
+-- DEC 2031 enables CSI ?997 notifications. Neovim's TUI consumes these and
+-- queries OSC 11; only the resulting color reply reaches TermResponse.
+-- Query once as well, since the startup reply can precede our autocmd.
 function M.enable_dec2031()
-  local tty = io.open("/dev/tty", "w")
-  if tty then
-    tty:write("\27[?2031h")
-    tty:close()
-  end
+  vim.api.nvim_ui_send("\27[?2031h\27]11;?\7")
 end
 
 function M.apply_background(bg)
-  if not bg or bg == vim.o.background then
+  if bg ~= "dark" and bg ~= "light" then
     return
   end
   vim.schedule(function()
-    vim.o.background = bg
     local cs = (vim.g.default_colorscheme or {})[bg]
+    -- Neovim may have updated background before this callback, without
+    -- selecting our separate light/dark colorscheme. Check both values.
+    if bg == vim.o.background and (not cs or cs == vim.g.colors_name) then
+      return
+    end
+    vim.o.background = bg
     if cs then
       pcall(vim.cmd.colorscheme, cs)
     end

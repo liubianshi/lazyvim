@@ -3,9 +3,9 @@ return {
     "LazyVim/LazyVim",
 
     opts = function(_, opts)
-      -- $NVIM_BACKGROUND is the shell-side override; TermResponse in
-      -- config/autocmds.lua corrects this after OSC 11 / DEC 2031 arrives.
-      local background = (vim.env.NVIM_BACKGROUND or "dark"):lower()
+      -- Preserve Neovim's startup terminal detection unless overridden.
+      -- TermResponse in config/autocmds.lua handles subsequent changes.
+      local background = (vim.env.NVIM_BACKGROUND or vim.o.background):lower()
 
       local colorschemes = vim.g.default_colorscheme
         or {
