@@ -3,7 +3,7 @@
 -- The question this module answers is deliberately *not* "am I on the far end
 -- of an SSH connection?".  That is a snapshot taken at login: SSH_TTY and
 -- friends are injected once and then frozen into whatever session inherits
--- them.  Under a session-persistence multiplexer (zmx, tmux, screen) the same
+-- them.  Under a session-persistence multiplexer (herdr, zmx, tmux, screen) the same
 -- session outlives the connection that created it, so the snapshot goes stale
 -- -- attach from a different client and the variables still describe the *old*
 -- client.  That staleness is the whole reason clipboard support here felt
@@ -17,8 +17,9 @@
 --   * picking the native path on a remote host silently copies into the
 --     *remote* machine's clipboard, which the user can never reach.
 --
--- Therefore anything short of positive evidence that a *local* clipboard is
--- reachable falls through to OSC 52.
+-- A reachable display socket belongs to this host, not necessarily the attached
+-- client. Herdr panes retain the server's environment across client attaches,
+-- so send their copies through Herdr even when a host display is reachable.
 --
 -- 设置 vim.g.clipboard 命中 $VIMRUNTIME/autoload/provider/clipboard.vim
 -- 的最高优先级分支，绕过工具存在性探测顺序——否则它会在轮到 OSC 52 之前
@@ -40,6 +41,9 @@ local function collect()
     ssh_tty = env.SSH_TTY,
     ssh_connection = env.SSH_CONNECTION,
     ssh_client = env.SSH_CLIENT,
+    herdr_env = env.HERDR_ENV,
+    herdr_pane_id = env.HERDR_PANE_ID,
+    term_program = env.TERM_PROGRAM,
     zmx_session = env.ZMX_SESSION,
     tmux = env.TMUX,
     sty = env.STY,
@@ -49,7 +53,11 @@ local function collect()
     xdg_runtime_dir = env.XDG_RUNTIME_DIR,
   }
 
-  s.multiplexer = (s.zmx_session and "zmx") or (s.tmux and "tmux") or (s.sty and "screen") or nil
+  s.multiplexer = ((s.herdr_env == "1" or (s.herdr_pane_id or "") ~= "" or s.term_program == "herdr") and "herdr")
+    or (s.zmx_session and "zmx")
+    or (s.tmux and "tmux")
+    or (s.sty and "screen")
+    or nil
   s.ssh_env = (s.ssh_tty or s.ssh_connection or s.ssh_client) ~= nil
 
   -- stdin's pty, e.g. /dev/pts/3.  Only meaningful when stdin really is a
@@ -95,6 +103,9 @@ end
 --- @param s table signals from collect()
 --- @return "native"|"osc52" mode, string reason
 local function decide(s)
+  if s.multiplexer == "herdr" then
+    return "osc52", "persistent herdr session (attached client may be remote)"
+  end
   if s.ssh_env then
     return "osc52",
       s.ssh_tty_stale and "SSH env present (stale SSH_TTY -- session outlived its client)" or "SSH env present"
@@ -292,6 +303,7 @@ local function apply(mode)
     }
   end
   -- Re-run the provider bootstrap so a mid-session switch takes effect.
+  vim.g.loaded_clipboard_provider = nil
   vim.cmd("runtime autoload/provider/clipboard.vim")
   return true
 end
@@ -325,6 +337,9 @@ function M.diagnose()
     "",
     string.format("multiplexer    : %s", s.multiplexer or "none"),
     string.format("TERM           : %s", s.term or "-"),
+    string.format("TERM_PROGRAM   : %s", s.term_program or "-"),
+    string.format("HERDR_ENV      : %s", s.herdr_env or "-"),
+    string.format("HERDR_PANE_ID  : %s", s.herdr_pane_id or "-"),
     string.format("stdin tty      : %s", s.tty or "-"),
     string.format("SSH_TTY        : %s%s", s.ssh_tty or "-", s.ssh_tty_stale and "   <- STALE" or ""),
     string.format("SSH_CONNECTION : %s", s.ssh_connection or "-"),
