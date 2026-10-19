@@ -210,16 +210,19 @@ return {
   },
   { -- MeanderingProgrammer/render-markdown.nvim ------------------------ {{{2
     "MeanderingProgrammer/render-markdown.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    dependencies = { "nvim-treesitter/nvim-treesitter", "liubianshi/mdwrap.nvim" },
     ft = { "markdown", "quarto", "rmd", "codecompanion", "Avante" },
     opts = {
+      custom_handlers = {
+        markdown_inline = { extends = true, parse = require("lbs.markdown.quotes").parse },
+      },
       render_modes = true,
       win_options = {
         concealcursor = { rendered = "nvc" },
       },
       anti_conceal = {
         enabled = true,
-        disable_modes = { "n", "c" },
+        disabled_modes = { "n", "c" },
         ignore = {
           table_border = true,
           callout = true,
@@ -272,7 +275,11 @@ return {
       },
     },
     config = function(_, opts)
-      require("render-markdown").setup(opts)
+      require("lbs.markdown.quotes").setup()
+      require("render-markdown").setup(require("mdwrap.integrations.render_markdown").extend(opts, {
+        wrap_sentence = true,
+        max_width = 120,
+      }))
       vim.api.nvim_set_hl(0, "RenderMarkdownIndent", { bg = nil })
     end,
   },

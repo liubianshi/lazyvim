@@ -50,7 +50,7 @@ M.handlers = {
         return
       end
 
-      local utils = require("codecompanion.utils.adapters")
+      local utils = require("codecompanion.adapters.utils")
       -- Optimization: Flattened logic and reduced nesting for readability
       local ok, json = pcall(vim.json.decode, utils.clean_streamed_data(data), { luanil = { object = true } })
 
@@ -121,6 +121,24 @@ M.adapter_definitions = {
     },
   },
   http = {
+    deepseek = {
+      base = "deepseek",
+      opts = {
+        env = { api_key = secret_cmd .. "deepseek" },
+        schema = {
+          model = {
+            default = "deepseek-flash",
+            choices = {
+              ["deepseek-flash"] = {
+                formatted_name = "DeepSeek V4.1 Flash",
+                opts = { can_reason = true, can_use_tools = true },
+              },
+            },
+          },
+          reasoning_effort = { default = "high" },
+        },
+      },
+    },
     ["aihubmix_gemini"] = {
       base = "openai_compatible",
       opts = {

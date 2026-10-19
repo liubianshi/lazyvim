@@ -167,6 +167,8 @@ return {
     { "<leader><space>", "<cmd>CodeCompanionChat Toggle<CR>",                  desc = "CodeCompanion: Chat Toggle",            mode = { "n", "v" } },
     { "<A-l>",           "<cmd>CodeCompanionChat Add<CR>",                     desc = "CodeCompanion: Chat Add Selection",     mode = { "v" } },
     { "<A-o>",           function() optimize_select() end,                     desc = "CodeCompanion: Optimize selected text", mode = { "n", "v" } },
+    { "<leader>aw",      function() require("codecompanion").prompt("zh_polish") end, desc = "中文润色：五步工作流", mode = { "n", "x" } },
+    { "<leader>aW",      function() require("codecompanion").prompt("zh_polish_segments") end, desc = "中文润色：连续分段", mode = { "n", "x" } },
     { "<leader>ac",      function() require("codecompanion").toggle_cli() end, desc = "CLI: Toggle agent window",              mode = { "n" } },
     { "<leader>ap",      cli_send(nil, { prompt = true }),                     desc = "CLI: Open prompt buffer",               mode = { "n", "v" } },
     { "<leader>at",      cli_send("#{this}", { focus = false }),               desc = "CLI: Add buffer/selection",             mode = { "n", "v" } },
@@ -244,6 +246,8 @@ return {
         window = {
           width = 0.375,
           opts = {
+            wrap = true,
+            linebreak = false,
             number = false,
             relativenumber = false,
             signcolumn = "yes:1",
@@ -259,6 +263,12 @@ return {
         },
       },
       input = {
+        window = {
+          opts = {
+            wrap = true,
+            linebreak = false,
+          },
+        },
         -- 上游默认给 prompt buffer 挂 <CR>/<C-s> 的 send 映射（固定 bang=false，无提交语义），
         -- 与 config 中自定义的提交键竞争同一按键；置 false 整体移除，避免注册时序竞速。
         -- 只能整体 false：部分覆写会被 deep-merge 保留默认的 insert 模式 <C-s>。
@@ -378,7 +388,12 @@ return {
     language = "Chinese",
   },
   config = function(_, opts)
+    local chinese_polish = dofile(vim.fn.stdpath("config") .. "/prompts/chinese_polish.lua")
+    opts.prompt_library["中文润色专家"] = chinese_polish.workflow()
+    opts.prompt_library["中文连续分段润色"] = chinese_polish.workflow({ segmented = true })
     require("codecompanion").setup(opts)
+    require("lbs.codecompanion.history").setup()
+    chinese_polish.setup()
 
     -- 可视模式下发送无标签自由文本（如 <leader>ap 的 prompt buffer）时，
     -- interactions/cli/init.lua 的 resolve_editor_context 会硬编码把选区内容

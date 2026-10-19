@@ -12,7 +12,6 @@ return {
       r = { "air" },
       markdown = { "injected" },
       quarto = { "injected" },
-      codecompanion = { "mdwrap" },
       perl = { "perltidy" },
     },
     formatters = {
@@ -35,10 +34,10 @@ return {
       end,
       ["mdwrap"] = {
         format = function(_, ctx, lines, callback)
-          local ok, out = pcall(require("mdwrap").format_lines, lines, {
-            bufnr = ctx.buf, -- 取窗口 conceallevel 等环境量
-            range = ctx.range, -- conform 选区 → mdwrap 块范围
-          })
+          local opts = { bufnr = ctx.buf, range = ctx.range }
+          local ok, out = pcall(function()
+            return require("mdwrap").format_lines(lines, opts)
+          end)
           if ok then
             callback(nil, out)
           else
