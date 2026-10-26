@@ -278,6 +278,7 @@ return {
       require("lbs.markdown.quotes").setup()
       require("render-markdown").setup(require("mdwrap.integrations.render_markdown").extend(opts, {
         wrap_sentence = true,
+        insert_mode = "wrap",
         max_width = 120,
       }))
       vim.api.nvim_set_hl(0, "RenderMarkdownIndent", { bg = nil })

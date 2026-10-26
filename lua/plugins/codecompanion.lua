@@ -389,6 +389,8 @@ return {
   },
   config = function(_, opts)
     local chinese_polish = dofile(vim.fn.stdpath("config") .. "/prompts/chinese_polish.lua")
+    opts.interactions.chat.tools = opts.interactions.chat.tools or {}
+    opts.interactions.chat.tools.chinese_polish_edit = require("lbs.codecompanion.polish_edit").config()
     opts.prompt_library["中文润色专家"] = chinese_polish.workflow()
     opts.prompt_library["中文连续分段润色"] = chinese_polish.workflow({ segmented = true })
     require("codecompanion").setup(opts)

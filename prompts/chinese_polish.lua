@@ -2,6 +2,7 @@ local M = {}
 local api = vim.api
 local namespace = api.nvim_create_namespace("lbs_chinese_polish")
 local segments = require("lbs.codecompanion.polish_segments")
+local editing = require("lbs.codecompanion.polish_edit")
 local max_repairs = 2
 local stage_names =
   { "原文分析", "多视角润色方向", "参考书与方向词汇", "确认润色方案", "润色定稿" }
@@ -22,10 +23,17 @@ end
 local function cleanup(state)
   state.candidate = nil
   state.active = false
+  if state.chat_bufnr then
+    editing.release({ bufnr = state.chat_bufnr })
+  end
   state.generation = (state.generation or 0) + 1
   state.request = nil
   state.repair_queued = false
   state.phase = "closed"
+  if state.source_autocmd then
+    pcall(api.nvim_del_autocmd, state.source_autocmd)
+    state.source_autocmd = nil
+  end
   if state.mark and api.nvim_buf_is_valid(state.bufnr) then
     pcall(api.nvim_buf_del_extmark, state.bufnr, namespace, state.mark)
   end
@@ -167,33 +175,6 @@ function M.source(args)
   return (state.batch and segments.progress(state.batch) .. "\n\n" or "") .. fenced(state.original)
 end
 
-local function extract_final(content)
-  local opened, language, lines
-  local results = {}
-  for _, line in ipairs(vim.split(content, "\n", { plain = true })) do
-    local delimiter, suffix = line:match("^%s*(```+)(.-)%s*$")
-    if opened then
-      if delimiter and #delimiter >= #opened and vim.trim(suffix) == "" then
-        if language == "polished" then
-          table.insert(results, table.concat(lines, "\n"))
-        end
-        opened, language, lines = nil, nil, nil
-      elseif language == "polished" then
-        table.insert(lines, line)
-      end
-    elseif delimiter then
-      opened, language, lines = delimiter, vim.trim(suffix), {}
-      if language == "polished" and #delimiter < 4 then
-        return nil, "polished 围栏至少需要四个反引号。"
-      end
-    end
-  end
-  if opened or #results ~= 1 or vim.trim(results[1]) == "" then
-    return nil, "需要且只能有一个完整、非空的 polished 围栏；不要嵌套在其他代码块内。"
-  end
-  return results[1]
-end
-
 local function citations(text)
   local result = {}
   local function add(token)
@@ -249,6 +230,7 @@ local function finish_segment(chat, state, status, replacement, range)
   local summary = segments.finish(state.batch, chat.bufnr, status, replacement, range)
   cleanup(state)
   if summary and api.nvim_buf_is_valid(chat.bufnr) then
+    chat.ui:unlock_buf()
     api.nvim_buf_set_lines(
       chat.bufnr,
       math.min(chat.header_line or 0, api.nvim_buf_line_count(chat.bufnr)),
@@ -264,57 +246,60 @@ local function finish_segment(chat, state, status, replacement, range)
   end
 end
 
-local function apply(chat, state)
-  local candidate = state.candidate
-  if not candidate or chat.current_request or candidate.cycle ~= chat.cycle then
-    return notify("没有可采用的完整定稿，请先完成第五步。")
+local function validate_candidate(state, candidate)
+  if candidate ~= state.candidate or candidate.generation ~= state.generation then
+    return nil, "会话或候选已变化，请重新生成后审阅。"
+  end
+  if state.batch and not segments.owns(state.batch, state.chat_bufnr) then
+    return nil, "此聊天不拥有当前分段批次。"
   end
   if not vim.deep_equal(citations(state.original), citations(candidate.text)) then
-    return notify("定稿改变了引文标记或其数量，拒绝写回；请让模型修正后重新生成定稿。")
+    return nil, "定稿改变了引文标记或其数量，拒绝写回；请让模型修正后重新提交。"
   end
-  local range, error_message = target_range(state)
+  return target_range(state)
+end
+
+local function write_candidate(state, candidate)
+  local range, error_message = validate_candidate(state, candidate)
   if not range then
-    return notify(error_message)
+    return nil, error_message
   end
-  vim.ui.select(
-    { "取消", "采用并替换原稿" },
-    { prompt = "确认采用本轮定稿？（不会自动保存）" },
-    function(choice)
-      if choice ~= "采用并替换原稿" then
-        return
-      end
-      if
-        not api.nvim_buf_is_valid(chat.bufnr)
-        or state.candidate ~= candidate
-        or candidate.cycle ~= chat.cycle
-        or chat.current_request
-      then
-        return notify("会话或定稿已变化，请重新检查后采用。")
-      end
-      local current_range, current_error = target_range(state)
-      if not current_range then
-        return notify(current_error)
-      end
-      if state.batch then
-        vim.bo[state.bufnr].undolevels = vim.bo[state.bufnr].undolevels
-      end
-      api.nvim_buf_set_text(
-        state.bufnr,
-        current_range[1],
-        current_range[2],
-        current_range[3],
-        current_range[4],
-        vim.split(candidate.text, "\n", { plain = true })
-      )
-      if state.batch then
-        vim.bo[state.bufnr].undolevels = vim.bo[state.bufnr].undolevels
-        finish_segment(chat, state, "applied", candidate.text, current_range)
-      else
-        cleanup(state)
-      end
-      vim.notify("已替换原稿，尚未保存；可用 u 撤销。", vim.log.levels.INFO, { title = "中文润色" })
-    end
+  vim.bo[state.bufnr].undolevels = vim.bo[state.bufnr].undolevels
+  local ok, write_error = pcall(
+    api.nvim_buf_set_text,
+    state.bufnr,
+    range[1],
+    range[2],
+    range[3],
+    range[4],
+    vim.split(candidate.text, "\n", { plain = true })
   )
+  if not ok then
+    return nil, "无法替换原稿：" .. tostring(write_error)
+  end
+  vim.bo[state.bufnr].undolevels = vim.bo[state.bufnr].undolevels
+  candidate.range = range
+  return true
+end
+
+local function finish_review(chat, state, result)
+  state.review_result = nil
+  if result.outcome == "accepted" then
+    if state.batch then
+      finish_segment(chat, state, "applied", result.candidate.text, result.candidate.range)
+    else
+      cleanup(state)
+    end
+    vim.notify("已替换原稿，尚未保存；可用 u 撤销。", vim.log.levels.INFO, { title = "中文润色" })
+  else
+    state.phase = result.outcome == "invalid" and "blocked" or "awaiting"
+    state.candidate = result.outcome == "cancelled" and result.candidate or nil
+    notify(result.message)
+  end
+end
+
+local function apply(chat)
+  editing.reopen(chat)
 end
 
 local function prepare_input(chat, state)
@@ -451,6 +436,10 @@ local function before_submit(chat)
     notify(state and state.error or "本轮已结束或来自历史记录，请从原稿重新启动五步润色。")
     return false
   end
+  if editing.pending(chat) then
+    notify("请先接受、拒绝或关闭当前 diff，再发送新的修改要求。")
+    return false
+  end
   if state.last_cycle and chat.cycle < state.last_cycle then
     if state.batch and segments.owns(state.batch, chat.bufnr) then
       segments.stop(state.batch)
@@ -530,7 +519,8 @@ local function before_submit(chat)
       segments.confirm(state.batch, selection)
     end
   end
-  state.candidate = nil
+  editing.cancel(chat, true)
+  state.candidate, state.review_result, state.validation_error = nil, nil, nil
   state.generation = state.generation + 1
   state.repairs = 0
   state.repair_queued = false
@@ -549,7 +539,7 @@ local function before_submit(chat)
         .. scheme_text(selection)
     end
   elseif stage == 5 then
-    detail = "用户已确认以下方案，按此润色；仍须遵守保真与唯一 polished 围栏约定：\n"
+    detail = "用户已确认以下方案，按此润色；必须调用 chinese_polish_edit 提交完整替换正文，保留引文，不输出 polished 围栏，不声称已写回：\n"
       .. scheme_text(selection)
   end
   if state.batch then
@@ -573,13 +563,21 @@ end
 
 local function on_ready(chat)
   local state = get_state(chat)
-  if not state or not state.active or state.phase ~= "running" or not state.request then
+  if not state or not state.active or not state.request then
+    return
+  end
+  local request = state.request
+  if state.review_result then
+    state.stage, state.last_cycle, state.request, state.retry_target = request.stage, chat.cycle, nil, nil
+    state.input_label = nil
+    return finish_review(chat, state, state.review_result)
+  end
+  if state.phase ~= "running" then
     return
   end
   if chat.status ~= "success" then
     return fail_request(state)
   end
-  local request = state.request
   local content = ""
   for index = #chat.messages, request.message_count + 1, -1 do
     local message = chat.messages[index]
@@ -588,7 +586,7 @@ local function on_ready(chat)
       break
     end
   end
-  if content == "" then
+  if content == "" and request.stage ~= 5 then
     return fail_request(state)
   end
   state.stage = request.stage
@@ -606,15 +604,9 @@ local function on_ready(chat)
       state.phase = "blocked"
       return notify(range_error)
     end
-    local text, validation_error = extract_final(content)
-    validation_error = validation_error or citation_error(state.original, text)
-    if not validation_error then
-      state.candidate = { text = text, cycle = chat.cycle }
-      vim.notify(
-        "定稿格式与引文检查通过：<leader>aA 确认替换；请另行核对事实与语义。",
-        vim.log.levels.INFO
-      )
-    elseif state.repairs < max_repairs then
+    local validation_error = state.validation_error
+      or "第五步必须调用 chinese_polish_edit 提交正文，不能只输出聊天定稿。"
+    if state.repairs < max_repairs then
       state.phase = "repair_pending"
       state.validation_error = validation_error
     else
@@ -659,7 +651,7 @@ local function queue_repair(chat, state)
     control(
       chat,
       5,
-      "仅修复本次格式或引文问题，保持已确认方案与原意。\n"
+      "仅修复本次工具提交或引文问题，调用 chinese_polish_edit 提交正文，保持已确认方案与原意。\n"
         .. state.validation_error
         .. "\n已确认方案：\n"
         .. scheme_text(state.selection)
@@ -690,12 +682,12 @@ local function show_input(chat, state)
     label =
       "填写或修改润色方案；完整方案回显后单独填「确认」，或填「采用默认方案」出稿："
   else
-    label = "可按 <leader>aA 确认替换原稿，或在下方填写本稿的修改要求："
+    label =
+      "可按 <leader>aA 重开暂停的 diff，或在下方填写新的修改要求；接受后仍需手动保存："
   end
   chat:add_buf_message({ role = "user", content = label })
   prepare_input(chat, state)
 end
-
 local function close_workflow(chat, state)
   if state.batch and segments.owns(state.batch, chat.bufnr) then
     segments.stop(state.batch)
@@ -744,6 +736,12 @@ local function skip_segment(chat, state)
   if chat.current_request then
     return notify("请先取消当前请求，再跳过本段。")
   end
+  if editing.pending(chat) then
+    state.stage, state.phase = state.request and state.request.stage or state.stage, "awaiting"
+    state.request = nil
+    editing.cancel(chat, true)
+    state.candidate = nil
+  end
   local generation = state.generation
   vim.ui.select({ "取消", "跳过本段，保留原文" }, { prompt = "确认跳过当前段？" }, function(choice)
     if choice ~= "跳过本段，保留原文" then
@@ -768,10 +766,13 @@ local function change_plan(chat, state)
   if chat.current_request then
     return notify("请先取消当前请求，再修改方案。")
   end
+  state.request = nil
+  editing.cancel(chat, true)
   state.generation = state.generation + 1
   state.candidate, state.request, state.retry_target, state.plan, state.default_plan = nil, nil, nil, nil, nil
   state.repair_queued = false
   state.phase, state.stage = "awaiting", 4
+  chat.ui:unlock_buf()
   api.nvim_buf_set_lines(
     chat.bufnr,
     math.min(chat.header_line or 0, api.nvim_buf_line_count(chat.bufnr)),
@@ -794,10 +795,11 @@ local function attach(chat)
     return
   end
   state.attached = true
+  state.chat_bufnr = chat.bufnr
   if state.batch then
     local claimed = segments.claim(state.batch, state.segment, chat.bufnr, function()
       cleanup(state)
-      if chat.current_request then
+      if chat.current_request or chat.tool_orchestrator then
         chat:stop()
       end
     end)
@@ -807,7 +809,80 @@ local function attach(chat)
     end
   end
   chat.opts.ignore_system_prompt = true
-  chat:remove_tagged_message(require("codecompanion.interactions.shared.tags").SYSTEM_PROMPT_FROM_CONFIG)
+  local tags = require("codecompanion.interactions.shared.tags")
+  for _, tag in ipairs({ tags.SYSTEM_PROMPT_FROM_CONFIG, tags.TOOL_SYSTEM_PROMPT, tags.TOOL }) do
+    chat:remove_tagged_message(tag)
+  end
+  chat.tool_registry:clear()
+  chat.tool_registry.flags.ignore_tool_system_prompt = true
+  editing.bind(chat, {
+    propose = function(args)
+      if not state.active or not state.request or state.request.stage ~= 5 or not state.selection then
+        return nil, "仅在已确认方案的第五步允许提交当前段修改。"
+      end
+      if state.request.proposed then
+        return nil, "每次第五步请求只能提交一个候选，拒绝重复调用。"
+      end
+      state.request.proposed = true
+      local range, range_error = target_range(state)
+      if not range then
+        state.review_result = { outcome = "invalid", message = range_error }
+        return nil, range_error
+      end
+      local validation_error
+      if type(args) ~= "table" then
+        state.validation_error = "工具参数必须是包含 replacement 正文的对象。"
+        return nil, state.validation_error
+      end
+      for key in pairs(args) do
+        if key ~= "replacement" and key ~= "summary" then
+          validation_error = "仅允许 replacement 正文和可选 summary，不得指定路径或范围。"
+        end
+      end
+      if type(args.replacement) ~= "string" or vim.trim(args.replacement) == "" then
+        validation_error = "replacement 必须是当前段完整、非空的正文。"
+      elseif args.replacement:match("^%s*```+polished") or args.replacement:match("^%s*~~~+polished") then
+        validation_error = "replacement 只放正文，不要添加 polished 围栏。"
+      elseif args.summary ~= nil and type(args.summary) ~= "string" then
+        validation_error = "summary 必须是字符串。"
+      else
+        validation_error = validation_error or citation_error(state.original, args.replacement)
+      end
+      if validation_error then
+        state.validation_error = validation_error
+        return nil, validation_error
+      end
+      local candidate = {
+        text = args.replacement,
+        original = state.original,
+        summary = args.summary,
+        generation = state.generation,
+      }
+      state.candidate, state.phase = candidate, "reviewing"
+      return candidate
+    end,
+    validate = function(candidate)
+      return validate_candidate(state, candidate)
+    end,
+    accept = function(candidate)
+      return write_candidate(state, candidate)
+    end,
+    settled = function(outcome, candidate, pending_tool, message)
+      if not state.active or state.candidate ~= candidate then
+        return
+      end
+      local result = { outcome = outcome, candidate = candidate, message = message }
+      if pending_tool then
+        if state.request then
+          state.review_result = result
+        end
+      else
+        finish_review(chat, state, result)
+      end
+    end,
+  })
+  chat.tool_registry:add_single_tool("chinese_polish_edit", { visible = false })
+  chat.context:remove_items({ ["<tool>chinese_polish_edit</tool>"] = true })
   for _, branch in ipairs({
     {
       name = "chinese_polish_input",
@@ -852,12 +927,24 @@ local function attach(chat)
       close_workflow(chat, state)
     end,
   })
+  if not state.batch then
+    state.source_autocmd = api.nvim_create_autocmd({ "BufUnload", "BufWipeout" }, {
+      buffer = state.bufnr,
+      once = true,
+      callback = function()
+        close_workflow(chat, state)
+        if chat.current_request or chat.tool_orchestrator then
+          chat:stop()
+        end
+      end,
+    })
+  end
   vim.keymap.set("n", "<leader>aA", function()
     apply(chat, state)
-  end, { buffer = chat.bufnr, desc = "中文润色：确认替换原稿" })
+  end, { buffer = chat.bufnr, desc = "中文润色：重开当前段 diff" })
   api.nvim_buf_create_user_command(chat.bufnr, "ChinesePolishApply", function()
     apply(chat, state)
-  end, { desc = "确认采用本轮中文润色定稿" })
+  end, { desc = "重开暂停的中文润色 diff" })
   if state.batch then
     for name, callback in pairs({
       ChinesePolishNext = next_segment,
@@ -951,7 +1038,9 @@ function M.workflow(options)
       if state and state.active then
         state.retry_target = state.request and state.request.stage or state.stage
         state.request = nil
+        editing.cancel(chat, true)
         state.candidate = nil
+        state.review_result = nil
         state.generation = state.generation + 1
         state.repair_queued = false
         state.phase = "cancelled"

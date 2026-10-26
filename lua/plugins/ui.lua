@@ -285,7 +285,8 @@ return {
       opts.highlighters.citation = {
         pattern = function(buf_id)
           if vim.tbl_contains({ "quarto", "rmarkdown", "markdown" }, vim.bo[buf_id].filetype) then
-            return "%f[-@_%w]()%@%S+()%f[^-@_%w]"
+            -- Restrict citation keys: %S+ also consumes brackets and adjacent Chinese prose.
+            return "%f[-@_%w]()%@[%w_][%w_:%-%.#%$%%&+%?<>~/]*()%f[^-@_%w]"
           end
         end,
         group = "@markup.link.label",
