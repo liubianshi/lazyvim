@@ -22,7 +22,8 @@ return {
       "rafamadriz/friendly-snippets",
     },
     build = function()
-      require("blink.cmp").build():wait(60000)
+      ---@diagnostic disable-next-line: undefined-field
+      require("blink.cmp").build():pwait()
     end,
     opts = function()
       -- local border = require("lbs.ui.border").border("▔", "bottom")

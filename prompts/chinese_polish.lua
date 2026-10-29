@@ -939,9 +939,7 @@ local function attach(chat)
       end,
     })
   end
-  vim.keymap.set("n", "<leader>aA", function()
-    apply(chat)
-  end, { buffer = chat.bufnr, desc = "中文润色：重开当前段 diff" })
+  vim.keymap.set("n", "<leader>aA", function() apply(chat) end, { buffer = chat.bufnr, desc = "中文润色：重开当前段 diff" })
   api.nvim_buf_create_user_command(chat.bufnr, "ChinesePolishApply", function()
     apply(chat)
   end, { desc = "重开暂停的中文润色 diff" })
