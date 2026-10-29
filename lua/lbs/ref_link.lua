@@ -33,7 +33,7 @@ function M.get_id(url)
   end
 
   -- Read every line after the marker for efficient scanning.
-  local link_lines = vim.fn.getbufline("%", marker_line + 1, "$")
+  local link_lines = vim.api.nvim_buf_get_lines(0, marker_line, -1, false)
   local max_id = 0
   local url_lower = url:lower()
 

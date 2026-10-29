@@ -25,11 +25,14 @@ end
 
 -- Model the remote host's display socket and installed clipboard tools without
 -- touching either the host's clipboard or the terminal client's clipboard.
-vim.uv.fs_stat = function(path)
+rawset(vim.uv, "fs_stat", function(path)
   if path == "/clipboard-check/wayland-1" then
     return { type = "socket" }
   end
-end
+  return nil
+end)
+-- Replace the native function only for this test process.
+---@diagnostic disable-next-line: duplicate-set-field
 vim.fn.executable = function(cmd)
   return (cmd == "wl-copy" or cmd == "wl-paste") and 1 or 0
 end
@@ -76,6 +79,8 @@ vim.g.clipboard = {
 }
 vim.cmd("runtime autoload/provider/clipboard.vim")
 local sent = {}
+-- Replace the native function only for this test process.
+---@diagnostic disable-next-line: duplicate-set-field
 vim.api.nvim_ui_send = function(sequence)
   sent[#sent + 1] = sequence
 end

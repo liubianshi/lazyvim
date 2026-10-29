@@ -1,6 +1,11 @@
 -- 缓冲区文本操作：visual 选区取值与坐标、按段落合并行。
 local M = {}
 
+---@alias VisualCoordinate [integer, integer, integer, integer]
+---@class Paragraphs.Position
+---@field start integer
+---@field finish integer
+
 --- Gets the start and end coordinates (line and column) of the last visual selection.
 --- Ensures that the start position always comes before the end position,
 --- regardless of the direction the visual selection was made.

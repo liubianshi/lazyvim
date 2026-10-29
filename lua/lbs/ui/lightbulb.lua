@@ -98,8 +98,10 @@ function M.setup()
         end)
         :totable()
 
-      local params = vim.lsp.util.make_range_params(winid, client.offset_encoding)
-      params.context = context
+      ---@type lsp.CodeActionParams
+      local params = vim.tbl_extend("force", vim.lsp.util.make_range_params(winid, client.offset_encoding), {
+        context = context,
+      })
 
       client:request(method, params, function(_, result, _)
         if has_action then

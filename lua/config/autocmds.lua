@@ -362,9 +362,11 @@ vim.api.nvim_create_autocmd("LspAttach", {
     if not client then
       return
     end
-    if type(client.root_dir) == "function" then
+    local root_dir = client.root_dir
+    ---@cast root_dir +fun(bufnr: integer, on_dir: fun(dir: string?))
+    if type(root_dir) == "function" then
       local resolved
-      pcall(client.root_dir, ev.buf, function(dir)
+      pcall(root_dir, ev.buf, function(dir)
         resolved = dir
       end)
       client.root_dir = type(resolved) == "string" and resolved or nil

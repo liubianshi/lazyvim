@@ -19,7 +19,7 @@ local SEP = "\31"
 local state = {
   inited = false, -- has ensure_init run?
   enabled = false, -- is the SQLite backend usable?
-  tbl = nil, -- the sqlite.tbl instance (nil when degraded)
+  tbl = nil, ---@type sqlite_tbl? the sqlite.tbl instance (nil when degraded)
   db = nil, -- the sqlite db handle
   mem = {}, -- in-memory fallback: hash -> result string
 }
@@ -81,15 +81,12 @@ local function ensure_init()
       translations = translations,
       opts = { keep_open = false, lazy = true },
     })
-    state.tbl = state.db.translations
+    state.tbl = translations
   end)
 
   if not ok_open or not state.tbl then
     vim.schedule(function()
-      vim.notify(
-        "translate.cache: SQLite unavailable, using in-memory cache\n" .. tostring(err),
-        vim.log.levels.WARN
-      )
+      vim.notify("translate.cache: SQLite unavailable, using in-memory cache\n" .. tostring(err), vim.log.levels.WARN)
     end)
     state.enabled = false
     state.tbl = nil
@@ -173,6 +170,8 @@ function M.clear()
   ensure_init()
   if state.enabled and state.tbl then
     pcall(function()
+      -- sqlite.tbl forwards nil to db:delete to remove all rows.
+      ---@diagnostic disable-next-line: missing-parameter
       state.tbl:remove()
     end)
   end
@@ -192,6 +191,8 @@ function M.find_source(result_text)
   end
   local target = M.normalize(result_text)
   local ok, rows = pcall(function()
+    -- sqlite.tbl supplies its own all-rows query when this argument is absent.
+    ---@diagnostic disable-next-line: missing-parameter
     return state.tbl:get()
   end)
   if not ok or not rows then

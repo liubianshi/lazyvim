@@ -940,10 +940,10 @@ local function attach(chat)
     })
   end
   vim.keymap.set("n", "<leader>aA", function()
-    apply(chat, state)
+    apply(chat)
   end, { buffer = chat.bufnr, desc = "中文润色：重开当前段 diff" })
   api.nvim_buf_create_user_command(chat.bufnr, "ChinesePolishApply", function()
-    apply(chat, state)
+    apply(chat)
   end, { desc = "重开暂停的中文润色 diff" })
   if state.batch then
     for name, callback in pairs({
@@ -971,6 +971,8 @@ end
 function M.workflow(options)
   options = options or {}
   local path = vim.fn.stdpath("config") .. "/prompts/chinese_polish.md"
+  -- parse_file only stores frontmatter and prompts; its context argument is unused.
+  ---@diagnostic disable-next-line: missing-fields
   local ok, prompt = pcall(require("codecompanion.prompt_library.markdown").parse_file, path, {})
   if not ok or not prompt or not prompt.prompts or not prompt.prompts[1] then
     notify("无法解析中文润色提示词，未注册本工作流；请检查 " .. path .. " 和 YAML parser。")

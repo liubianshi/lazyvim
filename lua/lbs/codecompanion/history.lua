@@ -23,7 +23,9 @@ local function describe_error(error)
 end
 
 function M.setup()
-  local Generator = require("codecompanion._extensions.history.title_generator")
+  ---@class LBS.History.TitleGenerator: CodeCompanion.History.TitleGenerator
+  ---@field _lbs_compatible? boolean
+  local Generator = require("codecompanion._extensions.history.title_generator") --[[@as LBS.History.TitleGenerator]]
   if Generator._lbs_compatible then
     return
   end
@@ -50,7 +52,12 @@ function M.setup()
       settings.model = opts.model
     end
     local Background = require("codecompanion.interactions.background")
-    local ok, background = pcall(Background.new, { adapter = opts.adapter or chat.adapter, settings = settings })
+    local adapter = opts.adapter or chat.adapter
+    if type(adapter) == "table" and adapter.type == "acp" then
+      return callback(nil, "无法初始化标题生成所需的 HTTP 适配器。")
+    end
+    ---@cast adapter string|CodeCompanion.HTTPAdapter
+    local ok, background = pcall(Background.new, { adapter = adapter, settings = settings })
     if not ok or not background then
       return callback(nil, "无法初始化标题生成所需的 HTTP 适配器。")
     end

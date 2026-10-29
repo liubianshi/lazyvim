@@ -31,12 +31,12 @@ end
 -- @return 测试文件路径
 function M.source_to_test_filepath(fname)
   fname = fname or vim.api.nvim_buf_get_name(0)
-  fname = vim.fs.relpath(vim.fn.getcwd() .. "/R", fname)
-  if not fname then
+  local relative = vim.fs.relpath(vim.fn.getcwd() .. "/R", fname)
+  if not relative then
     return
   end
 
-  local modifed_fname = fname:gsub("/", "-")
+  local modifed_fname = relative:gsub("/", "-")
   local test_name = "tests/testthat/test_" .. modifed_fname
   return vim.fn.filewritable(test_name) == 1 and test_name or "tests/testthat/test-" .. modifed_fname
 end

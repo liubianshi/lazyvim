@@ -17,6 +17,8 @@ function EditorContext:cli_render()
 
   if ctx and ctx.is_visual and ctx.lines and #ctx.lines > 0 then
     return require("lbs.codecompanion.editor_context.selection")
+      -- Upstream constructors do not consume the required `target` annotation.
+      ---@diagnostic disable-next-line: missing-fields
       .new({ buffer_context = ctx, config = self.config, params = self.params })
       :cli_render()
   end

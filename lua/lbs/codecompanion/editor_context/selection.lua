@@ -7,6 +7,10 @@ local Base = require("codecompanion.interactions.shared.editor_context.selection
 
 local fmt = string.format
 
+-- The upstream context constructor supplies path, but its type omits it.
+---@class CodeCompanion.BufferContext
+---@field path string
+
 ---@class LBS.EditorContext.Selection: CodeCompanion.EditorContext.Selection
 local EditorContext = setmetatable({}, { __index = Base })
 
@@ -41,9 +45,9 @@ end
 
 ---@return { inline: string, block: string }|nil
 function EditorContext:cli_render()
-  local ctx = self.buffer_context
+  local ctx = self.buffer_context --[[@as CodeCompanion.BufferContext?]]
 
-  if not EditorContext.can_reference(ctx) then
+  if not ctx or not EditorContext.can_reference(ctx) then
     return Base.cli_render(self)
   end
 

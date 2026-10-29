@@ -10,7 +10,7 @@ local M = {}
 ---@param row integer 0-based line index for the mark.
 ---@param col integer 0-based column index for the mark.
 ---@param text string The virtual text content to display.
----@param opts? table Additional `nvim_buf_set_extmark` options.
+---@param opts? vim.api.keyset.set_extmark Additional `nvim_buf_set_extmark` options.
 function M.set_text_extmark(buf, row, col, text, opts)
   opts = opts or {}
 
@@ -19,7 +19,8 @@ function M.set_text_extmark(buf, row, col, text, opts)
     virt_text_repeat_linebreak = true,
     hl_mode = "combine",
   }
-  local merged_opts = vim.tbl_deep_extend("keep", opts, default)
+  ---@type vim.api.keyset.set_extmark
+  local merged_opts = vim.tbl_deep_extend("keep", {}, opts, default)
   merged_opts.virt_text = { { string.format("[%s]", text), config.options.hl_group } }
 
   vim.api.nvim_buf_set_extmark(buf, config.ns_id, row, col, merged_opts)
@@ -31,13 +32,13 @@ end
 ---@param lines string[] virtual lines to add
 ---@param opts? vim.api.keyset.set_extmark
 function M.set_line_extmark(buf, row, lines, opts)
-  opts = vim.tbl_deep_extend("keep", opts or {}, {
+  local merged_opts = vim.tbl_deep_extend("keep", {}, opts or {}, {
     virt_lines_leftcol = false,
   })
-  opts.virt_lines = vim.tbl_map(function(line)
+  merged_opts.virt_lines = vim.tbl_map(function(line)
     return { { line, config.options.hl_group } }
   end, lines)
-  vim.api.nvim_buf_set_extmark(buf, config.ns_id, row, 0, opts)
+  vim.api.nvim_buf_set_extmark(buf, config.ns_id, row, 0, merged_opts)
 end
 
 --- Save or append translated content to a file, checking writability first.

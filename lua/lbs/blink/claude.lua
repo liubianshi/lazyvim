@@ -103,6 +103,7 @@ function source:get_trigger_characters()
   return { "@", "/" }
 end
 
+---@return (fun():nil)?
 function source:get_completions(context, callback)
   callback = vim.schedule_wrap(callback)
   local row, col = context.pos.row, context.pos.col
@@ -153,10 +154,11 @@ function source:get_completions(context, callback)
       }
     end
     callback({ is_incomplete_forward = false, is_incomplete_backward = false, items = items })
-    return
+    return nil
   end
 
   callback({ is_incomplete_forward = false, is_incomplete_backward = false, items = {} })
+  return nil
 end
 
 return source
