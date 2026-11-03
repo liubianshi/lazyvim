@@ -114,7 +114,9 @@ return {
           list = {
             selection = {
               preselect = false,
-              auto_insert = true,
+              auto_insert = function(ctx)
+                return not vim.tbl_contains({ "markdown", "quarto", "rmd" }, vim.bo[ctx.bufnr].filetype)
+              end,
             },
           },
           menu = {

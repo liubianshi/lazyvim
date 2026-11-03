@@ -56,10 +56,6 @@ return {
           single_file_support = true,
         },
         vimls = {},
-        copilot = {
-          name = "copilot",
-          cmd = { "copilot-language-server", "--stdio" },
-        },
         perlnavigator = {
           cmd = { "perlnavigator" },
           single_file_support = true,
@@ -90,6 +86,7 @@ return {
           },
         },
         markdown_oxide = {
+          enabled = false,
           cmd = {
             vim.fn.executable("markdown-oxide") == 1 and "markdown-oxide"
               or vim.env.HOME .. "/.cargo/bin/markdown-oxide",
