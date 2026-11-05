@@ -328,11 +328,11 @@ vim.api.nvim_create_autocmd({ "QuitPre" }, {
 
 -- Formatprg --------------------------------------------------------------- {{{1
 vim.api.nvim_create_autocmd({ "FileType" }, {
-  pattern = { "newsboat", "quarto", "rmarkdown", "markdown" },
+  pattern = { "quarto", "rmarkdown", "markdown" },
   group = augroups.Formatprg,
   callback = function(ev)
     vim.bo[ev.buf].formatexpr = nil
-    vim.bo[ev.buf].formatprg = vim.b[ev.buf].filetype == "newsboat" and "mdwrap --tonewsboat" or "mdwrap -w 70"
+    vim.bo[ev.buf].formatprg = "mdwrap -w 70"
   end,
 })
 

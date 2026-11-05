@@ -1,5 +1,8 @@
 return {
   "folke/snacks.nvim",
+  init = function()
+    require("lbs.image").setup()
+  end,
   opts = {
     bigfile = { enabled = true },
     image = {
@@ -51,7 +54,7 @@ return {
       },
       sections = {
         { section = "header" },
-        { section = "keys",  padding = 1, gap = 0 },
+        { section = "keys", padding = 1, gap = 0 },
         {
           pane = 1,
           icon = " ",
@@ -68,9 +71,9 @@ return {
       enabled = true,
       filter = function(buf)
         return vim.g.snacks_indent ~= false
-            and vim.b[buf].snacks_indent ~= false
-            and vim.bo[buf].buftype == ""
-            and not vim.tbl_contains({ "norg", "quarto", "markdown" }, vim.bo[buf].filetype)
+          and vim.b[buf].snacks_indent ~= false
+          and vim.bo[buf].buftype == ""
+          and not vim.tbl_contains({ "norg", "quarto", "markdown" }, vim.bo[buf].filetype)
       end,
     },
     notifier = {
@@ -80,8 +83,8 @@ return {
     picker = {
       ui_select = true,
       matcher = {
-        cwd_bonus = true,     -- give bonus for matching files in the cwd
-        frecency = true,      -- frecency bonus
+        cwd_bonus = true, -- give bonus for matching files in the cwd
+        frecency = true, -- frecency bonus
         history_bonus = true, -- give more weight to chronological order
       },
       win = {
@@ -133,7 +136,7 @@ return {
                       "Error deleting file %s: %s (%s)",
                       file_path,
                       unlink_err[1] or "Unknown Error", -- Error code string
-                      unlink_err[2] or "No details"     -- Error description string
+                      unlink_err[2] or "No details" -- Error description string
                     )
                     vim.notify(error_message, vim.log.levels.ERROR, { title = "File Deletion" })
                   end

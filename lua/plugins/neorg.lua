@@ -24,10 +24,6 @@ return {
       })
     end
 
-    local image_render_exist = function()
-      PlugExist("image.nvim")
-    end
-
     local get_modules = function()
       local modules = {
         ["core.defaults"] = {},
@@ -89,14 +85,6 @@ return {
         },
       }
 
-      if image_render_exist() then
-        modules["core.latex.renderer"] = {
-          renderer = "core.integrations.image",
-          render_on_enter = true,
-          dpi = 600,
-          scale = 0.5,
-        }
-      end
       return modules
     end
 

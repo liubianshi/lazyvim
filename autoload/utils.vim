@@ -730,7 +730,7 @@ function! utils#MdPreview(method = "infile") range  abort
 
   let bg = synIDattr(synIDtrans(hlID("StatusLine")), "bg#")
 
-  if !(($TERM ==? "xterm-kitty" || $WEZTERM_EXECUTABLE != "") && v:lua.PlugExist('image.nvim') && has('mac'))
+  if !luaeval('require("snacks.image").supports_terminal()')
     let outfile = shellescape(stdpath('cache') . "/vim_markdown_preview.png")
     let command = "mdviewer --wname " . sha256(expand('.')) .
                 \ " --outfile " . outfile
@@ -744,7 +744,8 @@ function! utils#MdPreview(method = "infile") range  abort
   let lines = getline(a:firstline, a:lastline)
   call system(command, lines)
 
-  exec "PreviewImage! " . a:method . " " . outfile
+  let method = type(a:method) == v:t_number && a:method == 1 ? "current" : a:method
+  exec "PreviewImage! " . method . " " . fnameescape(outfile)
 endfunction
 
 

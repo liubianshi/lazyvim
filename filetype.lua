@@ -29,7 +29,6 @@ vim.filetype.add({
     sthlp = "smcl",
     ihlp = "smcl",
     norg = "norg",
-    newsboat = "newsboat",
     perl = "perl",
   },
   filename = {
@@ -39,7 +38,6 @@ vim.filetype.add({
   pattern = {
     ["%.[Rr]md$"] = "rmd",
     ["%.[Rr]markdown$"] = "rmd",
-    [".*/newsboat-article.*"] = "newsboat",
     [".*cheatsheets/personal/.*"] = cheatsheets_filetype,
   },
 })
