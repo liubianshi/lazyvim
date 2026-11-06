@@ -92,10 +92,10 @@ Lua 入口复用 CodeCompanion 原生条件订阅与重复执行，Markdown 模�
 聊天折行改用 `mdwrap.nvim` 的显示预览，通过 `render-markdown.nvim` 的渲染回调接入。
 显示设置位于 `lua/plugins/markdown.lua`，使用 `wrap_sentence=true` 按宽填行，
 宽度取窗口正文区与 `max_width=120` 列的较小值。
-普通模式下显示预览，插入与可视模式下恢复原生显示。
+普通与可视模式下显示预览；插入模式仅当前行恢复原生显示，其余行继续显示折行。
 `:MdwrapDisplay toggle` 可切换当前缓冲区的显示折行。
 这套预览不插入真实换行，也不改变空格、原稿、用户输入或发送给模型的消息。
-已移除回复完成后的硬折行、折叠行号补偿，以及聊天缓冲区的 Conform `mdwrap` 配置。
+已移除回复完成后的硬折行、折叠行号补偿，以及聊天缓冲区的 Conform 硬折行配置。
 `Reasoning` 折叠继续由 CodeCompanion 原生管理。
 代码块与表格不注入预览断点，原有引文与中文引号渲染保留。
 流式输出与输入窗口保留 `wrap=true`、`linebreak=false`，其他 Markdown 的硬折行设置不变。

@@ -32,19 +32,6 @@ return {
           stdin = true,
         }
       end,
-      ["mdwrap"] = {
-        format = function(_, ctx, lines, callback)
-          local opts = { bufnr = ctx.buf, range = ctx.range }
-          local ok, out = pcall(function()
-            return require("mdwrap").format_lines(lines, opts)
-          end)
-          if ok then
-            callback(nil, out)
-          else
-            callback(tostring(out))
-          end
-        end,
-      },
       ["injected"] = {
         lang_to_ft = {
           r = { "air" },

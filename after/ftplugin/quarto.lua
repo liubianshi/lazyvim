@@ -17,9 +17,6 @@ vim.wo.breakindent = true
 -- vim.wo.showbreak = '|'
 
 -- vim.cmd.UltiSnipsAddFiletype "quarto.r.markdown"
-vim.api.nvim_set_option_value("formatexpr", nil, { scope = "local" })
-vim.api.nvim_set_option_value("formatprg", "mdwrap", { scope = "local" })
-
 local keymap = require("lbs.keymap").keymap
 
 local fexport = function(oformat, ofile)

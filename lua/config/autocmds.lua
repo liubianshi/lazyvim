@@ -328,13 +328,20 @@ vim.api.nvim_create_autocmd({ "QuitPre" }, {
 
 -- Formatprg --------------------------------------------------------------- {{{1
 vim.api.nvim_create_autocmd({ "FileType" }, {
-  pattern = { "quarto", "rmarkdown", "markdown" },
+  pattern = "rmarkdown",
   group = augroups.Formatprg,
   callback = function(ev)
-    vim.bo[ev.buf].formatexpr = nil
+    vim.bo[ev.buf].formatexpr = ""
     vim.bo[ev.buf].formatprg = "mdwrap -w 70"
   end,
 })
+-- VeryLazy 加载前已经打开的 Rmarkdown buffer 不会再触发 FileType。
+for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+  if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].filetype == "rmarkdown" then
+    vim.bo[buf].formatexpr = ""
+    vim.bo[buf].formatprg = "mdwrap -w 70"
+  end
+end
 
 -- Lsp ------------------------------------------------------------------ {{{1
 -- Create an autocommand that triggers on buffer rename events.
