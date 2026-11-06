@@ -1,6 +1,8 @@
+local filetypes = { "markdown", "quarto", "rmd", "rmarkdown", "pandoc" }
+
 return {
   "liubianshi/schola.nvim",
-  config = true,
   dev = true,
-  ft = { "markdown", "quarto", "rmd", "rmarkdown", "pandoc" },
+  ft = filetypes,
+  opts = { filetypes = filetypes },
 }

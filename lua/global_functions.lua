@@ -13,9 +13,9 @@ vim.print = _G.dd -- Override print to use snacks for `:=` command
 
 function _G.LoadedPlugins()
   local plugs = require("lazy").plugins()
-  local loaded_plugs = {}
+  local loaded_plugs = vim.empty_dict()
   for _, plug in ipairs(plugs) do
-    if not plug["_"].loaded then
+    if plug["_"].loaded then
       loaded_plugs[plug.name] = 1
     end
   end
