@@ -8,7 +8,6 @@ foo.*
 data
 *.orig
 lazy-lock.json
-lazy-lock.json
 .aider*
 
 .scout/

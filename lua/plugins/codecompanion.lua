@@ -360,7 +360,7 @@ return {
         },
       },
     },
-    -- AI 适配器配置（从 util.ai_adapters 加载）
+    -- AI 适配器配置（从 lbs.ai_adapters 加载）
     adapters = ai_adapters.codecompanion_adapters(),
     -- 提示词库配置
     prompt_library = {

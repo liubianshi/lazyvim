@@ -80,7 +80,7 @@ return {
     { "<leader>ad", function() require("sidekick.cli").close() end,                                    desc = "Sidekick: Detach a CLI Session", },
     { "<leader>at", function() require("sidekick.cli").send({ msg = "{this}" }) end,                   mode = { "x", "n" },                     desc = "Sidekick: Send This", },
     { "<leader>ag", function() require("sidekick.cli").toggle({ name = "gemini", focus = false }) end, desc = "Sidekick: Toggle Gemini", },
-    { "<leader>ax", function() require("sidekick.cli").toggle({ name = "claude", focus = false }) end, desc = "Sidekick: Toggle Gemini", },
+    { "<leader>ax", function() require("sidekick.cli").toggle({ name = "claude", focus = false }) end, desc = "Sidekick: Toggle Claude", },
     -- Open split buffer (anchored under sidekick CLI terminal) to write prompt
     {
       "<leader>ap",

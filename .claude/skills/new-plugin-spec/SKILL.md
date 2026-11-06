@@ -1,6 +1,6 @@
 ---
 name: new-plugin-spec
-description: Scaffold a new lazy.nvim plugin spec under lua/plugins/ following this repo's AGENTS.md conventions (opts pattern, keys table, lazy trigger, explicit dependencies). Use when the user runs `/new-plugin-spec <author/repo>` or says "add a plugin", "new plugin spec", "scaffold plugin", "新建插件配置".
+description: Scaffold a new lazy.nvim plugin spec under lua/plugins/ following this repo's CLAUDE.md conventions (opts pattern, keys table, lazy trigger, explicit dependencies). Use when the user runs `/new-plugin-spec <author/repo>` or says "add a plugin", "new plugin spec", "scaffold plugin", "新建插件配置".
 disable-model-invocation: true
 ---
 
@@ -55,7 +55,7 @@ If **appending** to an existing file:
 - The file should already return `{ {...}, {...} }` (multi-spec form). Insert your new spec as a new table entry inside that list.
 - If the file currently returns a single spec (no outer list), refactor to a list and add yours — confirm with user first.
 
-### 4. Validate against AGENTS.md rules
+### 4. Validate against CLAUDE.md rules
 
 After writing, mentally verify (do not invoke another agent for this — these are tractable):
 - **R3**: no `config = function` with a trivial body — use `opts =`.
@@ -63,7 +63,7 @@ After writing, mentally verify (do not invoke another agent for this — these a
 - **R5**: at least one of `event`/`ft`/`cmd`/`keys`/`lazy = false` present.
 - **R6**: `dependencies` block exists (can be empty `{}` if truly standalone).
 
-If the user gave you info that would violate a rule (e.g., "set it up with a config function that just calls setup"), gently redirect: "AGENTS.md prefers `opts =` for trivial setup — I'll use that. Tell me if you actually need the function form."
+If the user gave you info that would violate a rule (e.g., "set it up with a config function that just calls setup"), gently redirect: "CLAUDE.md prefers `opts =` for trivial setup — I'll use that. Tell me if you actually need the function form."
 
 ### 5. Report back
 

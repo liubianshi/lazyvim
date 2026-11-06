@@ -27,7 +27,7 @@ return {
         },
         bashls = {
           cmd = { "bash-language-server", "start" },
-          filetpyes = { "sh" },
+          filetypes = { "sh" },
           root_markers = { ".git", ".root", ".project" },
           single_file_support = true,
         },

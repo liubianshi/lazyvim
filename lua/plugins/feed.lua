@@ -19,14 +19,6 @@ return {
     zen = {
       enabled = false,
     },
-    protocol = {
-      backend = "local",
-      ttrss = {
-        url = "http://rss.econc.blog:181/",
-        user = "liubianshi",
-        password = vim.fn.system("~/.private_info.sh ttrss"),
-      },
-    },
     options = {
       entry = {
         wo = {

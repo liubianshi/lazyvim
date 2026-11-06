@@ -183,7 +183,7 @@ keymap({ "<leader>er", "<cmd>edit ~/.Rprofile<cr>", desc = "Edit R Profile" })
 keymap({ "<leader>es", "<cmd>edit ~/.config/stata/profile.do<cr>", desc = "Edit Stata profile" })
 keymap({ "<leader>ez", "<cmd>edit ~/.zshrc<cr>", desc = "Edit .zshrc" })
 keymap({ "<leader>eZ", "<cmd>edit ~/useScript/usr.zshrc<cr>", desc = "Edit User .zshrc" })
-keymap({ "<leader>eu", "<cmd>edit ~/.config/nvim/UltiSnips<cr>", desc = "Edit Snippets" })
+keymap({ "<leader>eu", "<cmd>edit ~/.config/nvim/snippets<cr>", desc = "Edit Snippets" })
 keymap({ "<leader>et", "<cmd>edit +ToggleZenMode ~/Documents/Writing/plantodo.norg<cr>zt", desc = "Open Plan to Do" })
 keymap({ "<leader>eT", "<cmd>edit +$ ~/Documents/Writing/todo.norg<cr>zt", desc = "Open TODO list" })
 keymap({
