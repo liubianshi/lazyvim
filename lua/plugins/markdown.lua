@@ -126,7 +126,7 @@ return {
 
       ---@diagnostic disable: missing-fields, unused-local
       picker = {
-        name = "snacks.pick",
+        name = "snacks.picker",
         note_mappings = {
           ["new"] = "<C-x>n",
           ["insert_link"] = "<C-x>l",

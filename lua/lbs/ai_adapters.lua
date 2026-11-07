@@ -34,7 +34,7 @@ M.use_models = {
   chat          = { name = "aihubmix_claude", model = "claude-sonnet-4-6" },
   advanced_code = { name = "aihubmix_openai", model = "gpt-5.5-free" },
   write         = { name = "aihubmix_gemini", model = "gemini-3.1-flash-lite" },
-  academic      = { name = "aihubmix_gemini", model = "gemini-3.1-pro-preview" },
+  academic      = { name = "aihubmix_gemini", model = "gemini-4-argon" },
 }
 -- stylua: ignore end
 
