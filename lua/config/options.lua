@@ -227,5 +227,5 @@ opt.winblend = 5 -- pseudo transparency for floating window
 opt.winminwidth = 5 -- Minimum window width
 opt.wrap = false -- Default to no wrap; ftplugin files will enable for specific filetypes
 opt.linebreak = true
-opt.wrapmargin = 2 -- 指定拆行处与编辑窗口右边缘之间空出的字符数
+opt.wrapmargin = 0 -- Disable automatic hard wrapping at the window edge
 opt.writebackup = false
