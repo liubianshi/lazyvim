@@ -40,49 +40,6 @@ M.use_models = {
 
 -- Custom Handlers
 M.handlers = {
-  gemini = {
-    ---Parse Gemini output for CodeCompanion
-    ---@param self table The adapter instance
-    ---@param data string The raw data chunk
-    ---@return table|nil
-    chat_output = function(self, data)
-      if not data or data == "" then
-        return
-      end
-
-      local utils = require("codecompanion.adapters.utils")
-      -- Optimization: Flattened logic and reduced nesting for readability
-      local ok, json = pcall(vim.json.decode, utils.clean_streamed_data(data), { luanil = { object = true } })
-
-      if not ok or not json.choices or #json.choices == 0 then
-        return
-      end
-
-      local choice = json.choices[1]
-      local reason = choice.finish_reason
-
-      -- Check for error stops
-      if reason and reason ~= "stop" and reason ~= "" then
-        return {
-          status = "error",
-          output = string.format("Stream stopped. Finish reason: '%s'", reason),
-        }
-      end
-
-      -- Handle both streaming (delta) and standard (message) responses
-      local delta = (self.opts and self.opts.stream) and choice.delta or choice.message
-
-      if delta then
-        return {
-          status = "success",
-          output = {
-            role = delta.role or "llm",
-            content = delta.content or "",
-          },
-        }
-      end
-    end,
-  },
   openai = {
     ---Strip sampling knobs that OpenAI reasoning models reject.
     ---o-series 与 gpt-5 系列均为 reasoning-only：发送 `temperature`/`top_p`
@@ -147,10 +104,6 @@ M.adapter_definitions = {
           url = "https://aihubmix.com",
           api_key = secret_cmd .. "aihubmix",
           chat_url = "/v1/chat/completions",
-        },
-        handlers = {
-          -- Reference resolved at runtime to avoid definition order issues
-          chat_output = "M.handlers.gemini.chat_output",
         },
         schema = {
           model = {
