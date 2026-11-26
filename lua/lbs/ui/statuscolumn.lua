@@ -156,7 +156,7 @@ function M.statuscolumn()
     components[1] = "%=" .. components[1] .. " " -- right align
   end
 
-  if vim.v.virtnum ~= 0 then
+  if (is_num or is_relnum) and vim.v.virtnum ~= 0 then
     components[1] = "%= "
   end
 
