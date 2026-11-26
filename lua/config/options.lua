@@ -15,8 +15,8 @@ vim.g.lazyvim_python_lsp = "basedpyright"
 
 -- colorscheme
 vim.g.default_colorscheme = {
-  dark = vim.env.NVIM_COLOR_SCHEME_DARK or "tokyonight-night",
-  light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "default",
+  dark = vim.env.NVIM_COLOR_SCHEME_DARK or "nord",
+  light = vim.env.NVIM_COLOR_SCHEME_LIGHT or "nord",
 }
 
 -- Resolving Errors Opening Man Files

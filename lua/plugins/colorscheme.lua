@@ -52,6 +52,17 @@ return {
     },
   },
   {
+    "gbprod/nord.nvim",
+    opts = {
+      on_colors = function()
+        require("foxberry").on_colors()
+      end,
+      on_highlights = function(hl)
+        require("foxberry").on_highlights(hl)
+      end,
+    },
+  },
+  {
     "zenbones-theme/zenbones.nvim",
     -- Optionally install Lush. Allows for more configuration or extending the colorscheme
     -- If you don't want to install lush, make sure to set g:zenbones_compat = 1
