@@ -3,6 +3,7 @@ return {
     "nvim-lualine/lualine.nvim",
     opts = {
       options = {
+        component_separators = { left = "›", right = "‹" },
         theme = function()
           if vim.g.colors_name == "nord" then
             return require("foxberry").lualine_theme()
