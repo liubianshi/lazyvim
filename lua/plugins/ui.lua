@@ -1,6 +1,7 @@
 return {
   {
     "nvim-lualine/lualine.nvim",
+    cond = function() return vim.g.how_chat ~= 1 end,
     opts = {
       options = {
         component_separators = { left = "›", right = "‹" },

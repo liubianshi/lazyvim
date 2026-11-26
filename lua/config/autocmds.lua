@@ -87,6 +87,10 @@ aucmd({ "WinResized" }, {
 aucmd({ "BufWinEnter", "BufRead", "BufEnter" }, {
   group = augroups.Zen,
   callback = function(ev)
+    -- how manages its own tabline and statusline across buffer switches.
+    if vim.g.how_chat == 1 then
+      return
+    end
     local bufnr = ev.buf
     local winid = vim.fn.bufwinid(bufnr)
     if winid == -1 or vim.api.nvim_win_get_config(winid).zindex then
@@ -96,13 +100,13 @@ aucmd({ "BufWinEnter", "BufRead", "BufEnter" }, {
     local zen_oriwin = vim.b[bufnr].zen_oriwin
     local is_zen_buffer = zen_oriwin and zen_oriwin.zenmode
     local is_zen_window = vim.w[winid].zen_mode
-    local _, lualine = pcall(require, "lualine")
+    local has_lualine, lualine = pcall(require, "lualine")
 
     if is_zen_window and is_zen_buffer then
       vim.go.showtabline = 0
       vim.go.laststatus = 0
       ---@diagnostic disable: missing-fields
-      if lualine then
+      if has_lualine then
         lualine.hide({})
       end
       return
@@ -112,7 +116,7 @@ aucmd({ "BufWinEnter", "BufRead", "BufEnter" }, {
       vim.go.showtabline = vim.g.showtabline or 1
       vim.go.laststatus = vim.g.laststatus or 3
       ---@diagnostic disable: missing-fields
-      if lualine then
+      if has_lualine then
         lualine.hide({ unhide = true })
       end
       return

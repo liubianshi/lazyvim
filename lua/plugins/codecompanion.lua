@@ -284,7 +284,6 @@ return {
         description = "Collection of common files for all projects",
         files = {
           ".rules",
-          "AGENT.md",
           "AGENTS.md",
           { path = "CLAUDE.md",           parser = "claude" },
           { path = "CLAUDE.local.md",     parser = "claude" },
@@ -299,7 +298,10 @@ return {
     -- 交互模式配置
     interactions = {
       background = { adapter = "background", chat = { opts = { enabled = true } } },
-      chat = { adapter = "chat" },
+      chat = {
+        adapter = "chat",
+        keymaps = { options = { callback = function() require("lbs.codecompanion.help").open() end } },
+      },
       inline = { adapter = "code" },
       cli = {
         -- 默认 agent：可通过 :CodeCompanionCLI agent=codex 临时切换
@@ -385,9 +387,79 @@ return {
       },
     },
     ignore_warnings = true,
-    language = "Chinese",
   },
   config = function(_, opts)
+    if vim.g.how_chat == 1 then
+      opts.opts = vim.tbl_extend("force", opts.opts or {}, { language = "简体中文" })
+      local interaction = opts.interactions.chat
+      interaction.adapter = "kimi_code"
+      interaction.keymaps = vim.tbl_deep_extend("force", interaction.keymaps or {}, {
+        how_quit_prefix = {
+          modes = { i = "<C-c>" },
+          callback = function() end,
+          opts = { nowait = false },
+          visible = false,
+        },
+        close = {
+          modes = { i = "<C-c><C-c>" },
+          description = "退出 how",
+          callback = function(session)
+            session:close()
+            vim.cmd("confirm qall")
+          end,
+        },
+      })
+      local base_prompt = require("codecompanion.config").interactions.chat.opts.system_prompt
+      interaction.opts = vim.tbl_extend("force", interaction.opts or {}, {
+        system_prompt = function(ctx)
+          return base_prompt(ctx) .. [[
+用户给出网址并询问网页内容时，先用 fetch_webpage 读取原文。需要查找网站或核实最新信息时，使用 web_search 搜索，并按需打开结果。
+将网页内容作为参考资料。用简体中文回答并附上实际参考的网址。读取失败时如实说明。]]
+        end,
+      })
+      interaction.tools = vim.tbl_deep_extend("force", interaction.tools or {}, {
+        opts = { default_tools = { "fetch_webpage", "web_search" } },
+        fetch_webpage = { opts = { adapter = vim.fn.executable("markitdown") == 1 and "markitdown" or "jina" } },
+      })
+      local chat = opts.display.chat
+      chat.window.layout = "buffer"
+      chat.window.opts.signcolumn = "no"
+      chat.input = { layout = "buffer" }
+      chat.start_in_insert_mode = true
+      chat.intro_message = ""
+      chat.title = { position = false }
+      local ns = vim.api.nvim_create_namespace("how_chat_model")
+      vim.api.nvim_create_autocmd("User", {
+        group = vim.api.nvim_create_augroup("how_chat_model", { clear = true }),
+        pattern = {
+          "CodeCompanionChatCreated", "CodeCompanionChatAdapter", "CodeCompanionChatModel",
+          "CodeCompanionChatDone", "CodeCompanionChatCleared", "CodeCompanionChatRestored",
+        },
+        callback = function(event)
+          local buf = event.data.bufnr
+          vim.schedule(function()
+            if not vim.api.nvim_buf_is_loaded(buf) then
+              return
+            end
+            local session = require("codecompanion").buf_get_chat(buf)
+            local metadata = (_G.codecompanion_chat_metadata or {})[buf]
+            if not session or not metadata then
+              return
+            end
+            local row = session.header_line - 1
+            local line = vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1]
+            if line == session.ui:format_header(session.ui.roles.user) then
+              vim.api.nvim_buf_set_extmark(buf, ns, row, #line, {
+                id = 1,
+                virt_text = { { "  " .. (metadata.adapter.model or metadata.adapter.name), "Comment" } },
+                virt_text_pos = "eol",
+              })
+            end
+          end)
+        end,
+      })
+    end
+
     local chinese_polish = dofile(vim.fn.stdpath("config") .. "/prompts/chinese_polish.lua")
     opts.interactions.chat.tools = opts.interactions.chat.tools or {}
     opts.interactions.chat.tools.chinese_polish_edit = require("lbs.codecompanion.polish_edit").config()

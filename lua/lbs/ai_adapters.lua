@@ -78,6 +78,26 @@ M.adapter_definitions = {
     },
   },
   http = {
+    kimi_code = {
+      base = "kimi",
+      opts = {
+        name = "kimi_code",
+        formatted_name = "Kimi Code",
+        url = "https://api.kimi.com/coding/v1/chat/completions",
+        env = { api_key = vim.env.KIMI_API_KEY and vim.env.KIMI_API_KEY ~= "" and "KIMI_API_KEY" or secret_cmd .. "kimi_claude" },
+        schema = {
+          model = {
+            default = "k3.1-pro",
+            choices = {
+              ["k3.1-pro"] = {
+                formatted_name = "Kimi K3.1 Pro",
+                opts = { can_reason = true, can_use_tools = true, has_vision = true },
+              },
+            },
+          },
+        },
+      },
+    },
     deepseek = {
       base = "deepseek",
       opts = {
