@@ -1,4 +1,17 @@
 return {
+  {
+    "nvim-lualine/lualine.nvim",
+    opts = {
+      options = {
+        theme = function()
+          if vim.g.colors_name == "nord" then
+            return require("foxberry").lualine_theme()
+          end
+          return "auto"
+        end,
+      },
+    },
+  },
   { -- folke/noice.nvim ------------------------------------------------- {{{2
     "folke/noice.nvim",
     cmd = { "NoiceEnable" },
